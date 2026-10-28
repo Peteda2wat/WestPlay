@@ -188,7 +188,7 @@
   color: #ff453a;
 }
 
-/* A map WestPlay doesn't allow: the tile says so instead of showing it (MapView). */
+/* A map ATS GPS doesn't allow: the tile says so instead of showing it (MapView). */
 .map-blocked {
   display: grid;
   place-content: center;

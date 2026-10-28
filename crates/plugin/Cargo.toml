@@ -7,7 +7,7 @@ license.workspace = true
 publish.workspace = true
 
 [lib]
-name = "westplay"
+name = "atsgps"
 crate-type = ["cdylib"]
 
 [dependencies]

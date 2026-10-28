@@ -61,7 +61,7 @@ impl fmt::Display for PrefabError {
             Self::UnsupportedVersion(v) => {
                 write!(f, "prefab version {v} (only {OLDEST_VERSION} to {SUPPORTED_VERSION} are supported)")
             }
-            Self::OtherLayout(v) => write!(f, "prefab version {v} laid out in a way WestPlay doesn't read"),
+            Self::OtherLayout(v) => write!(f, "prefab version {v} laid out in a way ATS GPS doesn't read"),
             Self::OutOfBounds(error) => error.fmt(f),
             Self::BadNeighbour { point, neighbour } => write!(f, "map point {point} has neighbour {neighbour}"),
         }

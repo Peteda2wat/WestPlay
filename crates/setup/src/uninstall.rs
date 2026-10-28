@@ -37,10 +37,15 @@ pub fn remove_mod_from(dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
-/// How a profile lists WestPlay's mod: its package is the mod's file without `.scs` (`westplay|WestPlay`).
+/// How a profile lists the mod: its package is the mod's file without `.scs` (`atsgps|ATS GPS`), or its
+/// name before ATS GPS was named so (`westplay|WestPlay`).
 pub fn is_westplay(entry: &str) -> bool {
-    entry.split('|').next() == Some(game_mod::FILE_NAME.trim_end_matches(".scs"))
+    let package = entry.split('|').next();
+    package == Some(game_mod::FILE_NAME.trim_end_matches(".scs")) || package == Some(LEGACY_PACKAGE)
 }
+
+/// The mod's package before ATS GPS was named so (2026-10-28).
+const LEGACY_PACKAGE: &str = "westplay";
 
 /// What taking WestPlay out of the profiles did.
 #[derive(Debug, Default, PartialEq)]
@@ -165,7 +170,7 @@ mod tests {
         assert!(!mods.join(game_mod::FILE_NAME).exists());
         assert!(mods.join("promods.scs").exists());
         // WestPlay's own folder, its half-written copy too.
-        let ours = docs.join("WestPlay");
+        let ours = docs.join("ATS GPS");
         std::fs::create_dir_all(&ours).unwrap();
         std::fs::write(ours.join(game_mod::FILE_NAME), b"mod").unwrap();
         std::fs::write(ours.join(format!("{}.partial", game_mod::FILE_NAME)), b"half").unwrap();

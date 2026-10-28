@@ -5,7 +5,7 @@ import { poweredOff, withGame } from './youtube/withGame'
 /**
  * A music app with the game (YouTube, Spotify, Apple Music, YouTube Music; the rule: youtube/withGame.ts):
  * the music playing here fades out and pauses while the player is away from the game (it's paused, or tabbed
- * out of) and plays on fading in as they come back, only if it was WestPlay that paused it; it stops at once
+ * out of) and plays on fading in as they come back, only if it was ATS GPS that paused it; it stops at once
  * as the truck's electrics go off, and nothing plays while they're off. Music playing elsewhere (Spotify on a
  * phone) is left as it is.
  */

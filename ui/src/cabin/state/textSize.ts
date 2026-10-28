@@ -9,7 +9,7 @@
  */
 export const TEXT_SIZES = [0.8, 0.9, 1, 1.12, 1.24, 1.35, 1.5, 1.7, 2] as const
 
-/** The step WestPlay starts on: a quarter larger than the apps' text as designed. */
+/** The step ATS GPS starts on: a quarter larger than the apps' text as designed. */
 export const DEFAULT_TEXT_SIZE = 4
 
 /** The steps added below the others on 2026-10-24 (0.8 and 0.9): a step kept from before is this many further on. */

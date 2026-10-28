@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Continua',
   welcome: {
     title: 'CarPlay a la teva cabina',
-    sub: 'WestPlay porta CarPlay a la pantalla del teu camió a Euro Truck Simulator 2. La configuració només triga uns minuts.',
+    sub: 'ATS GPS porta CarPlay a la pantalla del teu camió a Euro Truck Simulator 2. La configuració només triga uns minuts.',
     start: 'Comença',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'El teu joc',
     titleMissing: 'On és el teu joc?',
-    found: 'WestPlay ha trobat Euro Truck Simulator 2 en aquest ordinador.',
+    found: 'ATS GPS ha trobat Euro Truck Simulator 2 en aquest ordinador.',
     foundMany: 'Euro Truck Simulator 2 està instal·lat en més d’un lloc. Tria el que fas servir per jugar.',
     missing:
-      'WestPlay no ha trobat Euro Truck Simulator 2. Tria la carpeta on el vas instal·lar, la que conté base.scs.',
+      'ATS GPS no ha trobat Euro Truck Simulator 2. Tria la carpeta on el vas instal·lar, la que conté base.scs.',
     chooseAnother: 'Fes servir una altra carpeta…',
     chooseFolder: 'Tria la carpeta…',
     picker: 'Tria la carpeta d’Euro Truck Simulator 2',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'El joc ja no és en aquesta carpeta.',
     closeToGoOn: {
       title: 'Tanca el joc, si us plau.',
-      text: 'WestPlay només es pot configurar mentre Euro Truck Simulator 2 no està obert.',
+      text: 'ATS GPS només es pot configurar mentre Euro Truck Simulator 2 no està obert.',
     },
   },
   check: {
@@ -43,14 +43,14 @@ export const words: Words = {
     notYet: 'Encara no és compatible',
     title: 'Aquesta és la teva configuració',
     titleNotYet: 'Encara no és compatible',
-    cantInstall: 'WestPlay encara no és compatible amb aquesta versió del joc.',
+    cantInstall: 'ATS GPS encara no és compatible amb aquesta versió del joc.',
     version: 'Versió',
     unknown: 'Desconeguda',
     dlcs: 'DLC',
     mapDlcs: 'DLC de mapa',
     noMapDlcs: 'Cap',
     untested:
-      'WestPlay s’ha fet per a la versió 1.61. La teva encara no s’ha provat, però el més probable és que funcioni.',
+      'ATS GPS s’ha fet per a la versió 1.61. La teva encara no s’ha provat, però el més probable és que funcioni.',
     trucks: 'Camions',
     truckNotYet: 'Encara no és compatible',
     otherTrucks: 'La resta de camions del joc no són compatibles amb CarPlay a la vida real.',
@@ -58,11 +58,11 @@ export const words: Words = {
     notInGame: 'No és al teu joc',
     scania7: 'Scania S i R – pantalla de 7"',
     scaniaSmartDash: 'Scania S i R – Smart Dash',
-    anyTruckTablet: 'Qualsevol camió – amb la tauleta WestPlay',
+    anyTruckTablet: 'Qualsevol camió – amb la tauleta ATS GPS',
     profiles: 'Perfils',
     profileCount: { one: '{n} perfil', other: '{n} perfils' },
     noProfiles: 'Encara no hi ha perfils',
-    noProfilesDetail: 'WestPlay prepararà el mapa per al primer perfil que creïs.',
+    noProfilesDetail: 'ATS GPS prepararà el mapa per al primer perfil que creïs.',
     baseMap: 'Mapa original',
     withMods: '{map} amb {mods}',
     unreadable: {
@@ -70,20 +70,20 @@ export const words: Words = {
       other: 'No s’han pogut llegir {n} mods de mapa, així que els seus canvis no apareixeran',
     },
     mapNote:
-      'WestPlay prepara un mapa per a cadascun dels teus perfils, un darrere l’altre, començant per l’últim amb què has jugat. Els mapes es preparen mentre el joc està tancat.',
+      'ATS GPS prepara un mapa per a cadascun dels teus perfils, un darrere l’altre, començant per l’últim amb què has jugat. Els mapes es preparen mentre el joc està tancat.',
   },
   install: {
-    title: 'Instal·la WestPlay',
-    titleDone: 'WestPlay està instal·lat',
-    sub: 'WestPlay afegeix un connector al teu joc, i aquest carrega les pantalles de WestPlay per als camions cada vegada que hi jugues: no cal activar res a Gestionar mods. Els fitxers del joc mateix no es toquen, i en desinstal·lar WestPlay se suprimeix tot.',
+    title: 'Instal·la ATS GPS',
+    titleDone: 'ATS GPS està instal·lat',
+    sub: 'ATS GPS afegeix un connector al teu joc, i aquest carrega les pantalles de ATS GPS per als camions cada vegada que hi jugues: no cal activar res a Gestionar mods. Els fitxers del joc mateix no es toquen, i en desinstal·lar ATS GPS se suprimeix tot.',
     install: 'Instal·la',
     tryAgain: 'Torna-ho a provar',
     asAdministrator: 'Instal·la com a administrador',
     plugin: 'Connector',
-    pluginDetail: 'Mostra WestPlay a la pantalla del teu camió',
+    pluginDetail: 'Mostra ATS GPS a la pantalla del teu camió',
     banners: {
       installing: { title: 'S’està instal·lant…' },
-      done: { title: 'WestPlay està instal·lat', text: 'El teu joc està a punt' },
+      done: { title: 'ATS GPS està instal·lat', text: 'El teu joc està a punt' },
       permission: { title: 'Cal permís', text: 'Windows ho demanarà un cop' },
       inUse: { title: 'Tanca el joc', text: 'Està fent servir el connector' },
       failed: { title: 'La instal·lació no ha acabat', text: 'Mira els detalls a l’esquerra' },
@@ -91,7 +91,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Tanca el joc, si us plau.',
-      text: 'WestPlay no es pot instal·lar mentre Euro Truck Simulator 2 està obert.',
+      text: 'ATS GPS no es pot instal·lar mentre Euro Truck Simulator 2 està obert.',
     },
     inUse: {
       title: 'Tanca el joc, si us plau.',
@@ -106,24 +106,24 @@ export const words: Words = {
       text: 'Sense ell no es pot instal·lar el connector. Torna-ho a provar i tria «Sí».',
     },
     pluginFailed: 'No s’ha pogut instal·lar el connector.',
-    modFailed: 'No s’han pogut preparar les pantalles de WestPlay per al camió a partir del teu joc.',
-    noPlugin: 'A aquesta còpia de WestPlay li falta el connector. Torna a instal·lar WestPlay.',
+    modFailed: 'No s’han pogut preparar les pantalles de ATS GPS per al camió a partir del teu joc.',
+    noPlugin: 'A aquesta còpia de ATS GPS li falta el connector. Torna a instal·lar ATS GPS.',
     noDocuments: 'No s’ha trobat la carpeta Documents.',
   },
   map: {
     title: 'S’està preparant el teu mapa…',
     titleReady: 'El teu mapa està a punt',
-    sub: 'WestPlay crea el seu mapa a partir del teu propi joc, amb els teus DLC i mods de mapa. Triga un o dos minuts.',
+    sub: 'ATS GPS crea el seu mapa a partir del teu propi joc, amb els teus DLC i mods de mapa. Triga un o dos minuts.',
     banners: {
       building: 'S’està preparant el teu mapa',
       ready: { title: 'El teu mapa està a punt', text: 'Amb els teus DLC i mods de mapa' },
       waiting: { title: 'Tanca el joc', text: 'El mapa es prepara amb el joc tancat' },
-      failed: { title: 'No s’ha pogut preparar el mapa', text: 'WestPlay ho tornarà a provar més tard' },
+      failed: { title: 'No s’ha pogut preparar el mapa', text: 'ATS GPS ho tornarà a provar més tard' },
       getting: 'S’està preparant…',
     },
     waiting: {
       title: 'Tanca el joc, si us plau.',
-      text: 'Preparar el mapa necessita molta memòria, així que WestPlay espera que el joc no estigui obert.',
+      text: 'Preparar el mapa necessita molta memòria, així que ATS GPS espera que el joc no estigui obert.',
     },
     stages: {
       reading: { now: 'S’està llegint el mapa del joc', done: 'Mapa llegit del joc' },
@@ -146,7 +146,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Inicia la sessió a YouTube',
-    sub: 'Opcional. Inicia la sessió per veure les teves recomanacions, subscripcions i historial a la pantalla del camió. Inicies la sessió amb Google en una finestra a part, i WestPlay no veu mai el teu compte.',
+    sub: 'Opcional. Inicia la sessió per veure les teves recomanacions, subscripcions i historial a la pantalla del camió. Inicies la sessió amb Google en una finestra a part, i ATS GPS no veu mai el teu compte.',
     signIn: 'Inicia la sessió',
     signOut: 'Tanca la sessió',
     signedIn: 'Sessió iniciada',
@@ -157,13 +157,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Inicia la sessió a Spotify',
-    sub: 'Opcional. Inicia la sessió per escoltar Spotify a la pantalla del camió, amb les teves llistes i la teva biblioteca. Inicies la sessió a Spotify en una finestra a part, i WestPlay no veu mai el teu compte.',
+    sub: 'Opcional. Inicia la sessió per escoltar Spotify a la pantalla del camió, amb les teves llistes i la teva biblioteca. Inicies la sessió a Spotify en una finestra a part, i ATS GPS no veu mai el teu compte.',
     finishInWindow: 'Acaba d’iniciar la sessió a la finestra de Spotify',
     signingIn: { title: 'S’està iniciant la sessió a Spotify', text: 'Continua a la finestra de Spotify' },
   },
   appleMusic: {
     title: 'Inicia la sessió a Apple Music',
-    sub: 'Opcional. Inicia la sessió per escoltar Apple Music a la pantalla del camió, amb les teves llistes i la teva biblioteca. Inicies la sessió a Apple Music en una finestra a part, i WestPlay no veu mai el teu compte.',
+    sub: 'Opcional. Inicia la sessió per escoltar Apple Music a la pantalla del camió, amb les teves llistes i la teva biblioteca. Inicies la sessió a Apple Music en una finestra a part, i ATS GPS no veu mai el teu compte.',
     finishInWindow: 'Acaba d’iniciar la sessió a la finestra d’Apple Music',
     signingIn: { title: 'S’està iniciant la sessió a Apple Music', text: 'Continua a la finestra d’Apple Music' },
   },
@@ -173,11 +173,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Obre el joc',
-        text: 'Quan digui «S’ha detectat una petició d’ús de les característiques avançades del SDK.», tria «D’acord». És WestPlay.',
+        text: 'Quan digui «S’ha detectat una petició d’ús de les característiques avançades del SDK.», tria «D’acord». És ATS GPS.',
       },
       {
         title: 'Puja al teu camió',
-        text: 'Encén el sistema elèctric i WestPlay apareixerà a la pantalla. Deixa WestPlay obert mentre jugues.',
+        text: 'Encén el sistema elèctric i ATS GPS apareixerà a la pantalla. Deixa ATS GPS obert mentre jugues.',
       },
     ],
   },

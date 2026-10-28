@@ -1,6 +1,6 @@
 import type { AppIconRole } from '../../shared/icons'
 
-/** Every app WestPlay knows, in Home grid order. */
+/** Every app ATS GPS knows, in Home grid order. */
 export const APP_IDS = [
   'maps',
   'music',

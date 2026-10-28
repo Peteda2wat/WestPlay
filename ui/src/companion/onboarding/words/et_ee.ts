@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Jätka',
   welcome: {
     title: 'CarPlay sinu kabiinis',
-    sub: 'WestPlay toob CarPlay sinu veoki ekraanile mängus Euro Truck Simulator 2. Seadistamine võtab vaid mõne minuti.',
+    sub: 'ATS GPS toob CarPlay sinu veoki ekraanile mängus Euro Truck Simulator 2. Seadistamine võtab vaid mõne minuti.',
     start: 'Alustame',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'Sinu mäng',
     titleMissing: 'Kus su mäng on?',
-    found: 'WestPlay leidis selles arvutis mängu Euro Truck Simulator 2.',
+    found: 'ATS GPS leidis selles arvutis mängu Euro Truck Simulator 2.',
     foundMany: 'Euro Truck Simulator 2 on paigaldatud mitmesse kohta. Vali see, mida mängid.',
     missing:
-      'WestPlay ei leidnud mängu Euro Truck Simulator 2. Vali kaust, kuhu selle paigaldasid – see, kus on base.scs.',
+      'ATS GPS ei leidnud mängu Euro Truck Simulator 2. Vali kaust, kuhu selle paigaldasid – see, kus on base.scs.',
     chooseAnother: 'Kasuta teist kausta…',
     chooseFolder: 'Vali kaust…',
     picker: 'Vali Euro Truck Simulator 2 kaust',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'Mängu pole enam selles kaustas.',
     closeToGoOn: {
       title: 'Sulge mäng.',
-      text: 'WestPlay saab end seadistada ainult siis, kui Euro Truck Simulator 2 ei tööta.',
+      text: 'ATS GPS saab end seadistada ainult siis, kui Euro Truck Simulator 2 ei tööta.',
     },
   },
   check: {
@@ -43,13 +43,13 @@ export const words: Words = {
     notYet: 'Veel ei toetata',
     title: 'See on sinu komplekt',
     titleNotYet: 'Veel ei toetata',
-    cantInstall: 'WestPlay ei toeta veel selle mängu versiooni.',
+    cantInstall: 'ATS GPS ei toeta veel selle mängu versiooni.',
     version: 'Versioon',
     unknown: 'Tundmatu',
     dlcs: 'DLC-d',
     mapDlcs: 'Kaardi-DLC-d',
     noMapDlcs: 'Puuduvad',
-    untested: 'WestPlay on tehtud versioonile 1.61. Sinu oma pole veel testitud, kuid see töötab suure tõenäosusega.',
+    untested: 'ATS GPS on tehtud versioonile 1.61. Sinu oma pole veel testitud, kuid see töötab suure tõenäosusega.',
     trucks: 'Veokid',
     truckNotYet: 'Veel ei toetata',
     otherTrucks: 'Mängu ülejäänud veokid ei toeta päriselus CarPlayd.',
@@ -57,11 +57,11 @@ export const words: Words = {
     notInGame: 'Pole sinu mängus',
     scania7: 'Scania S ja R – 7" ekraan',
     scaniaSmartDash: 'Scania S ja R – Smart Dash',
-    anyTruckTablet: 'Iga veok – WestPlay tahvelarvutiga',
+    anyTruckTablet: 'Iga veok – ATS GPS tahvelarvutiga',
     profiles: 'Profiilid',
     profileCount: { one: '{n} profiil', other: '{n} profiili' },
     noProfiles: 'Profiile veel pole',
-    noProfilesDetail: 'WestPlay valmistab kaardi ette esimesele profiilile, mille lood.',
+    noProfilesDetail: 'ATS GPS valmistab kaardi ette esimesele profiilile, mille lood.',
     baseMap: 'Algne kaart',
     withMods: '{map} koos modidega {mods}',
     unreadable: {
@@ -69,20 +69,20 @@ export const words: Words = {
       other: '{n} kaardimodi ei õnnestunud lugeda, seega nende muudatusi pole näha',
     },
     mapNote:
-      'WestPlay valmistab kaardi igale sinu profiilile, ühe teise järel, alustades sellest, millega mängisid viimati. Kaardid valmivad siis, kui mäng on suletud.',
+      'ATS GPS valmistab kaardi igale sinu profiilile, ühe teise järel, alustades sellest, millega mängisid viimati. Kaardid valmivad siis, kui mäng on suletud.',
   },
   install: {
-    title: 'WestPlay paigaldamine',
-    titleDone: 'WestPlay on paigaldatud',
-    sub: 'WestPlay lisab mängule pistikprogrammi, mis laadib iga kord mängides ise WestPlay veokiekraanid: Moodihalduris ei pea midagi sisse lülitama. Mängu enda failid jäävad puutumata ja WestPlay eemaldamisel eemaldatakse kõik.',
+    title: 'ATS GPS paigaldamine',
+    titleDone: 'ATS GPS on paigaldatud',
+    sub: 'ATS GPS lisab mängule pistikprogrammi, mis laadib iga kord mängides ise ATS GPS veokiekraanid: Moodihalduris ei pea midagi sisse lülitama. Mängu enda failid jäävad puutumata ja ATS GPS eemaldamisel eemaldatakse kõik.',
     install: 'Paigalda',
     tryAgain: 'Proovi uuesti',
     asAdministrator: 'Paigalda administraatorina',
     plugin: 'Pistikprogramm',
-    pluginDetail: 'Näitab WestPlayd sinu veoki ekraanil',
+    pluginDetail: 'Näitab ATS GPS-d sinu veoki ekraanil',
     banners: {
       installing: { title: 'Paigaldamine…' },
-      done: { title: 'WestPlay on paigaldatud', text: 'Sinu mäng on valmis' },
+      done: { title: 'ATS GPS on paigaldatud', text: 'Sinu mäng on valmis' },
       permission: { title: 'Vaja on luba', text: 'Windows küsib ühe korra' },
       inUse: { title: 'Sulge mäng', text: 'See kasutab pistikprogrammi' },
       failed: { title: 'Paigaldamine jäi pooleli', text: 'Üksikasjad on vasakul' },
@@ -90,7 +90,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Sulge mäng.',
-      text: 'WestPlayd ei saa paigaldada, kui Euro Truck Simulator 2 töötab.',
+      text: 'ATS GPS-d ei saa paigaldada, kui Euro Truck Simulator 2 töötab.',
     },
     inUse: {
       title: 'Sulge mäng.',
@@ -105,24 +105,24 @@ export const words: Words = {
       text: 'Ilma selleta ei saa pistikprogrammi paigaldada. Proovi uuesti ja vali „Jah“.',
     },
     pluginFailed: 'Pistikprogrammi ei õnnestunud paigaldada.',
-    modFailed: 'WestPlay veokiekraane ei õnnestunud sinu mängust valmistada.',
-    noPlugin: 'Selles WestPlay koopias puudub pistikprogramm. Paigalda WestPlay uuesti.',
+    modFailed: 'ATS GPS veokiekraane ei õnnestunud sinu mängust valmistada.',
+    noPlugin: 'Selles ATS GPS koopias puudub pistikprogramm. Paigalda ATS GPS uuesti.',
     noDocuments: 'Kausta Dokumendid ei leitud.',
   },
   map: {
     title: 'Sinu kaarti valmistatakse…',
     titleReady: 'Sinu kaart on valmis',
-    sub: 'WestPlay teeb oma kaardi sinu enda mängust koos kaardi-DLC-de ja kaardimodidega. See võtab minuti või kaks.',
+    sub: 'ATS GPS teeb oma kaardi sinu enda mängust koos kaardi-DLC-de ja kaardimodidega. See võtab minuti või kaks.',
     banners: {
       building: 'Sinu kaarti valmistatakse',
       ready: { title: 'Sinu kaart on valmis', text: 'Koos sinu DLC-de ja kaardimodidega' },
       waiting: { title: 'Sulge mäng', text: 'Kaart valmib, kui mäng on suletud' },
-      failed: { title: 'Kaarti ei õnnestunud valmistada', text: 'WestPlay proovib hiljem uuesti' },
+      failed: { title: 'Kaarti ei õnnestunud valmistada', text: 'ATS GPS proovib hiljem uuesti' },
       getting: 'Valmistamine…',
     },
     waiting: {
       title: 'Sulge mäng.',
-      text: 'Kaardi valmistamine vajab palju mälu, seega ootab WestPlay, kuni mäng enam ei tööta.',
+      text: 'Kaardi valmistamine vajab palju mälu, seega ootab ATS GPS, kuni mäng enam ei tööta.',
     },
     stages: {
       reading: { now: 'Loetakse sinu mängu kaarti', done: 'Kaart on mängust loetud' },
@@ -145,7 +145,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Logi sisse YouTube’i',
-    sub: 'Valikuline. Logi sisse, et näha veoki ekraanil oma soovitusi, tellimusi ja ajalugu. Logid Google’i sisse eraldi aknas ja WestPlay ei näe kunagi sinu kontot.',
+    sub: 'Valikuline. Logi sisse, et näha veoki ekraanil oma soovitusi, tellimusi ja ajalugu. Logid Google’i sisse eraldi aknas ja ATS GPS ei näe kunagi sinu kontot.',
     signIn: 'Logi sisse',
     signOut: 'Logi välja',
     signedIn: 'Sisse logitud',
@@ -156,13 +156,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Logi sisse Spotify’sse',
-    sub: 'Valikuline. Logi sisse, et kuulata veoki ekraanil Spotifyt oma esitusloendite ja koguga. Logid Spotify’sse sisse eraldi aknas ja WestPlay ei näe kunagi sinu kontot.',
+    sub: 'Valikuline. Logi sisse, et kuulata veoki ekraanil Spotifyt oma esitusloendite ja koguga. Logid Spotify’sse sisse eraldi aknas ja ATS GPS ei näe kunagi sinu kontot.',
     finishInWindow: 'Vii sisselogimine Spotify aknas lõpule',
     signingIn: { title: 'Spotify’sse sisselogimine', text: 'Jätka Spotify aknas' },
   },
   appleMusic: {
     title: 'Logi sisse teenusesse Apple Music',
-    sub: 'Valikuline. Logi sisse, et kuulata veoki ekraanil teenust Apple Music oma esitusloendite ja koguga. Logid teenusesse Apple Music sisse eraldi aknas ja WestPlay ei näe kunagi sinu kontot.',
+    sub: 'Valikuline. Logi sisse, et kuulata veoki ekraanil teenust Apple Music oma esitusloendite ja koguga. Logid teenusesse Apple Music sisse eraldi aknas ja ATS GPS ei näe kunagi sinu kontot.',
     finishInWindow: 'Vii sisselogimine Apple Musicu aknas lõpule',
     signingIn: { title: 'Teenusesse Apple Music sisselogimine', text: 'Jätka Apple Musicu aknas' },
   },
@@ -172,11 +172,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Käivita mäng',
-        text: 'Kui see teatab „Leitud on edasijõudnud SDK kasutamiseks tehtud päring.“, vali „Ok“. See on WestPlay.',
+        text: 'Kui see teatab „Leitud on edasijõudnud SDK kasutamiseks tehtud päring.“, vali „Ok“. See on ATS GPS.',
       },
       {
         title: 'Istu oma veokisse',
-        text: 'Lülita elekter sisse ja WestPlay ilmub ekraanile. Hoia WestPlay mängimise ajal avatuna.',
+        text: 'Lülita elekter sisse ja ATS GPS ilmub ekraanile. Hoia ATS GPS mängimise ajal avatuna.',
       },
     ],
   },

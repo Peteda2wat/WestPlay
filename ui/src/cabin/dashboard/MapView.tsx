@@ -21,7 +21,7 @@ import { cabClock } from '../../shared/host'
  * data it shows a drawn stand-in map (dark or daytime, following the appearance) tilted like CarPlay's
  * driving view. `interactive` (the Maps app): the player can move the map, with its buttons; on the
  * Dashboard, it only zooms (its buttons fading while unused).
- * On a map WestPlay doesn't allow (by HVT), it says so instead, in the game's language.
+ * On a map ATS GPS doesn't allow (by HVT), it says so instead, in the game's language.
  */
 export function MapView({ interactive = false }: { interactive?: boolean }) {
   const miles = useCabin((state) => state.miles)

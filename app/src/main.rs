@@ -3,6 +3,7 @@
 // No console window in release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod buttonbox;
 mod customize;
 mod maps;
 mod setup;
@@ -172,31 +173,54 @@ fn register_autostart() {
         RegSetKeyValueW(
             HKEY_CURRENT_USER,
             w!(r"Software\Microsoft\Windows\CurrentVersion\Run"),
-            &HSTRING::from("WestPlay"),
+            &HSTRING::from("ATS GPS"),
             REG_SZ.0,
             Some(command.as_ptr().cast()),
             (command.len() * 2) as u32,
         )
     };
     if status.is_err() {
-        westplay_host::log!("[app] couldn't add WestPlay to Windows' startup: {status:?}");
+        westplay_host::log!("[app] couldn't add ATS GPS to Windows' startup: {status:?}");
     }
+    // The entry under the name before ATS GPS was named so (2026-10-28).
+    // SAFETY: a plain call with static names.
+    let _ = unsafe {
+        windows::Win32::System::Registry::RegDeleteKeyValueW(
+            HKEY_CURRENT_USER,
+            w!(r"Software\Microsoft\Windows\CurrentVersion\Run"),
+            w!("WestPlay"),
+        )
+    };
 }
 
-/// Truck Remote starts WestPlay with itself and, quitting, asks it to quit too by setting this event (owner
-/// 2026-10-27: one program to run on the PC): WestPlay quits as its tray's Quit does.
-fn quit_when_asked(app: AppHandle) {
+/// Started again while running, the program asks the running one to show its window by setting this event.
+const SHOW_EVENT: windows::core::PCWSTR = windows::core::w!(r"Local\WestPlay.Show");
+
+/// Shows the window each time another start asks (`show_running`).
+fn show_when_asked(app: AppHandle) {
     use windows::Win32::System::Threading::{CreateEventW, INFINITE, WaitForSingleObject};
-    use windows::core::w;
     // SAFETY: a plain call with a static name; the handle stays open for the process's life (never closed).
-    let Ok(event) = (unsafe { CreateEventW(None, false, false, w!(r"Local\WestPlay.Quit")) }) else { return };
+    let Ok(event) = (unsafe { CreateEventW(None, false, false, SHOW_EVENT) }) else { return };
     let raw = event.0 as usize;
     std::thread::spawn(move || {
-        // SAFETY: the event's handle, open for the process's life (above).
-        unsafe { WaitForSingleObject(windows::Win32::Foundation::HANDLE(raw as *mut _), INFINITE) };
-        westplay_host::log!("[app] Truck Remote asked WestPlay to quit");
-        app.exit(0);
+        loop {
+            // SAFETY: the event's handle, open for the process's life (above).
+            unsafe { WaitForSingleObject(windows::Win32::Foundation::HANDLE(raw as *mut _), INFINITE) };
+            show_main(&app);
+        }
     });
+}
+
+/// Asks the running program to show its window; whether it could be asked.
+fn show_running() -> bool {
+    use windows::Win32::System::Threading::{EVENT_MODIFY_STATE, OpenEventW, SetEvent};
+    // SAFETY: plain calls with a static name; the handle is closed once set.
+    unsafe {
+        let Ok(event) = OpenEventW(EVENT_MODIFY_STATE, false, SHOW_EVENT) else { return false };
+        let shown = SetEvent(event).is_ok();
+        let _ = windows::Win32::Foundation::CloseHandle(event);
+        shown
+    }
 }
 
 /// Shows the companion window (from the notification area).
@@ -212,10 +236,10 @@ fn show_main(app: &AppHandle) {
 fn add_tray(app: &tauri::App) -> tauri::Result<()> {
     use tauri::menu::{Menu, MenuItem};
     use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-    let open = MenuItem::with_id(app, "open", "Open WestPlay", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit WestPlay", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Open American Truck Simulator GPS", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit American Truck Simulator GPS", true, None::<&str>)?;
     let mut tray = TrayIconBuilder::with_id("westplay")
-        .tooltip("WestPlay")
+        .tooltip("American Truck Simulator GPS")
         .menu(&Menu::with_items(app, &[&open, &quit])?)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -244,8 +268,9 @@ fn main() {
     // One WestPlay at a time: a second only says so (held until the app ends). Before the log starts: a second
     // making the log anew would empty the running one's.
     let Some(_instance) = westplay_host::Instance::claim() else {
-        // Started hidden, by Windows' sign-in or by Truck Remote (both at sign-in): no one to tell.
-        if !started_hidden() {
+        // Started hidden, by Windows' sign-in: no one to tell. Started by the player (its shortcut): the running
+        // one shows its window (owner 2026-10-28: a message saying it runs, the window hidden, looked broken).
+        if !started_hidden() && !show_running() {
             westplay_host::tell_already_running();
         }
         return;
@@ -295,7 +320,12 @@ fn main() {
             setup::finish_setup,
             setup::uninstall_from_game,
             setup::remove_data,
-            setup::leave_pc
+            setup::leave_pc,
+            buttonbox::buttonbox_status,
+            buttonbox::buttonbox_recent,
+            buttonbox::buttonbox_set_test_mode,
+            buttonbox::buttonbox_bindings,
+            buttonbox::buttonbox_set_binding
         ])
         // Closing the window keeps WestPlay running in the notification area (its menu quits it).
         .on_window_event(|window, event| {
@@ -310,7 +340,7 @@ fn main() {
             westplay_host::startup::mark("app: window set up");
             add_tray(app)?;
             register_autostart();
-            quit_when_asked(app.handle().clone());
+            show_when_asked(app.handle().clone());
             // A page that never says it's ready (it failed to load) still shows, rather than nothing at all.
             if let Some(window) = app.get_webview_window("main")
                 && !started_hidden()
@@ -344,14 +374,17 @@ fn main() {
             app.manage(SettingsStore { file, shared });
             app.manage(setup);
             app.manage(std::sync::Mutex::new(host));
+            // The iPad's button box, its settings beside WestPlay's.
+            app.manage(buttonbox::Box::start(&config_dir));
             update::watch(app.handle());
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("failed to build the WestPlay app");
+        .expect("failed to build the American Truck Simulator GPS app");
 
     app.run(|app, event| {
         if let RunEvent::Exit = event {
+            app.state::<buttonbox::Box>().shutdown();
             stop_host(app);
         }
     });
@@ -473,7 +506,7 @@ fn start_host(
                 }
                 Ended::Failed(error) => error,
             };
-            let status = Status { error: Some(format!("WestPlay engine stopped: {error}")), ..Default::default() };
+            let status = Status { error: Some(format!("ATS GPS engine stopped: {error}")), ..Default::default() };
             let _ = events.emit("host-status", &status);
             return;
         }

@@ -58,7 +58,7 @@ export function Shell({ children, overlay, entering = false }: ShellProps) {
     document.documentElement.style.setProperty('--text-scale', String(textScale(textSize)))
   }, [textSize])
 
-  // Handed to the truck (the sidebar's truck button, or the W shortcut): CarPlay shrinks into WestPlay's
+  // Handed to the truck (the sidebar's truck button, or the W shortcut): CarPlay shrinks into ATS GPS's
   // button and the truck's own screen shows; the button grows it back.
   const truckScreen = useCabin((state) => state.truckScreen)
   const button = returnButtonCentre(profile, insets.left)
@@ -105,7 +105,7 @@ export function Shell({ children, overlay, entering = false }: ShellProps) {
         type="button"
         className={truckScreen ? 'return-button shown' : 'return-button'}
         style={{ left: button.x - RETURN_BUTTON_SIZE / 2, top: button.y - RETURN_BUTTON_SIZE / 2 }}
-        aria-label="WestPlay"
+        aria-label="ATS GPS"
         aria-hidden={!truckScreen}
         tabIndex={truckScreen ? 0 : -1}
         onClick={() => useCabin.getState().setTruckScreen(false)}

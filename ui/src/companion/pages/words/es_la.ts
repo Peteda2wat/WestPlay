@@ -10,7 +10,7 @@ export const words: CompanionWords = {
     titles: { ...spain.screen.titles, stopped: 'Algo falló' },
     subs: {
       ...spain.screen.subs,
-      stopped: 'El motor de WestPlay se detuvo. Tienes los detalles en Información.',
+      stopped: 'El motor de ATS GPS se detuvo. Tienes los detalles en Información.',
     },
   },
   controls: {
@@ -26,7 +26,7 @@ export const words: CompanionWords = {
   },
   accounts: {
     ...spain.accounts,
-    sub: 'Inicia sesión para ver tu música y tus videos en la pantalla del camión. Inicias sesión en cada servicio en su propia ventana, y WestPlay nunca ve tu cuenta.',
+    sub: 'Inicia sesión para ver tu música y tus videos en la pantalla del camión. Inicias sesión en cada servicio en su propia ventana, y ATS GPS nunca ve tu cuenta.',
   },
   map: {
     ...spain.map,
@@ -53,9 +53,9 @@ export const words: CompanionWords = {
   },
   uninstall: {
     ...spain.uninstall,
-    text: 'WestPlay se quita de tu juego y de tus perfiles, y se elimina de esta computadora junto con tus inicios de sesión y sus registros.',
-    steps: { ...spain.uninstall.steps, data: 'Eliminando WestPlay de esta computadora' },
+    text: 'ATS GPS se quita de tu juego y de tus perfiles, y se elimina de esta computadora junto con tus inicios de sesión y sus registros.',
+    steps: { ...spain.uninstall.steps, data: 'Eliminando ATS GPS de esta computadora' },
     profilesFailed:
-      'No se pudieron cambiar {n} de tus perfiles y todavía incluyen WestPlay. Quítalo allí en el Gestor de mods.',
+      'No se pudieron cambiar {n} de tus perfiles y todavía incluyen ATS GPS. Quítalo allí en el Gestor de mods.',
   },
 }

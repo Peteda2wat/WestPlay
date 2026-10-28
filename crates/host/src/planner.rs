@@ -109,7 +109,7 @@ impl Planner {
     /// `to`, on the map in `maps`/`folder`.
     pub fn ask(&self, id: u32, maps: &Path, folder: &str, (x, z, heading): (f32, f32, f32), to: u64) {
         let Some(graph) = graph_of(&maps.join(folder)) else {
-            crate::log!("routes: the map {folder} has no road graph (built before WestPlay had one)");
+            crate::log!("routes: the map {folder} has no road graph (built before ATS GPS had one)");
             return;
         };
         let turn = heading * std::f32::consts::TAU;

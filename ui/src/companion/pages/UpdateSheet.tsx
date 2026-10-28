@@ -7,10 +7,10 @@ import { installUpdate, noteLines, type Offer, onUpdateProgress, type Progress }
 import type { CompanionWords } from './words'
 
 /**
- * An update to WestPlay, offered in a sheet over the room: its version, what's new (the changelog's notes,
+ * An update to ATS GPS, offered in a sheet over the room: its version, what's new (the changelog's notes,
  * in English as they're written), and Later or Update. Updating downloads it (its progress shown), then
- * Windows' installer puts it in and starts WestPlay again: the app quits for it. The game has to be closed:
- * the plugin it loaded is this WestPlay's.
+ * Windows' installer puts it in and starts ATS GPS again: the app quits for it. The game has to be closed:
+ * the plugin it loaded is this ATS GPS's.
  */
 export function UpdateSheet({ cw, offer, close }: { cw: CompanionWords; offer: Offer; close(): void }) {
   const w = cw.update
@@ -31,7 +31,7 @@ export function UpdateSheet({ cw, offer, close }: { cw: CompanionWords; offer: O
     setProgress(null)
     screen.banner(banner(w.banners.updating, true))
     try {
-      // Comes back only if it couldn't be installed: otherwise WestPlay quits for the installer.
+      // Comes back only if it couldn't be installed: otherwise ATS GPS quits for the installer.
       await installUpdate()
     } catch (e) {
       setError(String(e) === 'gameRunning' ? null : `${w.failed} ${explain(words, e)}`)
@@ -103,7 +103,7 @@ function percent(progress: Progress, locale: string): string {
 }
 
 /**
- * After an update, the new WestPlay's plugin and mod go into the game (setup's `updated`), once it's closed:
+ * After an update, the new ATS GPS's plugin and mod go into the game (setup's `updated`), once it's closed:
  * on their own when they can, the screen saying so. A game folder that needs administrator rights (or the
  * player said no to Windows) asks first, in a sheet, until it's done or put off (the Setup page's reinstall
  * then).

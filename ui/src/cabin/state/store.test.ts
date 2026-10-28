@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-/** A browser's storage holding what an earlier WestPlay saved (and the page around it, outside WestPlay). */
+/** A browser's storage holding what an earlier ATS GPS saved (and the page around it, outside ATS GPS). */
 function savedStorage(state: unknown, version = 1) {
   vi.stubGlobal('window', {})
   vi.stubGlobal('location', { search: '' })
@@ -38,7 +38,7 @@ describe('the saved Settings choices', () => {
     expect(useCabin.getState().albumArt).toBe(true)
   })
 
-  it('are all on when nothing was saved (an earlier WestPlay)', async () => {
+  it('are all on when nothing was saved (an earlier ATS GPS)', async () => {
     vi.stubGlobal('localStorage', savedStorage({ appearanceMode: 'dark' }))
     const { useCabin } = await import('./store')
     expect(useCabin.getState().dashboardWidgets).toEqual({ nowPlaying: true, destination: true, weather: true })

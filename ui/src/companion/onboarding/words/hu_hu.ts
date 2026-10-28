@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Tovább',
   welcome: {
     title: 'CarPlay a fülkédben',
-    sub: 'A WestPlay a CarPlayt a kamionod képernyőjére hozza az Euro Truck Simulator 2-ben. A beállítás csak pár percet vesz igénybe.',
+    sub: 'A ATS GPS a CarPlayt a kamionod képernyőjére hozza az Euro Truck Simulator 2-ben. A beállítás csak pár percet vesz igénybe.',
     start: 'Kezdjük',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'A játékod',
     titleMissing: 'Hol a játékod?',
-    found: 'A WestPlay megtalálta az Euro Truck Simulator 2-t ezen a gépen.',
+    found: 'A ATS GPS megtalálta az Euro Truck Simulator 2-t ezen a gépen.',
     foundMany: 'Az Euro Truck Simulator 2 több helyre is telepítve van. Válaszd ki azt, amelyikkel játszol.',
     missing:
-      'A WestPlay nem találta az Euro Truck Simulator 2-t. Válaszd ki a mappát, ahová telepítetted – azt, amelyikben a base.scs van.',
+      'A ATS GPS nem találta az Euro Truck Simulator 2-t. Válaszd ki a mappát, ahová telepítetted – azt, amelyikben a base.scs van.',
     chooseAnother: 'Másik mappa használata…',
     chooseFolder: 'Mappa kiválasztása…',
     picker: 'Válaszd ki az Euro Truck Simulator 2 mappáját',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'A játék már nincs ebben a mappában.',
     closeToGoOn: {
       title: 'Zárd be a játékot.',
-      text: 'A WestPlay csak akkor tud beállni, amikor az Euro Truck Simulator 2 nem fut.',
+      text: 'A ATS GPS csak akkor tud beállni, amikor az Euro Truck Simulator 2 nem fut.',
     },
   },
   check: {
@@ -43,14 +43,14 @@ export const words: Words = {
     notYet: 'Még nem támogatott',
     title: 'Ez a te felállásod',
     titleNotYet: 'Még nem támogatott',
-    cantInstall: 'A WestPlay még nem támogatja a játék ezen verzióját.',
+    cantInstall: 'A ATS GPS még nem támogatja a játék ezen verzióját.',
     version: 'Verzió',
     unknown: 'Ismeretlen',
     dlcs: 'DLC-k',
     mapDlcs: 'Térkép-DLC-k',
     noMapDlcs: 'Nincs',
     untested:
-      'A WestPlay az 1.61-es verzióhoz készült. A tiédet még nem tesztelték, de nagy valószínűséggel működni fog.',
+      'A ATS GPS az 1.61-es verzióhoz készült. A tiédet még nem tesztelték, de nagy valószínűséggel működni fog.',
     trucks: 'Kamionok',
     truckNotYet: 'Még nem támogatott',
     otherTrucks: 'A játék többi kamionja a valóságban nem támogatja a CarPlayt.',
@@ -58,11 +58,11 @@ export const words: Words = {
     notInGame: 'Nincs a játékodban',
     scania7: 'Scania S és R – 7"-os képernyő',
     scaniaSmartDash: 'Scania S és R – Smart Dash',
-    anyTruckTablet: 'Bármelyik kamion – a WestPlay tablettel',
+    anyTruckTablet: 'Bármelyik kamion – a ATS GPS tablettel',
     profiles: 'Profilok',
     profileCount: { one: '{n} profil', other: '{n} profil' },
     noProfiles: 'Még nincs profil',
-    noProfilesDetail: 'A WestPlay az első létrehozott profilodhoz készíti el a térképet.',
+    noProfilesDetail: 'A ATS GPS az első létrehozott profilodhoz készíti el a térképet.',
     baseMap: 'Eredeti térkép',
     withMods: '{map} ezekkel: {mods}',
     unreadable: {
@@ -70,20 +70,20 @@ export const words: Words = {
       other: '{n} térképmodot nem sikerült beolvasni, ezért a változtatásaik nem jelennek meg',
     },
     mapNote:
-      'A WestPlay minden profilodhoz készít egy térképet, egymás után, azzal kezdve, amellyel utoljára játszottál. A térképek akkor készülnek, amikor a játék be van zárva.',
+      'A ATS GPS minden profilodhoz készít egy térképet, egymás után, azzal kezdve, amellyel utoljára játszottál. A térképek akkor készülnek, amikor a játék be van zárva.',
   },
   install: {
-    title: 'A WestPlay telepítése',
-    titleDone: 'A WestPlay telepítve',
-    sub: 'A WestPlay egy bővítményt ad a játékodhoz, amely minden játéknál magától betölti a WestPlay kamionképernyőit: a Modkezelőben nem kell semmit bekapcsolnod. A játék saját fájljai érintetlenek maradnak, és a WestPlay eltávolításakor minden törlődik.',
+    title: 'A ATS GPS telepítése',
+    titleDone: 'A ATS GPS telepítve',
+    sub: 'A ATS GPS egy bővítményt ad a játékodhoz, amely minden játéknál magától betölti a ATS GPS kamionképernyőit: a Modkezelőben nem kell semmit bekapcsolnod. A játék saját fájljai érintetlenek maradnak, és a ATS GPS eltávolításakor minden törlődik.',
     install: 'Telepítés',
     tryAgain: 'Újrapróbálás',
     asAdministrator: 'Telepítés rendszergazdaként',
     plugin: 'Bővítmény',
-    pluginDetail: 'Megjeleníti a WestPlayt a kamionod képernyőjén',
+    pluginDetail: 'Megjeleníti a ATS GPS-t a kamionod képernyőjén',
     banners: {
       installing: { title: 'Telepítés…' },
-      done: { title: 'A WestPlay telepítve', text: 'A játékod készen áll' },
+      done: { title: 'A ATS GPS telepítve', text: 'A játékod készen áll' },
       permission: { title: 'Engedély szükséges', text: 'A Windows egyszer rákérdez' },
       inUse: { title: 'Zárd be a játékot', text: 'Épp használja a bővítményt' },
       failed: { title: 'A telepítés nem fejeződött be', text: 'A részleteket bal oldalt látod' },
@@ -91,7 +91,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Zárd be a játékot.',
-      text: 'A WestPlay nem telepíthető, amíg az Euro Truck Simulator 2 fut.',
+      text: 'A ATS GPS nem telepíthető, amíg az Euro Truck Simulator 2 fut.',
     },
     inUse: {
       title: 'Zárd be a játékot.',
@@ -106,24 +106,24 @@ export const words: Words = {
       text: 'Enélkül a bővítmény nem telepíthető. Próbáld újra, és válaszd az „Igen” lehetőséget.',
     },
     pluginFailed: 'A bővítményt nem sikerült telepíteni.',
-    modFailed: 'A WestPlay kamionképernyőit nem sikerült elkészíteni a játékodból.',
-    noPlugin: 'A WestPlay ezen példányából hiányzik a bővítmény. Telepítsd újra a WestPlayt.',
+    modFailed: 'A ATS GPS kamionképernyőit nem sikerült elkészíteni a játékodból.',
+    noPlugin: 'A ATS GPS ezen példányából hiányzik a bővítmény. Telepítsd újra a ATS GPS-t.',
     noDocuments: 'A Dokumentumok mappa nem található.',
   },
   map: {
     title: 'A térképed készül…',
     titleReady: 'A térképed elkészült',
-    sub: 'A WestPlay a saját játékodból készíti el a térképét, a térkép-DLC-iddel és térképmodjaiddal együtt. Ez egy-két percig tart.',
+    sub: 'A ATS GPS a saját játékodból készíti el a térképét, a térkép-DLC-iddel és térképmodjaiddal együtt. Ez egy-két percig tart.',
     banners: {
       building: 'A térképed készül',
       ready: { title: 'A térképed elkészült', text: 'A DLC-iddel és térképmodjaiddal' },
       waiting: { title: 'Zárd be a játékot', text: 'A térkép akkor készül, amikor be van zárva' },
-      failed: { title: 'A térképet nem sikerült elkészíteni', text: 'A WestPlay később újra próbálkozik' },
+      failed: { title: 'A térképet nem sikerült elkészíteni', text: 'A ATS GPS később újra próbálkozik' },
       getting: 'Előkészítés…',
     },
     waiting: {
       title: 'Zárd be a játékot.',
-      text: 'A térkép elkészítése sok memóriát igényel, ezért a WestPlay megvárja, amíg a játék nem fut.',
+      text: 'A térkép elkészítése sok memóriát igényel, ezért a ATS GPS megvárja, amíg a játék nem fut.',
     },
     stages: {
       reading: { now: 'A játékod térképének beolvasása', done: 'A térkép beolvasva' },
@@ -146,7 +146,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Bejelentkezés a YouTube-ba',
-    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén a saját ajánlásaidat, feliratkozásaidat és előzményeidet látod. A Google-bejelentkezés külön ablakban történik, és a WestPlay soha nem látja a fiókodat.',
+    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén a saját ajánlásaidat, feliratkozásaidat és előzményeidet látod. A Google-bejelentkezés külön ablakban történik, és a ATS GPS soha nem látja a fiókodat.',
     signIn: 'Bejelentkezés',
     signOut: 'Kijelentkezés',
     signedIn: 'Bejelentkezve',
@@ -157,13 +157,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Bejelentkezés a Spotifyba',
-    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén Spotifyt hallgathatsz a saját lejátszási listáiddal és könyvtáraddal. A Spotify-bejelentkezés külön ablakban történik, és a WestPlay soha nem látja a fiókodat.',
+    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén Spotifyt hallgathatsz a saját lejátszási listáiddal és könyvtáraddal. A Spotify-bejelentkezés külön ablakban történik, és a ATS GPS soha nem látja a fiókodat.',
     finishInWindow: 'Fejezd be a bejelentkezést a Spotify-ablakban',
     signingIn: { title: 'Bejelentkezés a Spotifyba', text: 'Folytasd a Spotify-ablakban' },
   },
   appleMusic: {
     title: 'Bejelentkezés az Apple Musicba',
-    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén Apple Musicot hallgathatsz a saját lejátszási listáiddal és könyvtáraddal. Az Apple Music-bejelentkezés külön ablakban történik, és a WestPlay soha nem látja a fiókodat.',
+    sub: 'Nem kötelező. Jelentkezz be, és a kamion képernyőjén Apple Musicot hallgathatsz a saját lejátszási listáiddal és könyvtáraddal. Az Apple Music-bejelentkezés külön ablakban történik, és a ATS GPS soha nem látja a fiókodat.',
     finishInWindow: 'Fejezd be a bejelentkezést az Apple Music-ablakban',
     signingIn: { title: 'Bejelentkezés az Apple Musicba', text: 'Folytasd az Apple Music-ablakban' },
   },
@@ -173,11 +173,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Indítsd el a játékot',
-        text: 'Amikor megjelenik, hogy „A játék fejlett SDK funkciók hívását érzékelte.”, válaszd az „Ok” gombot. Ez a WestPlay.',
+        text: 'Amikor megjelenik, hogy „A játék fejlett SDK funkciók hívását érzékelte.”, válaszd az „Ok” gombot. Ez a ATS GPS.',
       },
       {
         title: 'Szállj be a kamionodba',
-        text: 'Kapcsold be az elektromos rendszert, és a WestPlay megjelenik a képernyőn. Játék közben hagyd nyitva a WestPlayt.',
+        text: 'Kapcsold be az elektromos rendszert, és a ATS GPS megjelenik a képernyőn. Játék közben hagyd nyitva a ATS GPS-t.',
       },
     ],
   },

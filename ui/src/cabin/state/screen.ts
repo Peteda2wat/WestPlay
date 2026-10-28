@@ -2,7 +2,7 @@ import type { TruckInfo } from '../../shared/host'
 import type { OemStripId } from './oem'
 
 /**
- * The kinds of in-cabin screen WestPlay is drawn on: the game's GPS layouts the mod patches, in the order of
+ * The kinds of in-cabin screen ATS GPS is drawn on: the game's GPS layouts the mod patches, in the order of
  * crates/shared/screen_layouts.txt (the order sets each layout's screen texture size; a test checks it). The
  * plugin reports which one the game is drawing.
  */
@@ -50,7 +50,7 @@ export function frameRowAt(y: number, layout: ScreenLayoutId | null): number {
   return Math.ceil((y * rows) / SCREEN_HEIGHT)
 }
 
-/** How WestPlay fits one truck's screen. */
+/** How ATS GPS fits one truck's screen. */
 export interface ScreenProfile {
   /** For development notices, e.g. "Scania Smart Dash". */
   name: string
@@ -65,7 +65,7 @@ export interface ScreenProfile {
    * one's for fewer. */
   recents?: number
   /**
-   * Where WestPlay's button sits while the screen is handed to the truck (its centre, in frame pixels), if
+   * Where ATS GPS's button sits while the screen is handed to the truck (its centre, in frame pixels), if
    * the default spot (the CarPlay area's top-left corner) covers part of the truck's own screen.
    */
   returnButton?: { x: number; y: number }
@@ -77,11 +77,11 @@ export interface ScreenProfile {
   rim?: string
 }
 
-/** The WestPlay button's size, and its margin from the CarPlay area's corner (shell.css --edge). */
+/** The ATS GPS button's size, and its margin from the CarPlay area's corner (shell.css --edge). */
 export const RETURN_BUTTON_SIZE = 72
 const RETURN_BUTTON_MARGIN = 32
 
-/** The WestPlay button's centre while the screen is handed to the truck. `areaLeft`: where CarPlay starts. */
+/** The ATS GPS button's centre while the screen is handed to the truck. `areaLeft`: where CarPlay starts. */
 export function returnButtonCentre(profile: ScreenProfile, areaLeft: number): { x: number; y: number } {
   const half = RETURN_BUTTON_SIZE / 2
   return profile.returnButton ?? { x: areaLeft + RETURN_BUTTON_MARGIN + half, y: RETURN_BUTTON_MARGIN + half }
@@ -101,7 +101,7 @@ const SMART_DASH: ScreenProfile = {
   // A larger display than the DAF's: everything a little smaller, so the Home grid gets a fifth column.
   scale: 0.9,
   // The stock map has round buttons in a column right of the strip (menu and search at the top, recentre
-  // below; ui/dashboard/scania_2025_gps.sii, x 137-197 of 1440): WestPlay's goes in the free stretch
+  // below; ui/dashboard/scania_2025_gps.sii, x 137-197 of 1440): ATS GPS's goes in the free stretch
   // between them, like one of the dash's own.
   returnButton: { x: 148, y: 308 },
   // Its rim (the screen beyond the image) in the colour of the dash's own strip below the screen
@@ -144,9 +144,9 @@ const PROFILES: readonly ProfileEntry[] = [
   },
   // Volvo FH 2021 and 2024: the whole screen, at the DAF's sizing until tuned in the cab (owner 2026-10-21).
   { layout: 'volvo-fh', profile: { name: 'Volvo FH', oemStrip: null, scale: 1 } },
-  // WestPlay's tablet, in any truck: 31 x 21 cm, the page laid out at its 1.457:1 (crates/shared page_height),
+  // ATS GPS's tablet, in any truck: 31 x 21 cm, the page laid out at its 1.457:1 (crates/shared page_height),
   // at the DAF's sizing until tuned in the cab.
-  { layout: 'tablet', profile: { name: 'WestPlay tablet', oemStrip: null, scale: 1 } },
+  { layout: 'tablet', profile: { name: 'ATS GPS tablet', oemStrip: null, scale: 1 } },
   // Oyuncuyusbis' coaches (mods, owner 2026-10-24), each on its own screen, about 15-16 x 9-10 cm (the Setra S 516
   // HD/2 on its tablet part, 20.1 x 12.2 cm: owner 2026-10-26), the page laid out at its display's shape (crates/shared
   // page_height): at the DAF's sizing until tuned in the cab.
@@ -160,7 +160,7 @@ const PROFILES: readonly ProfileEntry[] = [
 /** Screens not tuned yet: CarPlay on the whole screen, its layout adapting to the space (responsive). */
 export const FALLBACK_PROFILE: ScreenProfile = { name: 'Default', oemStrip: null, scale: 1 }
 
-/** The profile for the screen the game draws WestPlay on (`layout` is null until it has drawn one). */
+/** The profile for the screen the game draws ATS GPS on (`layout` is null until it has drawn one). */
 export function screenProfile(layout: ScreenLayoutId | null, truck: TruckInfo | null): ScreenProfile {
   return findProfile(PROFILES, layout, truck)
 }

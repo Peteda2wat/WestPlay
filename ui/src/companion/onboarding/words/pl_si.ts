@@ -10,14 +10,14 @@ export const words: Words = {
   ...polish,
   install: {
     ...polish.install,
-    sub: 'WestPlay dodaje do gry wtyczkę, która przy każdej grze sama wczytuje ekrany WestPlay dla ciężarówek: w menu „Mynedżer modōw” nie trzeba niczego włączać. Pliki samej gry pozostają nietknięte, a odinstalowanie WestPlay usuwa wszystko.',
+    sub: 'ATS GPS dodaje do gry wtyczkę, która przy każdej grze sama wczytuje ekrany ATS GPS dla ciężarówek: w menu „Mynedżer modōw” nie trzeba niczego włączać. Pliki samej gry pozostają nietknięte, a odinstalowanie ATS GPS usuwa wszystko.',
   },
   launch: {
     ...polish.launch,
     steps: [
       {
         title: polish.launch.steps[0].title,
-        text: 'Gdy pojawi się komunikat „Wykrytŏ prōbã skorzistaniŏ ze zaawansowanych nŏczyniōw deweloperskich.”, wybierz „Ok”. To WestPlay.',
+        text: 'Gdy pojawi się komunikat „Wykrytŏ prōbã skorzistaniŏ ze zaawansowanych nŏczyniōw deweloperskich.”, wybierz „Ok”. To ATS GPS.',
       },
       polish.launch.steps[1],
     ],

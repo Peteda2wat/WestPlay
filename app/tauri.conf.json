@@ -1,6 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "WestPlay",
+  "productName": "American Truck Simulator GPS",
+  "mainBinaryName": "ats-gps",
   "version": "2.1.2",
   "identifier": "app.westplay",
   "build": {
@@ -20,7 +21,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "WestPlay",
+        "title": "American Truck Simulator GPS",
         "width": 900,
         "height": 600,
         "resizable": false,
@@ -37,8 +38,8 @@
     "publisher": "WestPlay",
     "copyright": "Copyright © 2026 WestPlay. Licensed under the GPL-3.0-or-later.",
     "category": "Game",
-    "shortDescription": "CarPlay for the screens of your trucks in Euro Truck Simulator 2 and American Truck Simulator",
-    "longDescription": "WestPlay puts a CarPlay-style screen in your truck in Euro Truck Simulator 2 and American Truck Simulator: a map made from your own game, music from Apple Music, Spotify and YouTube Music, YouTube, and your game's route, on the truck's own screen.",
+    "shortDescription": "Your iPad as your truck's GPS and button box in American Truck Simulator and Euro Truck Simulator 2",
+    "longDescription": "American Truck Simulator GPS turns your iPad into your truck's dashboard: WestPlay's CarPlay-style screen, live and touchable, beside a button box that presses the game's keys. WestPlay puts a CarPlay-style screen in your truck in Euro Truck Simulator 2 and American Truck Simulator: a map made from your own game, music from Apple Music, Spotify and YouTube Music, YouTube, and your game's route, on the truck's own screen.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

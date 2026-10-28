@@ -4,7 +4,7 @@ import type { KeyPreset } from '../../useSettings'
 
 /**
  * The onboarding's words, in each of the game's 43 languages (by the game's own codes: `locale/<code>` in
- * its archives). It speaks the game's language, as WestPlay does in the cab; before the game was ever
+ * its archives). It speaks the game's language, as ATS GPS does in the cab; before the game was ever
  * started, Windows' ([`languageOf`]); English for a language the game doesn't have. Where the onboarding
  * names something in the game (its Mod Manager, its question about advanced SDK features, its OK button),
  * it uses the game's own words for it in that language, from the game's `localization.sui`
@@ -76,14 +76,14 @@ export interface Words {
     untested: string
     trucks: string
     truckNotYet: string
-    /** Under the trucks: why only these (WestPlay is on the trucks that have CarPlay in real life). */
+    /** Under the trucks: why only these (ATS GPS is on the trucks that have CarPlay in real life). */
     otherTrucks: string
     notInMods: string
     notInGame: string
     /** The trucks' names that have words in them; the others are names alone. */
     scania7: string
     scaniaSmartDash: string
-    /** The tablet's row: any truck, with WestPlay's tablet (a dashboard toy, its name in the game's shop). */
+    /** The tablet's row: any truck, with ATS GPS's tablet (a dashboard toy, its name in the game's shop). */
     anyTruckTablet: string
     profiles: string
     profileCount: Plural

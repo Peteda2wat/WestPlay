@@ -177,7 +177,7 @@ pub fn truck_changed(id: &str) {
         bridge.plugin.truck_supported.store(0, Ordering::Release);
     }
     if ON_SUPPORTED_TRUCK.swap(false, Ordering::AcqRel) {
-        log!("screen: another truck, WestPlay's screen not seen in it yet");
+        log!("screen: another truck, ATS GPS's screen not seen in it yet");
     }
 }
 
@@ -366,7 +366,7 @@ unsafe fn refresh(context: &ID3D11DeviceContext, texture: ID3D11Texture2D, heigh
         // (a player's Actros MP4, 2026-10-24: the log never said why WestPlay didn't show).
         if !supported && (was || !UNSUPPORTED_SAID.swap(true, Ordering::AcqRel)) {
             let truck = truck.map(|truck| truck.id.as_str().to_owned()).unwrap_or_default();
-            log!("screen: {} isn't WestPlay's in {truck}, the game's own shows", screen_layouts()[layout].id);
+            log!("screen: {} isn't ATS GPS's in {truck}, the game's own shows", screen_layouts()[layout].id);
         }
         // This screen WestPlay's itself: the truck's own, beside the tablet, keeps the game's.
         let enabled = here && bridge::get().is_some_and(|b| b.host.screen_enabled.load(Ordering::Acquire) == 1);
@@ -521,7 +521,7 @@ fn cab_drawn() {
     } else if frame.saturating_sub(since) > NO_SCREEN_FRAMES
         && plugin.truck_supported.swap(TRUCK_UNSUPPORTED, Ordering::AcqRel) != TRUCK_UNSUPPORTED
     {
-        log!("screen: no screen of WestPlay's layouts in this truck: not WestPlay's");
+        log!("screen: no screen of ATS GPS's layouts in this truck: not ATS GPS's");
     }
 }
 

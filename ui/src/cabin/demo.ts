@@ -10,15 +10,15 @@ import './demo.css'
 
 /**
  * The cabin page as a live demo, in the companion's onboarding (`cabin.html?demo&power`, in an iframe of the
- * companion's own page): the real WestPlay, driven by the onboarding instead of the game. It powers on (the
- * WestPlay intro), goes where it's told (Home, the Dashboard, an app), shows the map the onboarding names,
+ * companion's own page): the real ATS GPS, driven by the onboarding instead of the game. It powers on (the
+ * ATS GPS intro), goes where it's told (Home, the Dashboard, an app), shows the map the onboarding names,
  * and says where an app's icon is, for the onboarding's cursor to move there and tap it.
  *
  * It shows the player's wallpaper and icons as the companion tells it (`looks`), is always dark, and keeps its
  * state apart from the player's (state/store.ts).
  */
 export type DemoCommand =
-  /** On: the WestPlay intro, then the screen. Off: black. */
+  /** On: the ATS GPS intro, then the screen. Off: black. */
   | { type: 'power'; on: boolean }
   | { type: 'go'; to: 'home' | 'dashboard' | AppId }
   /** Where something on the screen is (`target`, a CSS selector: an app's icon on Home,
@@ -33,7 +33,7 @@ export type DemoCommand =
   /** The language it speaks: a game language code (`tr_tr`), as the game would say. */
   | { type: 'language'; code: string }
   /** The player's wallpapers and icon sets (their files at `base`, the companion's address for them), and the
-   * wallpaper and icon set chosen (`null`: none chosen, WestPlay's own). */
+   * wallpaper and icon set chosen (`null`: none chosen, ATS GPS's own). */
   | {
       type: 'looks'
       custom: Customizations
@@ -75,7 +75,7 @@ export function installDemo(): void {
     switch (data.type) {
       case 'power': {
         const now = performance.now()
-        // On: straight to the WestPlay intro (the phone connecting), as when WestPlay starts mid-drive.
+        // On: straight to the ATS GPS intro (the phone connecting), as when ATS GPS starts mid-drive.
         useCabin.setState({ power: { phase: data.on ? 'connecting' : 'off', since: now, observed: true } })
         break
       }

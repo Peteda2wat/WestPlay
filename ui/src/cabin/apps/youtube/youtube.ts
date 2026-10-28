@@ -44,7 +44,7 @@ interface YouTubeStore {
   captions: string | null
   /** The picture's quality for every video: `auto` (YouTube's own choice), or the most it's to be. */
   quality: string
-  /** The playback speed, on every video until changed (not kept past WestPlay: YouTube's app's way). */
+  /** The playback speed, on every video until changed (not kept past ATS GPS: YouTube's app's way). */
   rate: number
   /** The newest first. */
   searches: string[]
@@ -124,7 +124,7 @@ export const useYouTube = create<YouTubeStore>()(
       watched: [],
       volume: 100,
       muted: false,
-      // Outside WestPlay (a plain browser) there's no host to say: the preview starts signed out.
+      // Outside ATS GPS (a plain browser) there's no host to say: the preview starts signed out.
       account: isInHost() ? null : { signedIn: false, avatar: null },
       signingIn: false,
       hole: null,
@@ -140,11 +140,11 @@ export const useYouTube = create<YouTubeStore>()(
         muted: store.muted,
         captions: store.captions,
         quality: store.quality,
-        // Signed in or not, and the picture's address (shown at once as WestPlay starts,
+        // Signed in or not, and the picture's address (shown at once as ATS GPS starts,
         // not 5 to 7 seconds on as YouTube's page says it; replaced as it does, signed out on signing out).
         account: store.account,
       }),
-      // Kept by an earlier WestPlay (or edited): only what's sound.
+      // Kept by an earlier ATS GPS (or edited): only what's sound.
       merge: (stored, current) => {
         const { searches, watched, volume, muted, captions, quality, account } = (stored ?? {}) as Partial<YouTubeStore>
         return {
@@ -510,7 +510,7 @@ export function closePlayer(): void {
 /** Opens Google's sign-in for YouTube in a window on the PC's desktop. */
 export function signIn(): void {
   command({ action: 'signIn' })
-  // Outside WestPlay, the preview's sign-in just succeeds.
+  // Outside ATS GPS, the preview's sign-in just succeeds.
   if (!isInHost()) useYouTube.setState({ account: { signedIn: true, avatar: null } })
 }
 

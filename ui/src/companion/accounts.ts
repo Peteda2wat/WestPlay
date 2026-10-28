@@ -4,7 +4,7 @@ import { type HostStatus, appleMusicCheck, spotifyCheck, youtubeCheck } from './
 /**
  * Whether each service is signed in, as the companion last knew: shown at once when it opens, kept up to date
  * by every status that says (a sign-in or out here, or the service run in the cab). Only whether, nothing
- * else of the account, in the companion's own storage (gone with WestPlay when it's uninstalled). A service
+ * else of the account, in the companion's own storage (gone with ATS GPS when it's uninstalled). A service
  * never known is asked once, as the companion opens: run hidden to say.
  */
 export interface SignedIn {

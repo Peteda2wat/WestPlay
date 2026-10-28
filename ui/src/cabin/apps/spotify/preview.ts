@@ -551,7 +551,7 @@ export function previewAnswer(question: Question): Promise<unknown> {
       case 'artist':
         return artist(question.uri)
       case 'lyrics':
-        return previewLyrics({ background: '#5b7c99', text: '#000000', highlight: '#ffffff' }, 'WestPlay')
+        return previewLyrics({ background: '#5b7c99', text: '#000000', highlight: '#ffffff' }, 'ATS GPS')
     }
   })()
   return new Promise((resolve) => setTimeout(() => resolve(answer), 120))

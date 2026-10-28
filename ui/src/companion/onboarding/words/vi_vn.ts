@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Tiếp tục',
   welcome: {
     title: 'CarPlay trong cabin của bạn',
-    sub: 'WestPlay đưa CarPlay lên màn hình xe tải của bạn trong Euro Truck Simulator 2. Thiết lập chỉ mất vài phút.',
+    sub: 'ATS GPS đưa CarPlay lên màn hình xe tải của bạn trong Euro Truck Simulator 2. Thiết lập chỉ mất vài phút.',
     start: 'Bắt đầu',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'Trò chơi của bạn',
     titleMissing: 'Trò chơi của bạn ở đâu?',
-    found: 'WestPlay đã tìm thấy Euro Truck Simulator 2 trên máy tính này.',
+    found: 'ATS GPS đã tìm thấy Euro Truck Simulator 2 trên máy tính này.',
     foundMany: 'Euro Truck Simulator 2 được cài ở nhiều nơi. Hãy chọn bản bạn đang chơi.',
     missing:
-      'WestPlay không tìm thấy Euro Truck Simulator 2. Hãy chọn thư mục bạn đã cài trò chơi, thư mục có chứa base.scs.',
+      'ATS GPS không tìm thấy Euro Truck Simulator 2. Hãy chọn thư mục bạn đã cài trò chơi, thư mục có chứa base.scs.',
     chooseAnother: 'Dùng thư mục khác…',
     chooseFolder: 'Chọn thư mục…',
     picker: 'Chọn thư mục Euro Truck Simulator 2 của bạn',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'Trò chơi không còn ở thư mục này nữa.',
     closeToGoOn: {
       title: 'Vui lòng đóng trò chơi.',
-      text: 'WestPlay chỉ có thể thiết lập khi Euro Truck Simulator 2 không chạy.',
+      text: 'ATS GPS chỉ có thể thiết lập khi Euro Truck Simulator 2 không chạy.',
     },
   },
   check: {
@@ -43,14 +43,14 @@ export const words: Words = {
     notYet: 'Chưa được hỗ trợ',
     title: 'Cấu hình của bạn',
     titleNotYet: 'Chưa được hỗ trợ',
-    cantInstall: 'WestPlay chưa hỗ trợ phiên bản này của trò chơi.',
+    cantInstall: 'ATS GPS chưa hỗ trợ phiên bản này của trò chơi.',
     version: 'Phiên bản',
     unknown: 'Không rõ',
     dlcs: 'DLC',
     mapDlcs: 'DLC bản đồ',
     noMapDlcs: 'Không có',
     untested:
-      'WestPlay được làm cho phiên bản 1.61. Phiên bản của bạn chưa được thử, nhưng nhiều khả năng vẫn chạy tốt.',
+      'ATS GPS được làm cho phiên bản 1.61. Phiên bản của bạn chưa được thử, nhưng nhiều khả năng vẫn chạy tốt.',
     trucks: 'Xe tải',
     truckNotYet: 'Chưa được hỗ trợ',
     otherTrucks: 'Các xe tải khác trong trò chơi không hỗ trợ CarPlay ngoài đời thực.',
@@ -58,29 +58,29 @@ export const words: Words = {
     notInGame: 'Không có trong trò chơi của bạn',
     scania7: 'Scania S và R – màn hình 7"',
     scaniaSmartDash: 'Scania S và R – Smart Dash',
-    anyTruckTablet: 'Mọi xe tải – với máy tính bảng WestPlay',
+    anyTruckTablet: 'Mọi xe tải – với máy tính bảng ATS GPS',
     profiles: 'Hồ sơ',
     profileCount: { other: '{n} hồ sơ' },
     noProfiles: 'Chưa có hồ sơ nào',
-    noProfilesDetail: 'WestPlay sẽ chuẩn bị bản đồ cho hồ sơ đầu tiên bạn tạo.',
+    noProfilesDetail: 'ATS GPS sẽ chuẩn bị bản đồ cho hồ sơ đầu tiên bạn tạo.',
     baseMap: 'Bản đồ gốc',
     withMods: '{map} với {mods}',
     unreadable: { other: 'Không đọc được {n} mod bản đồ nên thay đổi của chúng sẽ không hiển thị' },
     mapNote:
-      'WestPlay chuẩn bị bản đồ cho từng hồ sơ của bạn, lần lượt từng cái, bắt đầu từ hồ sơ bạn chơi gần nhất. Bản đồ được chuẩn bị khi trò chơi đang đóng.',
+      'ATS GPS chuẩn bị bản đồ cho từng hồ sơ của bạn, lần lượt từng cái, bắt đầu từ hồ sơ bạn chơi gần nhất. Bản đồ được chuẩn bị khi trò chơi đang đóng.',
   },
   install: {
-    title: 'Cài đặt WestPlay',
-    titleDone: 'Đã cài đặt WestPlay',
-    sub: 'WestPlay thêm một plugin vào trò chơi, và plugin tự nạp màn hình xe tải của WestPlay mỗi khi bạn chơi: không cần bật gì trong Trình quản lý mod. Các tệp gốc của trò chơi vẫn được giữ nguyên, và gỡ cài đặt WestPlay sẽ xóa tất cả.',
+    title: 'Cài đặt ATS GPS',
+    titleDone: 'Đã cài đặt ATS GPS',
+    sub: 'ATS GPS thêm một plugin vào trò chơi, và plugin tự nạp màn hình xe tải của ATS GPS mỗi khi bạn chơi: không cần bật gì trong Trình quản lý mod. Các tệp gốc của trò chơi vẫn được giữ nguyên, và gỡ cài đặt ATS GPS sẽ xóa tất cả.',
     install: 'Cài đặt',
     tryAgain: 'Thử lại',
     asAdministrator: 'Cài đặt với quyền quản trị',
     plugin: 'Plugin',
-    pluginDetail: 'Hiển thị WestPlay trên màn hình xe tải của bạn',
+    pluginDetail: 'Hiển thị ATS GPS trên màn hình xe tải của bạn',
     banners: {
       installing: { title: 'Đang cài đặt…' },
-      done: { title: 'Đã cài đặt WestPlay', text: 'Trò chơi của bạn đã sẵn sàng' },
+      done: { title: 'Đã cài đặt ATS GPS', text: 'Trò chơi của bạn đã sẵn sàng' },
       permission: { title: 'Cần cấp quyền', text: 'Windows sẽ hỏi một lần' },
       inUse: { title: 'Đóng trò chơi', text: 'Trò chơi đang dùng plugin' },
       failed: { title: 'Cài đặt chưa hoàn tất', text: 'Xem chi tiết ở bên trái' },
@@ -88,7 +88,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Vui lòng đóng trò chơi.',
-      text: 'Không thể cài WestPlay khi Euro Truck Simulator 2 đang chạy.',
+      text: 'Không thể cài ATS GPS khi Euro Truck Simulator 2 đang chạy.',
     },
     inUse: {
       title: 'Vui lòng đóng trò chơi.',
@@ -103,24 +103,24 @@ export const words: Words = {
       text: 'Không có quyền thì không cài được plugin. Hãy thử lại và chọn “Có”.',
     },
     pluginFailed: 'Không thể cài đặt plugin.',
-    modFailed: 'Không thể chuẩn bị màn hình xe tải của WestPlay từ trò chơi của bạn.',
-    noPlugin: 'Bản WestPlay này thiếu plugin. Hãy cài lại WestPlay.',
+    modFailed: 'Không thể chuẩn bị màn hình xe tải của ATS GPS từ trò chơi của bạn.',
+    noPlugin: 'Bản ATS GPS này thiếu plugin. Hãy cài lại ATS GPS.',
     noDocuments: 'Không tìm thấy thư mục Tài liệu của bạn.',
   },
   map: {
     title: 'Đang chuẩn bị bản đồ…',
     titleReady: 'Bản đồ đã sẵn sàng',
-    sub: 'WestPlay tạo bản đồ từ chính trò chơi của bạn, gồm cả DLC bản đồ và mod bản đồ. Việc này mất một hai phút.',
+    sub: 'ATS GPS tạo bản đồ từ chính trò chơi của bạn, gồm cả DLC bản đồ và mod bản đồ. Việc này mất một hai phút.',
     banners: {
       building: 'Đang chuẩn bị bản đồ',
       ready: { title: 'Bản đồ đã sẵn sàng', text: 'Gồm DLC và mod bản đồ của bạn' },
       waiting: { title: 'Đóng trò chơi', text: 'Bản đồ được tạo khi trò chơi đã đóng' },
-      failed: { title: 'Không thể chuẩn bị bản đồ', text: 'WestPlay sẽ thử lại sau' },
+      failed: { title: 'Không thể chuẩn bị bản đồ', text: 'ATS GPS sẽ thử lại sau' },
       getting: 'Đang chuẩn bị…',
     },
     waiting: {
       title: 'Vui lòng đóng trò chơi.',
-      text: 'Chuẩn bị bản đồ cần nhiều bộ nhớ, nên WestPlay sẽ đợi đến khi trò chơi không còn chạy.',
+      text: 'Chuẩn bị bản đồ cần nhiều bộ nhớ, nên ATS GPS sẽ đợi đến khi trò chơi không còn chạy.',
     },
     stages: {
       reading: { now: 'Đang đọc bản đồ của trò chơi', done: 'Đã đọc bản đồ' },
@@ -143,7 +143,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Đăng nhập YouTube',
-    sub: 'Không bắt buộc. Đăng nhập để xem đề xuất, kênh đăng ký và lịch sử của riêng bạn trên màn hình xe tải. Bạn đăng nhập Google trong một cửa sổ riêng, và WestPlay không bao giờ thấy tài khoản của bạn.',
+    sub: 'Không bắt buộc. Đăng nhập để xem đề xuất, kênh đăng ký và lịch sử của riêng bạn trên màn hình xe tải. Bạn đăng nhập Google trong một cửa sổ riêng, và ATS GPS không bao giờ thấy tài khoản của bạn.',
     signIn: 'Đăng nhập',
     signOut: 'Đăng xuất',
     signedIn: 'Đã đăng nhập',
@@ -154,13 +154,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Đăng nhập Spotify',
-    sub: 'Không bắt buộc. Đăng nhập để nghe Spotify trên màn hình xe tải, với danh sách phát và thư viện của riêng bạn. Bạn đăng nhập Spotify trong một cửa sổ riêng, và WestPlay không bao giờ thấy tài khoản của bạn.',
+    sub: 'Không bắt buộc. Đăng nhập để nghe Spotify trên màn hình xe tải, với danh sách phát và thư viện của riêng bạn. Bạn đăng nhập Spotify trong một cửa sổ riêng, và ATS GPS không bao giờ thấy tài khoản của bạn.',
     finishInWindow: 'Hoàn tất đăng nhập trong cửa sổ Spotify',
     signingIn: { title: 'Đang đăng nhập Spotify', text: 'Tiếp tục trong cửa sổ Spotify' },
   },
   appleMusic: {
     title: 'Đăng nhập Apple Music',
-    sub: 'Không bắt buộc. Đăng nhập để nghe Apple Music trên màn hình xe tải, với danh sách phát và thư viện của riêng bạn. Bạn đăng nhập Apple Music trong một cửa sổ riêng, và WestPlay không bao giờ thấy tài khoản của bạn.',
+    sub: 'Không bắt buộc. Đăng nhập để nghe Apple Music trên màn hình xe tải, với danh sách phát và thư viện của riêng bạn. Bạn đăng nhập Apple Music trong một cửa sổ riêng, và ATS GPS không bao giờ thấy tài khoản của bạn.',
     finishInWindow: 'Hoàn tất đăng nhập trong cửa sổ Apple Music',
     signingIn: { title: 'Đang đăng nhập Apple Music', text: 'Tiếp tục trong cửa sổ Apple Music' },
   },
@@ -170,11 +170,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Khởi động trò chơi',
-        text: 'Khi thấy “Đã phát hiện yêu cầu sử dụng các tính năng SDK nâng cao.”, hãy chọn “Đồng ý”. Đó là WestPlay.',
+        text: 'Khi thấy “Đã phát hiện yêu cầu sử dụng các tính năng SDK nâng cao.”, hãy chọn “Đồng ý”. Đó là ATS GPS.',
       },
       {
         title: 'Lên xe tải của bạn',
-        text: 'Bật điện, WestPlay sẽ hiện lên màn hình. Hãy để WestPlay mở trong lúc chơi.',
+        text: 'Bật điện, ATS GPS sẽ hiện lên màn hình. Hãy để ATS GPS mở trong lúc chơi.',
       },
     ],
   },

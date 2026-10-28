@@ -103,7 +103,7 @@ async fn look(app: &AppHandle) -> Result<Option<Offer>, ()> {
     // Kept before the companion's told, so an Update straight away finds it.
     *app.state::<Updates>().0.lock().unwrap_or_else(|e| e.into_inner()) = found;
     if let Some(offer) = &offer {
-        log!("[update] WestPlay {} is available", offer.version);
+        log!("[update] ATS GPS {} is available", offer.version);
         let _ = app.emit("update-found", offer);
     }
     Ok(offer)
@@ -135,7 +135,7 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
     }
     let update = app.state::<Updates>().0.lock().unwrap_or_else(|e| e.into_inner()).clone();
     let update = update.ok_or("noUpdate")?;
-    log!("[update] installing WestPlay {}", update.version);
+    log!("[update] installing ATS GPS {}", update.version);
     let mut done = 0u64;
     let mut shown = None;
     let bytes = update

@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ATS GPS">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#16181b">
+<title>ATS GPS</title>
+<link rel="stylesheet" href="/ipad/figtree.css">
+<style>
+  /* The whole box is laid out on a fixed 2000 x 1500 board, then scaled to fit the screen. */
+  :root {
+    --frame: #16181b; --housing: #3b3e43; --panel: #2a2d32; --key-top: #464a51; --key-bottom: #2e3238;
+    --dark-top: #2a2d31; --dark-bottom: #141619; --text: #f2f4f7; --lit: #d81c24; --lit-glow: rgba(200,16,24,.85); --green: #3cff7a;
+    --lcd: #000318; --lcd-text: var(--nav-accent); --red: #e0262b;
+  }
+  /* Map screen colours in the style of Apple Maps: night (charcoal) and day (light). Auto picks by the game's clock.
+     Panels are frosted glass over the map. */
+  body, body.map-night { --lcd: #23262b; --nav-text: #f2f2f7; --nav-dim: #98989d; --nav-panel: rgba(44,44,46,.78);
+    --nav-border: rgba(255,255,255,.12); --nav-accent: #0a84ff; --nav-on: #ffffff; --nav-divider: rgba(255,255,255,.14); }
+  body.map-day { --lcd: #f2efe9; --nav-text: #1c1c1e; --nav-dim: #6e6e73; --nav-panel: rgba(255,255,255,.80);
+    --nav-border: rgba(0,0,0,.08); --nav-accent: #007aff; --nav-on: #ffffff; --nav-divider: rgba(0,0,0,.10); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--frame); color: var(--text); }
+  /* One font everywhere: Figtree, a free font that looks like the Steam overlay's Motiva Sans. */
+  :root { --ui-font: "Figtree", "Segoe UI", -apple-system, sans-serif; }
+  body { font-family: var(--ui-font); }
+  button, input { font-family: var(--ui-font); }
+
+  /* No will-change here: on the iPad that drew the whole board once at 2000 x 1500 and shrank the picture, which made
+     every label and line soft. Without it the board is drawn at the size it is shown, at full Retina sharpness. */
+  #board { position: absolute; left: 0; top: 0; width: 2000px; height: 1500px; transform-origin: 0 0; }
+  .housing { position: absolute; left: 24px; top: 22px; width: 1952px; height: 896px; border-radius: 34px;
+    background: linear-gradient(180deg, #4a4d52, #34373c); box-shadow: inset 0 3px 0 rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.6); }
+  .housing::after { content: ""; position: absolute; inset: 22px 28px 14px; border-radius: 20px; background: #26282c; }
+  .panel { position: absolute; display: grid; gap: 6px; padding: 10px; border-radius: 16px;
+    background: #1f2125; box-shadow: inset 0 2px 0 rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.5); }
+
+  .key {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    border: 2px solid #15171a; border-radius: 12px; color: var(--text); cursor: pointer;
+    background: linear-gradient(180deg, var(--key-top), var(--key-bottom));
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.10), inset 0 -4px 0 rgba(0,0,0,.35);
+    font-size: 35px; line-height: 1; text-transform: uppercase; letter-spacing: .02em; text-align: center; touch-action: manipulation;
+  }
+  .key.pressed { background: linear-gradient(180deg, #2a2d32, #34383e); box-shadow: inset 0 3px 8px rgba(0,0,0,.6); transform: translateY(2px); }
+  .key.dark { background: linear-gradient(180deg, var(--dark-top), var(--dark-bottom)); border: 6px solid #0d0e10; border-radius: 18px;
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.08), 0 0 0 4px #2c2f34; }
+  .key svg { width: 76px; height: 76px; flex: none; }
+  .key.small svg { width: 64px; height: 64px; }
+  .key.lit { color: var(--lit); }
+  .sign { position: absolute; right: 10px; top: 8px; font-size: 32px; line-height: 1; font-weight: 400; font-family: var(--ui-font); }
+  /* Keys with a + / − sign (cruise, retarder, engine brake, wipers): a smaller icon, centred under the light bar. */
+  .key.signed svg { width: 40px !important; height: 40px !important; }
+  /* Lower panels are shorter than the dials were drawn for: shrink the dials around their own centre
+     (scale works alongside the knob's rotate, so the labels stay where they are). */
+  .rotary .bezel, .rotary .lock, .rotary .knob:not(.key-shape) { scale: .78; }
+  .rotary .knob.key-shape { scale: .86; }
+  #engineBtn .ring { scale: .85; }
+  .key.small svg { width: 54px; height: 54px; }
+  .bigsign svg { width: 200px !important; height: 200px !important; }
+  #hazardBtn svg { width: 170px !important; height: 150px !important; }
+  .lcd-mini { background: #050607; border: 3px solid #000; border-radius: 10px; height: 64px; display: grid; place-items: center;
+    color: var(--green); font: 700 44px var(--ui-font); font-variant-numeric: tabular-nums; text-shadow: 0 0 8px rgba(60,255,122,.6); }
+  .stack { display: grid; gap: 6px; }
+
+  /* ---- American truck rocker switches (Carling-style, as in Peterbilt / Kenworth dashes) ----
+     Each plain key is a rocker: a glossy black bezel, a curved paddle with a molded grain whose raised half catches
+     the light, a crease where it pivots, white embossed symbols, and a frosted lens at the top that glows red while the
+     function is on (or as you tap). Pressing tips the paddle the other way. Dials and the big knobs keep their own look. */
+  .rocker { border: 5px solid #070808; border-radius: 9px; color: #eef0f3;
+    background: linear-gradient(180deg, #50545b 0%, #3a3d43 18%, #2a2d32 40%, #1f2226 47%, #0b0c0d 50%, #15171a 53%, #1b1d21 75%, #23262a 100%);
+    box-shadow: 0 0 0 1px #3c4046, 0 0 0 3px #111214, 0 5px 9px rgba(0,0,0,.7),
+      inset 0 2px 1px rgba(255,255,255,.22), inset 0 -2px 2px rgba(0,0,0,.7),
+      inset 3px 0 3px rgba(255,255,255,.04), inset -3px 0 3px rgba(0,0,0,.35); }
+  .rocker::before { content: ""; position: absolute; left: 5px; right: 5px; top: calc(50% - 1px); height: 2px; border-radius: 1px;
+    background: linear-gradient(180deg, rgba(0,0,0,.75), rgba(255,255,255,.07)); pointer-events: none; }
+  .rocker > :not(.sign) { position: relative; z-index: 1; }   /* symbols and words sit above the crease */
+  .rocker .sign { z-index: 1; }
+  .rocker span { text-shadow: 0 -1px 0 rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.06); }
+  .rocker.pressed, .rocker.latched.lit { transform: translateY(1px); background: linear-gradient(180deg, #23262a 0%, #1b1d21 25%, #15171a 47%, #0b0c0d 50%, #1f2226 53%, #2a2d32 60%, #3a3d43 82%, #50545b 100%);
+    box-shadow: 0 0 0 1px #3c4046, 0 0 0 3px #111214, 0 3px 5px rgba(0,0,0,.7),
+      inset 0 3px 3px rgba(0,0,0,.75), inset 0 -2px 1px rgba(255,255,255,.18),
+      inset 3px 0 3px rgba(255,255,255,.03), inset -3px 0 3px rgba(0,0,0,.35); }
+  /* The lens: frosted dark red when off, glowing red with a hot centre when lit. */
+  .rocker::after { content: ""; position: absolute; left: 30%; right: 30%; top: 7px; height: 8px; border-radius: 2px;
+    background: linear-gradient(180deg, #3d1114, #1e0708 70%, #2a0a0c);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 1px rgba(0,0,0,.6), 0 0 0 1px #050505; }
+  .rocker.lit::after, .rocker.pressed::after { background: radial-gradient(ellipse at 50% 45%, #ff8a8a 0%, #ec2a31 35%, #b30f17 75%, #7a0a0f 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 0 0 1px #050505, 0 0 12px var(--lit-glow); }
+  /* Latching switches (Attach, cameras) stay rocked down and their symbol glows while on. */
+  .rocker.latched.lit, .rocker.latched.lit span { color: var(--lit); }
+  .rocker.lit { color: #eef0f3; }
+  /* Backlighting: with the truck's lights on (and the power on), the switch symbols and dial labels glow like a dash
+     at night. The colour comes from the truck's gauge theme (gauges.js sets --backlight / --backlight-glow). */
+  :root { --backlight: #fff2d6; --backlight-glow: rgba(255,200,120,.85); }
+  .backlit .rocker:not(.lit), .backlit .rot-label:not(.on), .backlit #engineBtn .push-top, .backlit #engineBtn .push-bottom { color: var(--backlight); }
+  .backlit .rocker:not(.lit) span, .backlit .rot-label:not(.on), .backlit #engineBtn .push-top, .backlit #engineBtn .push-bottom {
+    text-shadow: 0 0 6px var(--backlight-glow), 0 0 2px var(--backlight-glow); }
+  .backlit .rocker:not(.lit) svg, .backlit .rot-label:not(.on) svg { filter: drop-shadow(0 0 4px var(--backlight-glow)); }
+  /* Dash plates: dark textured metal with a screw in each corner. */
+  .panel:not(.strip) { background:
+      radial-gradient(circle at 13px 13px, #9aa0a8 0 3px, #3b3e43 4px, transparent 5.5px),
+      radial-gradient(circle at calc(100% - 13px) 13px, #9aa0a8 0 3px, #3b3e43 4px, transparent 5.5px),
+      radial-gradient(circle at 13px calc(100% - 13px), #9aa0a8 0 3px, #3b3e43 4px, transparent 5.5px),
+      radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #9aa0a8 0 3px, #3b3e43 4px, transparent 5.5px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 2px, transparent 2px 5px),
+      linear-gradient(180deg, #25282c, #191b1e);
+    padding: 14px 18px; }
+
+  /* ---- rotary switches ---- */
+  .rotary { position: relative; touch-action: none; cursor: pointer; }
+  .rotary.pressed { transform: none; }
+  /* Ignition: a key sitting in a chrome lock cylinder, turning around the lock's centre. */
+  .lock { position: absolute; left: 50%; top: 62%; width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 50%;
+    box-shadow: 0 6px 16px rgba(0,0,0,.7); }
+  .fob { position: absolute; width: 40px; height: 100px; transform-origin: 50% 15px; z-index: 3; pointer-events: none;
+    filter: drop-shadow(2px 6px 4px rgba(0,0,0,.6)); }
+  .fob svg { width: 100%; height: 100%; display: block; }
+  .knob.key-shape { z-index: 2; }
+  .knob.key-shape { top: 62%; width: 90px; height: 180px; margin: -128px 0 0 -45px; border-radius: 0; background: none; box-shadow: none;
+    transform-origin: 45px 128px; filter: drop-shadow(0 8px 8px rgba(0,0,0,.55)); }
+  .knob.key-shape svg { width: 90px; height: 180px; display: block; }
+  .bezel { position: absolute; left: 50%; top: 52%; width: 230px; height: 230px; margin: -115px 0 0 -115px; border-radius: 50%;
+    background: radial-gradient(circle, #1b1d20 58%, #0a0b0c 59%, #0a0b0c 64%, #6d737b 65.5%, #e3e6e9 67.5%, #8a9098 69.5%, #2c2f33 71.5%, transparent 72.5%);
+    box-shadow: 0 8px 20px rgba(0,0,0,.55); }
+  /* The dials and the push button sit straight on the dash plate. */
+  .rotary, #engineBtn { background: none; border: 0; box-shadow: none; }
+  .knob { position: absolute; left: 50%; top: 52%; width: 70px; height: 190px; margin: -95px 0 0 -35px; border-radius: 30px;
+    background: linear-gradient(90deg, #15171a, #4a4e55 45%, #202327); box-shadow: 0 6px 12px rgba(0,0,0,.7); transition: transform .15s ease-out; }
+  .knob.round { width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%; background: none;
+    box-shadow: 0 10px 18px rgba(0,0,0,.7); }
+  .knob.round svg, .lock svg { width: 100%; height: 100%; display: block; }
+  .rot-label { position: absolute; font-size: 20px; letter-spacing: .04em; transform: translate(-50%, -50%); color: #c9ced6; padding: 6px; }
+  .rot-label svg { width: 38px; height: 38px; display: block; }
+  .rot-label.on { color: var(--lit); }
+
+  /* Engine start/stop: a chrome-ringed push button; the LED ring is red with the engine off, green when running. */
+  #engineBtn .push { position: relative; width: 206px; height: 206px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(145deg, #fbfcfd 0%, #9ba2aa 32%, #eceef1 55%, #5b6168 82%, #2f3337 100%);
+    box-shadow: 0 10px 18px rgba(0,0,0,.65), inset 0 0 0 2px rgba(0,0,0,.35); }
+  #engineBtn .push-led { position: absolute; inset: 14px; border-radius: 50%;
+    background: radial-gradient(circle, #0a0b0c 64%, #e0342a 66%, #7a1410 74%); box-shadow: inset 0 0 0 3px #0a0b0c, 0 0 10px rgba(230,50,40,.55); }
+  #engineBtn.running .push-led { background: radial-gradient(circle, #0a0b0c 64%, #33e07a 66%, #0f6a35 74%); box-shadow: inset 0 0 0 3px #0a0b0c, 0 0 14px rgba(51,224,122,.7); }
+  #engineBtn .push-cap { position: relative; width: 144px; height: 144px; border-radius: 50%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px; color: #e3342a; font-family: var(--ui-font); font-weight: 700;
+    background: radial-gradient(circle at 36% 28%, #5d6269 0%, #24272b 34%, #0b0c0e 76%);
+    box-shadow: inset 0 2px 2px rgba(255,255,255,.25), inset 0 -8px 12px rgba(0,0,0,.85), 0 0 0 4px #08090a; transition: transform .08s; }
+  #engineBtn.running .push-cap { color: #3ce07f; }
+  #engineBtn.pressed { transform: none; }
+  #engineBtn.pressed .push-cap { transform: scale(.95); box-shadow: inset 0 4px 10px rgba(0,0,0,.9), 0 0 0 4px #08090a; }
+  #engineBtn .push-cap svg { width: 46px; height: 46px; }
+  #engineBtn .push-top { font-size: 17px; letter-spacing: .08em; color: #d9dde1; }
+  #engineBtn .push-bottom { font-size: 15px; line-height: 1.05; text-align: center; letter-spacing: .06em; color: #d9dde1; }
+  .wiper-led { height: 34px; margin: 0 26px; border-radius: 10px; background: #3a2a14; border: 3px solid #111; }
+  .wiper-led.on { background: #c8121b; box-shadow: 0 0 14px var(--lit-glow); }
+
+  #hazardBtn svg { width: 190px; height: 170px; }
+  #hazardBtn { border: 6px solid #070808; border-radius: 16px;
+    background: radial-gradient(ellipse at 40% 25%, #4b4f56 0%, #2a2d32 45%, #121315 100%);
+    box-shadow: 0 0 0 1px #3c4046, 0 0 0 4px #111214, 0 6px 12px rgba(0,0,0,.7),
+      inset 0 3px 2px rgba(255,255,255,.2), inset 0 -4px 6px rgba(0,0,0,.75); }
+  #hazardBtn.pressed { transform: translateY(2px); box-shadow: 0 0 0 1px #3c4046, 0 0 0 4px #111214, 0 3px 6px rgba(0,0,0,.7),
+      inset 0 4px 8px rgba(0,0,0,.85), inset 0 -1px 1px rgba(255,255,255,.12); }
+  #hazardBtn.lit { box-shadow: 0 0 0 1px #3c4046, 0 0 0 4px #111214, 0 0 18px rgba(255,40,40,.6),
+      inset 0 3px 2px rgba(255,255,255,.2), inset 0 -4px 6px rgba(0,0,0,.75); }
+  #hazardBtn.lit svg { animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .45; } }
+  .bigsign svg { width: 230px; height: 230px; }
+  /* Parking brake and trailer air supply: push-pull air valves on chrome stems. The parking brake knob stands
+     pulled out while the brake is set; the trailer knob pulls out as you tap it. */
+  .valve { background: none; border: 0; box-shadow: none; }
+  .valve.pressed { transform: none; }
+  .valve-collar { position: absolute; left: 50%; top: 44%; width: 96px; height: 96px; margin: -48px 0 0 -48px; border-radius: 50%;
+    background: radial-gradient(circle, #0b0c0d 30%, #4a4f56 33%, #eef0f2 46%, #8c939b 58%, #2a2d31 70%);
+    box-shadow: 0 4px 10px rgba(0,0,0,.6); }
+  .valve-stem { position: absolute; left: 50%; top: 44%; width: 30px; height: 0; margin-left: -15px; border-radius: 4px;
+    background: linear-gradient(90deg, #5e646c, #f4f5f6 45%, #b9bec4 60%, #4b5057); transition: height .12s; }
+  .valve .valve-knob { position: absolute; left: 50%; top: 44%; width: 160px; height: 160px; margin: -80px 0 0 -80px;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,.6)); transition: transform .12s, filter .12s; }
+  .valve.lit .valve-knob, #trailerBtn.pressed .valve-knob { transform: translateY(-22px) scale(1.07);
+    filter: drop-shadow(0 26px 14px rgba(0,0,0,.65)); }
+  .valve.lit .valve-stem, #trailerBtn.pressed .valve-stem { height: 66px; }
+  .valve-plate { position: absolute; left: 10px; right: 10px; bottom: 6px; padding: 3px 4px; border-radius: 4px; text-align: center;
+    font: 700 13px var(--ui-font); letter-spacing: .04em; color: #1c1d1f; background: linear-gradient(#e9ebee, #b7bcc2);
+    box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,.6); }
+  #refuelBtn.lit { color: var(--lit); background: linear-gradient(180deg, #4a1417, #2c0b0d); animation: glow 1.2s ease-in-out infinite; }
+  @keyframes glow { 50% { box-shadow: 0 0 22px var(--lit-glow); } }
+  .wide-key { flex-direction: row; gap: 22px; font-size: 37px; }
+  /* The key grid sits where the trip card was, narrower: smaller labels and icons. */
+  .keys .key { font-size: 18px; gap: 4px; letter-spacing: 0; padding: 0 2px; }
+  .keys .key svg { width: 44px; height: 44px; }
+  .keys .wide-key { font-size: 22px; gap: 12px; }
+
+  /* ATS GPS's in-cab screen, live (the same screen the game shows), where the key grid was. Taps go back to it. */
+  #westplay { background: #000; overflow: hidden; }
+  #wpScreen { position: absolute; display: block; touch-action: none; -webkit-user-drag: none; }
+  #wpMsg { position: absolute; inset: 0; display: grid; place-items: center; color: #98989d; font-size: 34px; pointer-events: none; }
+
+  #status { position: absolute; left: 70px; top: 1444px; width: 1860px; height: 48px; display: flex; align-items: center; gap: 16px;
+    font-family: var(--ui-font); font-size: 22px; }
+  #link { width: 16px; height: 16px; border-radius: 50%; background: #f87171; }
+  #link.ok { background: #34d399; }
+  #msg { flex: 1; color: #f87171; }
+  #status button { font: inherit; font-size: 20px; color: #9aa3b0; background: #24272b; border: 1px solid #34383e; border-radius: 10px; padding: 8px 16px; cursor: pointer; }
+  .native-only { display: none; }
+  .is-native .native-only { display: inline-block; }
+  .live #resetStates { display: none; }
+
+  #login { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; place-items: center; padding: 20px; z-index: 100;
+    font-family: var(--ui-font); }
+  #login.show { display: grid; }
+  #login form { background: #1f2227; padding: 22px; border-radius: 18px; width: min(380px, 100%); display: grid; gap: 14px; }
+  #login p { margin: 0; color: #9aa3b0; font-size: 14px; line-height: 1.4; }
+  #login button { font: inherit; font-size: 17px; font-weight: 600; color: #fff; background: #34415a; border: 0; border-radius: 12px; min-height: 50px; }
+  #code { font: inherit; font-size: 26px; letter-spacing: .25em; text-align: center; padding: 12px; border-radius: 12px;
+    border: 1px solid #34415a; background: #0e1116; color: #fff; -webkit-user-select: text; user-select: text; }
+  #loginMsg { color: #f87171; font-size: 13px; min-height: 16px; }
+
+  /* ---- Kenworth W900 dash look (matches the W900 gauge cluster in gauges.js) ----
+     Each rocker sits in a polished chrome bezel on a black plate: satin-black paddle, crisp white legends, the
+     red indicator lens on top. The bezel is the border, painted chrome under the paddle (border-box) so the paddle
+     itself (padding-box) keeps its rocker shading. With the truck's lights on, the legends glow blue. */
+  :root { --w9-chrome: linear-gradient(160deg, #ffffff 0%, #c9cdd2 18%, #6b7077 38%, #f3f4f6 52%, #8d939a 70%, #3a3d42 86%, #d9dce0 100%);
+    --backlight: #7cc4ff; --backlight-glow: rgba(40,140,255,.9); }
+  .rocker { border: 6px solid transparent; border-radius: 10px; color: #f6f7f9;
+    background: linear-gradient(180deg, #44474d 0%, #2c2f34 20%, #1c1e22 44%, #08090a 50%, #111316 56%, #17191c 78%, #1f2226 100%) padding-box,
+      var(--w9-chrome) border-box;
+    box-shadow: 0 0 0 2px #050506, 0 6px 10px rgba(0,0,0,.75),
+      inset 0 2px 1px rgba(255,255,255,.18), inset 0 -2px 2px rgba(0,0,0,.75); }
+  .rocker.pressed, .rocker.latched.lit {
+    background: linear-gradient(180deg, #1f2226 0%, #17191c 22%, #111316 44%, #08090a 50%, #1c1e22 56%, #2c2f34 80%, #44474d 100%) padding-box,
+      var(--w9-chrome) border-box;
+    box-shadow: 0 0 0 2px #050506, 0 3px 5px rgba(0,0,0,.75),
+      inset 0 3px 3px rgba(0,0,0,.8), inset 0 -2px 1px rgba(255,255,255,.14); }
+  .rocker span { font-weight: 600; letter-spacing: .05em; text-shadow: 0 1px 1px rgba(0,0,0,.95); }
+  /* The hazard switch and the big round knobs get the same chrome ring. */
+  #hazardBtn { border: 6px solid transparent;
+    background: linear-gradient(180deg, var(--dark-top), var(--dark-bottom)) padding-box, var(--w9-chrome) border-box;
+    box-shadow: 0 0 0 2px #050506, 0 6px 10px rgba(0,0,0,.75), inset 0 2px 1px rgba(255,255,255,.12); }
+  /* Dash plates: black with a thin chrome trim line just inside the edge, like the cluster. */
+  .panel:not(.strip) { box-shadow: inset 0 0 0 2px #0a0b0c, inset 0 0 0 3px #8c9198, inset 0 0 0 5px #0a0b0c, 0 6px 18px rgba(0,0,0,.55); }
+  /* Blue backlight: legends and symbols glow blue, and the chrome bezels pick up a faint blue halo. */
+  .backlit .rocker:not(.lit) { box-shadow: 0 0 0 2px #050506, 0 0 10px rgba(40,140,255,.35), 0 6px 10px rgba(0,0,0,.75),
+      inset 0 2px 1px rgba(255,255,255,.18), inset 0 -2px 2px rgba(0,0,0,.75); }
+</style>
+</head>
+<body>
+
+<div id="board">
+  <div class="housing"></div>
+
+  <!-- ATS GPS's screen; the trip card that was here is on ATS GPS's dashboard -->
+  <div class="panel" id="westplay" style="left:40px;top:40px;width:1358px;height:862px;display:block">
+    <img id="wpScreen" alt=""><div id="wpMsg">Connecting to ATS GPS…</div>
+  </div>
+
+  <!-- all the switches above the dials: a 5 x 6 grid of keys -->
+  <div class="panel keys" style="left:1422px;top:40px;width:540px;height:862px;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(6,1fr)">
+    <div class="key" data-action="window_left_close" title="Left window close"><span>Window</span><i data-icon="doorUp"></i></div>
+    <div class="key" data-action="window_right_close" title="Right window close"><span>Window</span><i data-icon="doorUpR"></i></div>
+    <div class="key" id="refuelBtn" data-action="refuel"><span>Refuel</span><i data-icon="fuel"></i></div>
+    <div class="key latched" data-action="trailer_attach" data-led="trailerAttached" title="Trailer attach (pressed in and lit while a trailer is coupled)"><span>Attach</span><i data-icon="trailer"></i></div>
+    <div class="key" data-action="garage" title="Garage"><span>Garage</span><i data-icon="garage"></i></div>
+    <div class="key" data-action="window_left_open" title="Left window open"><span>Window</span><i data-icon="doorDown"></i></div>
+    <div class="key" data-action="window_right_open" title="Right window open"><span>Window</span><i data-icon="doorDownR"></i></div>
+    <div class="key" data-action="mirrors"><span>Mirrors</span><i data-icon="mirrors"></i></div>
+    <div class="key" data-action="seat_adjust"><span>Adjust</span><i data-icon="seat"></i></div>
+    <div class="key" data-action="pause"><span>Pause</span><i data-icon="pause"></i></div>
+    <div class="key" data-action="dash_mode"><span>Dash Mode</span><i data-icon="dash"></i></div>
+    <div class="key" data-action="info_mode"><span>Info Mode</span><i data-icon="info"></i></div>
+    <div class="key latched" data-action="camera_cab"><span>In Cab</span><i data-icon="camera"></i></div>
+    <div class="key latched" data-action="camera_chase"><span>Chase</span><i data-icon="camera"></i></div>
+    <div class="key" data-action="trip_reset"><span>Trip Reset</span><i data-icon="info"></i></div>
+    <div class="key" data-action="activate_overlay"><span>Activate<br>Overlay</span></div>
+    <!-- SleepAnywhere / ServiceAnywhere plugins (Tommy On-Time Creations): their hotkeys are in config.json -->
+    <div class="key wide-key" data-action="sleep_anywhere" title="Sleep anywhere (stop the truck first)" style="grid-column:span 2"><i data-icon="bed"></i><span>Sleep</span></div>
+    <div class="key" data-action="service_anywhere" title="Service area (stop the truck first)"><span>Service</span><i data-icon="wrench"></i></div>
+    <!-- ATS GPS's spoken directions off / on (lit while off): straight to ATS GPS, no game key -->
+    <div class="key" id="navVoiceBtn" title="ATS GPS's spoken directions on / off"><span>Nav Voice</span><i data-icon="voice"></i></div>
+    <div class="key" data-action="tablet" title="Tablet (mouse back button)"><span>Tablet</span><i data-icon="info"></i></div>
+    <div class="key" data-action="escape" title="Escape"><span>Escape</span><i data-icon="cross"></i></div>
+    <div class="key" data-action="confirm" title="Confirm"><span>Confirm</span><i data-icon="check"></i></div>
+    <div class="key" data-action="navigation" title="Navigation"><span>Nav</span><i data-icon="nav"></i></div>
+    <div class="key" data-action="nav_zoom" title="Navigation zoom"><span>Nav Zoom</span><i data-icon="plusMinus"></i></div>
+    <!-- ATS GPS's music: its Volume down / Previous / Play-Pause / Next / Volume up keybinds (F16 / F13 / F14 / F15 / F17, set in ATS GPS's Controls) -->
+    <div class="key" data-action="music_volume_down" data-repeat title="Volume down (ATS GPS)"><span>Volume</span><i data-icon="volDown"></i></div>
+    <div class="key" data-action="music_previous" title="Previous track (ATS GPS)"><span>Rewind</span><i data-icon="rewind"></i></div>
+    <div class="key" data-action="music_play_pause" title="Play / pause (ATS GPS)"><span>Play</span><i data-icon="playPause"></i></div>
+    <div class="key" data-action="music_next" title="Next track (ATS GPS)"><span>Skip</span><i data-icon="skip"></i></div>
+    <div class="key" data-action="music_volume_up" data-repeat title="Volume up (ATS GPS)"><span>Volume</span><i data-icon="volUp"></i></div>
+  </div>
+
+  <!-- ignition, engine start, wipers -->
+  <div class="panel" style="left:40px;top:924px;width:772px;height:250px;grid-template-columns:300px 300px 1fr">
+    <div class="key rotary" id="ignition" title="Ignition: tap to turn the key (OFF / ON / START)">
+      <div class="bezel" style="top:62%"></div>
+      <div class="lock"><svg viewBox="0 0 160 160" aria-hidden="true">
+        <defs>
+          <filter id="lkLit" x="-15%" y="-15%" width="130%" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="h"/>
+            <feSpecularLighting in="h" surfaceScale="5" specularConstant="1.1" specularExponent="28" lighting-color="#ffffff" result="s"><fePointLight x="20" y="-40" z="220"/></feSpecularLighting>
+            <feComposite in="s" in2="SourceAlpha" operator="in" result="si"/>
+            <feComposite in="SourceGraphic" in2="si" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+          </filter>
+          <filter id="lkLitSoft" x="-15%" y="-15%" width="130%" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h"/>
+            <feSpecularLighting in="h" surfaceScale="4" specularConstant="0.6" specularExponent="14" lighting-color="#ffffff" result="s"><fePointLight x="20" y="-40" z="220"/></feSpecularLighting>
+            <feComposite in="s" in2="SourceAlpha" operator="in" result="si"/>
+            <feComposite in="SourceGraphic" in2="si" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+          </filter>
+          <radialGradient id="lkChrome" cx=".35" cy=".28" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="#c5cad0"/><stop offset=".5" stop-color="#6e747c"/><stop offset=".62" stop-color="#e8ebee"/><stop offset=".8" stop-color="#555a61"/><stop offset="1" stop-color="#2a2d31"/></radialGradient>
+          <radialGradient id="lkSteel" cx=".4" cy=".32" r=".8"><stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#9aa0a7"/><stop offset="1" stop-color="#4b5056"/></radialGradient>
+          <radialGradient id="lkHole" cx=".5" cy=".5" r=".5"><stop offset=".7" stop-color="#000"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+        </defs>
+        <circle cx="80" cy="80" r="78" fill="#151618"/>
+        <circle cx="80" cy="80" r="77" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="2"/>
+        <circle cx="80" cy="84" r="58" fill="url(#lkHole)"/>
+        <circle cx="80" cy="80" r="56" fill="url(#lkChrome)" filter="url(#lkLit)"/>
+        <circle cx="80" cy="80" r="44" fill="#0c0d0f"/>
+        <circle cx="80" cy="80" r="40" fill="url(#lkSteel)" filter="url(#lkLitSoft)"/>
+        <circle cx="80" cy="80" r="40" fill="none" stroke="rgba(0,0,0,.5)" stroke-width="1.5"/>
+        <circle cx="80" cy="80" r="33" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1"/>
+        <path d="M76 46 h8 v12 l-4 4 4 4 v10 h-8 v-10 l4-4 -4-4 z" fill="#0b0c0d"/>
+        <path d="M44 52 A44 44 0 0 1 116 52" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/>
+      </svg></div>
+      <div class="fob" id="keyFob"><svg viewBox="0 0 60 150" aria-hidden="true">
+        <defs>
+          <filter id="fobLit" x="-15%" y="-15%" width="130%" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="h"/>
+            <feSpecularLighting in="h" surfaceScale="5" specularConstant="0.3" specularExponent="30" lighting-color="#ffe8cc" result="s"><fePointLight x="-20" y="-30" z="220"/></feSpecularLighting>
+            <feComposite in="s" in2="SourceAlpha" operator="in" result="si"/>
+            <feComposite in="SourceGraphic" in2="si" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+          </filter>
+          <linearGradient id="fobRing" x1="0" x2="1"><stop offset="0" stop-color="#555a61"/><stop offset=".5" stop-color="#f2f4f6"/><stop offset="1" stop-color="#4a4f55"/></linearGradient>
+          <linearGradient id="fobLeather" x1="0" x2="1"><stop offset="0" stop-color="#2a1a10"/><stop offset=".5" stop-color="#5a3a24"/><stop offset="1" stop-color="#24160d"/></linearGradient>
+        </defs>
+        <circle cx="30" cy="22" r="19" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="7" transform="translate(1.5 2)"/>
+        <circle cx="30" cy="22" r="19" fill="none" stroke="url(#fobRing)" stroke-width="5"/>
+        <path d="M14 44 H46 Q54 44 54 54 V132 Q54 148 30 148 Q6 148 6 132 V54 Q6 44 14 44 Z" fill="url(#fobLeather)" filter="url(#fobLit)"/>
+        <path d="M11 58 V130 Q11 142 30 142 Q49 142 49 130 V58" fill="none" stroke="rgba(255,220,170,.4)" stroke-width="1.4" stroke-dasharray="3 3"/>
+        <rect x="19" y="38" width="22" height="12" rx="3" fill="url(#fobRing)"/>
+        <circle cx="30" cy="96" r="9" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>
+      </svg></div>
+      <div class="knob key-shape" id="ignitionKnob">
+        <svg viewBox="0 0 120 240" aria-hidden="true">
+          <defs>
+            <filter id="keyLit" x="-15%" y="-15%" width="130%" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="h"/>
+            <feSpecularLighting in="h" surfaceScale="6" specularConstant=".55" specularExponent="45" lighting-color="#ffffff" result="s"><fePointLight x="-30" y="-60" z="220"/></feSpecularLighting>
+            <feComposite in="s" in2="SourceAlpha" operator="in" result="si"/>
+            <feComposite in="SourceGraphic" in2="si" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+          </filter>
+            <filter id="keyLitMetal" x="-15%" y="-15%" width="130%" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h"/>
+            <feSpecularLighting in="h" surfaceScale="4" specularConstant="1.4" specularExponent="40" lighting-color="#ffffff" result="s"><fePointLight x="-30" y="-60" z="220"/></feSpecularLighting>
+            <feComposite in="s" in2="SourceAlpha" operator="in" result="si"/>
+            <feComposite in="SourceGraphic" in2="si" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+          </filter>
+            <linearGradient id="keyBody" x1="0" x2="1"><stop offset="0" stop-color="#050506"/><stop offset=".5" stop-color="#1d2024"/><stop offset="1" stop-color="#050506"/></linearGradient>
+            <linearGradient id="keyShoulder" x1="0" x2="1"><stop offset="0" stop-color="#5c6168"/><stop offset=".4" stop-color="#e9ecef"/><stop offset=".55" stop-color="#ffffff"/><stop offset=".7" stop-color="#9ea4ab"/><stop offset="1" stop-color="#43474d"/></linearGradient>
+          </defs>
+          <path d="M45 116 H75 L71 170 H49 Z" fill="url(#keyShoulder)" filter="url(#keyLitMetal)"/>
+          <path d="M49 132 H71 M50 148 H70" stroke="rgba(0,0,0,.3)" stroke-width="1.5"/>
+          <path d="M60 4 C95 4 113 24 113 54 C113 85 92 110 75 121 H45 C28 110 7 85 7 54 C7 24 25 4 60 4 Z" fill="url(#keyBody)" filter="url(#keyLit)"/>
+          <circle cx="60" cy="30" r="12" fill="#000"/>
+          <circle cx="60" cy="30" r="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+          <g stroke="#000" stroke-width="5" stroke-linecap="round" opacity=".85"><path d="M26 60 H94"/><path d="M24 72 H96"/><path d="M28 84 H92"/><path d="M34 96 H86"/></g>
+          <g stroke="rgba(255,255,255,.13)" stroke-width="2" stroke-linecap="round"><path d="M26 57.5 H94"/><path d="M24 69.5 H96"/><path d="M28 81.5 H92"/><path d="M34 93.5 H86"/></g>
+        </svg>
+      </div>
+    </div>
+    <div class="key" id="engineBtn" title="Engine start / stop">
+      <div class="push"><div class="push-led"></div>
+        <div class="push-cap"><span class="push-top">ENGINE</span>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 12 A16 16 0 1 0 32 12" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M24 6 V24" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          <span class="push-bottom">START<br>STOP</span></div>
+      </div>
+    </div>
+    <div class="stack" style="grid-template-rows:1fr auto 1fr">
+      <div class="key small" data-action="wipers_up"><i data-icon="wiper"></i><span class="sign">+</span></div>
+      <div class="wiper-led" id="wiperLed"></div>
+      <div class="key small" data-action="wipers_down"><i data-icon="wiper"></i><span class="sign">−</span></div>
+    </div>
+  </div>
+
+  <!-- diff lock, lift axles -->
+  <div class="panel" style="left:836px;top:924px;width:326px;height:250px;grid-template-columns:1fr 1fr">
+    <div class="key" data-action="diff_lock" data-led="diffLock" data-icon="axle" title="Differential lock"></div>
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key small" data-action="trailer_axle_up" data-led="trailerLiftAxle" data-icon="trailerLiftAxle" title="Trailer axle up (raise)"></div>
+      <div class="key small" data-action="trailer_axle_down" id="trailerAxleDown" data-icon="trailerAxleDown" title="Trailer axle down (lower)"></div>
+    </div>
+  </div>
+
+  <!-- cruise, retarder, engine brake -->
+  <div class="panel" style="left:1186px;top:924px;width:776px;height:250px;grid-template-columns:repeat(5,1fr)">
+    <div class="stack" style="grid-template-rows:1fr auto 1fr">
+      <div class="key small" data-action="cruise_up" data-repeat><i data-icon="cruise"></i><span class="sign">+</span></div>
+      <div class="lcd-mini" id="cruiseLcd">–</div>
+      <div class="key small" data-action="cruise_down" data-repeat><i data-icon="cruise"></i><span class="sign">−</span></div>
+    </div>
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key small" data-action="cruise_toggle" data-led="cruise" data-icon="cruise" title="Cruise control on/off"></div>
+      <div class="key" data-action="cruise_resume" style="font-size:30px"><span style="margin-top:44%">Resume</span></div>
+    </div>
+    <div class="stack" style="grid-template-rows:1fr auto 1fr">
+      <div class="key small" data-action="retarder_up"><i data-icon="retarder"></i><span class="sign">+</span></div>
+      <div class="lcd-mini" id="retarderLcd">0</div>
+      <div class="key small" data-action="retarder_down"><i data-icon="retarder"></i><span class="sign">−</span></div>
+    </div>
+    <div class="key" data-action="engine_brake" data-led="engineBrake" style="font-size:32px"><i data-icon="brake"></i><span>Engine<br>Brake</span></div>
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key small" data-action="engine_brake_up"><i data-icon="brake"></i><span class="sign">+</span></div>
+      <div class="key small" data-action="engine_brake_down"><i data-icon="brake"></i><span class="sign">−</span></div>
+    </div>
+  </div>
+
+  <!-- lights, high beam, beacon, hazard -->
+  <div class="panel" style="left:40px;top:1186px;width:772px;height:250px;grid-template-columns:300px 150px 1fr">
+    <div class="key rotary" id="lightSwitch" title="Lights: OFF / PARKING / LOW BEAM">
+      <div class="bezel" style="top:58%"></div><div class="knob round" id="lightKnob" style="top:58%"><svg viewBox="0 0 220 220" aria-hidden="true">
+        <defs>
+          <radialGradient id="knobFace" cx=".42" cy=".34" r=".72"><stop offset="0" stop-color="#5e636b"/><stop offset=".45" stop-color="#2a2d32"/><stop offset="1" stop-color="#0b0c0e"/></radialGradient>
+          <linearGradient id="knobBar" x1="0" x2="1"><stop offset="0" stop-color="#141518"/><stop offset=".45" stop-color="#5a5f67"/><stop offset=".55" stop-color="#3a3e44"/><stop offset="1" stop-color="#101113"/></linearGradient>
+          <linearGradient id="knobRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9ced4"/><stop offset=".5" stop-color="#5b6168"/><stop offset="1" stop-color="#1c1e21"/></linearGradient>
+        </defs>
+        <circle cx="110" cy="110" r="107" fill="#08090a"/>
+        <circle cx="110" cy="110" r="101" fill="none" stroke="url(#knobRim)" stroke-width="10"/>
+        <circle cx="110" cy="110" r="101" fill="none" stroke="#0b0c0e" stroke-width="10" stroke-dasharray="2.4 3"/>
+        <circle cx="110" cy="110" r="91" fill="url(#knobFace)"/>
+        <rect x="90" y="20" width="40" height="180" rx="18" fill="url(#knobBar)" stroke="#060708" stroke-width="3"/>
+        <rect x="99" y="30" width="7" height="160" rx="3.5" fill="rgba(255,255,255,.16)"/>
+        <path d="M110 24 L121 50 H99 Z" fill="#f4f6f8"/>
+      </svg></div>
+    </div>
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key" data-action="high_beam" data-led="highBeam" data-icon="highBeam" title="High beam"></div>
+      <div class="key" data-action="beacon" data-led="beacon" data-icon="beacon" title="Beacon"></div>
+    </div>
+    <div class="key" id="hazardBtn" data-action="hazard" data-led="hazard" data-icon="hazard" title="Hazard lights"></div>
+  </div>
+
+  <!-- suspension -->
+  <div class="panel" style="left:836px;top:1186px;width:476px;height:250px;grid-template-columns:repeat(3,1fr)">
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key" data-action="suspension_front_up" data-hold data-icon="suspFrontUp" title="Front suspension up"></div>
+      <div class="key" data-action="suspension_front_down" data-hold data-icon="suspFrontDown" title="Front suspension down"></div>
+    </div>
+    <div class="key" data-action="suspension_reset" style="font-size:33px"><i data-icon="spring"></i><span>Reset</span></div>
+    <div class="stack" style="grid-template-rows:1fr 1fr">
+      <div class="key" data-action="suspension_rear_up" data-hold data-icon="suspRearUp" title="Rear suspension up"></div>
+      <div class="key" data-action="suspension_rear_down" data-hold data-icon="suspRearDown" title="Rear suspension down"></div>
+    </div>
+  </div>
+
+  <!-- parking brake, trailer supply -->
+  <div class="panel" style="left:1336px;top:1186px;width:626px;height:250px;grid-template-columns:1fr 1fr">
+    <div class="key valve" id="parkBtn" data-action="parking_brake" data-led="parkBrake" title="Parking brake">
+      <div class="valve-collar"></div><div class="valve-stem"></div>
+        <svg class="valve-knob" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>
+            <radialGradient id="parkFace" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#fff7b0"/><stop offset=".4" stop-color="#f5cf12"/><stop offset="1" stop-color="#a27f05"/></radialGradient>
+            <linearGradient id="parkEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde76a"/><stop offset="1" stop-color="#5c4602"/></linearGradient>
+          </defs>
+          <path d="M100 6 Q106 6 110 10 L190 90 Q194 94 194 100 Q194 106 190 110 L110 190 Q106 194 100 194 Q94 194 90 190 L10 110 Q6 106 6 100 Q6 94 10 90 L90 10 Q94 6 100 6 Z" fill="url(#parkEdge)"/>
+          <path d="M100 20 L180 100 L100 180 L20 100 Z" fill="url(#parkFace)" stroke="rgba(0,0,0,.25)" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M100 26 L60 66" stroke="rgba(255,255,255,.55)" stroke-width="4" stroke-linecap="round"/>
+          <text x="100" y="97.5" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="21" fill="rgba(255,255,255,.45)">PARKING</text><text x="100" y="96" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="21" fill="#1d1a0a">PARKING</text>
+          <text x="100" y="121.5" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="21" fill="rgba(255,255,255,.45)">BRAKE</text><text x="100" y="120" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="21" fill="#1d1a0a">BRAKE</text>
+        </svg>
+      <div class="valve-plate">PULL TO APPLY · PUSH TO RELEASE</div>
+    </div>
+    <div class="key valve" id="trailerBtn" data-action="trailer_detach" title="Trailer air supply - pull to detach the trailer">
+      <div class="valve-collar"></div><div class="valve-stem"></div>
+        <svg class="valve-knob" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>
+            <radialGradient id="trlFace" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ff8a80"/><stop offset=".42" stop-color="#d81f26"/><stop offset="1" stop-color="#6e0b0e"/></radialGradient>
+            <linearGradient id="trlEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a6a"/><stop offset="1" stop-color="#4a0608"/></linearGradient>
+          </defs>
+          <path d="M66 8 H134 L192 66 V134 L134 192 H66 L8 134 V66 Z" fill="url(#trlEdge)" stroke="#3a0406" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M71 22 H129 L178 71 V129 L129 178 H71 L22 129 V71 Z" fill="url(#trlFace)" stroke="rgba(0,0,0,.25)" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M72 30 H120" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/>
+          <text x="100" y="91.5" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="22" fill="rgba(0,0,0,.5)">TRAILER</text><text x="100" y="90" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="22" fill="#ffffff">TRAILER</text>
+          <text x="100" y="115.5" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="17" fill="rgba(0,0,0,.5)">AIR SUPPLY</text><text x="100" y="114" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="17" fill="#ffffff">AIR SUPPLY</text>
+        </svg>
+      <div class="valve-plate">PULL TO DETACH TRAILER</div>
+    </div>
+  </div>
+
+  <div id="status">
+    <span id="link" title="Connection to PC"></span>
+    <span id="msg"></span>
+    <button id="resetStates" data-reset title="Use if the lamps don't match the truck">Reset states</button>
+    <button id="changeCode">Connect code</button>
+    <button id="changePc" class="native-only">PC address</button>
+  </div>
+</div>
+
+<div id="login">
+  <form id="loginForm">
+    <h2 style="margin:0">Connect to your PC</h2>
+    <p>Type the connect code shown on the iPad page of ATS GPS on your PC.</p>
+    <input id="code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20">
+    <div id="loginMsg"></div>
+    <button type="submit">Connect</button>
+  </form>
+</div>
+
+<script>
+  const $ = (sel) => document.querySelector(sel);
+
+  // ---- Icons (white line art, drawn in a 64 x 64 box) ----
+  const S = 'fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"';
+  const door = (arrow, mirror) => `<g ${mirror ? 'transform="matrix(-1 0 0 1 64 0)"' : ""}>
+      <path d="M8 46 L20 26 H52 V56 H8 Z" ${S}/><path d="M18 43 L25 32 H45 V43 Z" fill="currentColor"/></g>
+      <path d="${arrow === "up" ? "M32 21 V5 M25 12 L32 5 L39 12" : "M32 5 V21 M25 14 L32 21 L39 14"}" ${S}/>`;
+  const truck = (arrowX, up) => `<path d="M4 46 V30 H30 V16 H44 L54 30 H60 V46 Z" fill="currentColor"/>
+      <circle cx="16" cy="48" r="6" fill="currentColor" stroke="#2e3238" stroke-width="3"/><circle cx="48" cy="48" r="6" fill="currentColor" stroke="#2e3238" stroke-width="3"/>
+      <path d="${up ? `M${arrowX - 6} 10 L${arrowX} 3 L${arrowX + 6} 10 Z` : `M${arrowX - 6} 3 L${arrowX} 10 L${arrowX + 6} 3 Z`}" fill="currentColor"/>`;
+  const parens = (inner) => `<path d="M12 12 A28 28 0 0 0 12 52 M52 12 A28 28 0 0 1 52 52" ${S}/><circle cx="32" cy="32" r="17" ${S}/>${inner}`;
+  const ICONS = {
+    doorUp: door("up"), doorDown: door("down"), doorUpR: door("up", true), doorDownR: door("down", true),
+    check: `<circle cx="32" cy="32" r="24" ${S}/><path d="M21 33 L29 41 L44 24" ${S}/>`,
+    cross: `<path d="M22 8 H42 L56 22 V42 L42 56 H22 L8 42 V22 Z" ${S}/><path d="M24 24 L40 40 M40 24 L24 40" ${S}/>`,
+    bed: `<path d="M6 14 V54 M6 42 H58 V54 M58 42 V34 Q58 28 52 28 H26 V42" ${S}/><circle cx="16" cy="33" r="5" fill="currentColor"/><path d="M38 6 H48 L38 18 H48" ${S} stroke-width="3"/>`,
+    wrench: `<path d="M44 6 A13 13 0 0 0 34 26 L8 52 L12 56 L38 30 A13 13 0 0 0 58 20 L49 26 L41 23 L38 15 Z" ${S}/>`,
+    garage: `<path d="M8 26 L32 10 L56 26 V54 H8 Z" ${S}/><path d="M16 32 H48 M16 39 H48 M16 46 H48 M16 53 H48" ${S} stroke-width="3"/>`,
+    fuel: `<rect x="12" y="10" width="24" height="44" rx="3" ${S}/><rect x="17" y="16" width="14" height="10" fill="currentColor"/><path d="M36 24 H41 Q45 24 45 28 V44 Q45 48 49 48 Q53 48 53 44 V22 L47 16" ${S}/>`,
+    trailer: `<rect x="2" y="16" width="44" height="22" fill="currentColor"/><path d="M46 32 H60" ${S}/><circle cx="32" cy="44" r="5" fill="currentColor"/><circle cx="42" cy="44" r="5" fill="currentColor"/>`,
+    pause: `<rect x="18" y="14" width="9" height="36" fill="currentColor"/><rect x="37" y="14" width="9" height="36" fill="currentColor"/>`,
+    rewind: `<rect x="10" y="16" width="6" height="32" fill="currentColor"/><path d="M36 16 V48 L16 32 Z M56 16 V48 L36 32 Z" fill="currentColor"/>`,
+    playPause: `<path d="M8 14 V50 L34 32 Z" fill="currentColor"/><rect x="40" y="14" width="7" height="36" fill="currentColor"/><rect x="52" y="14" width="7" height="36" fill="currentColor"/>`,
+    volDown: `<path d="M8 24 H18 L32 12 V52 L18 40 H8 Z" fill="currentColor"/><path d="M40 32 H58" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>`,
+    volUp: `<path d="M8 24 H18 L32 12 V52 L18 40 H8 Z" fill="currentColor"/><path d="M40 32 H58 M49 23 V41" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>`,
+    skip: `<path d="M8 16 V48 L28 32 Z M28 16 V48 L48 32 Z" fill="currentColor"/><rect x="48" y="16" width="6" height="32" fill="currentColor"/>`,
+    info: `<path d="M32 6 L58 32 L32 58 L6 32 Z" ${S}/><circle cx="32" cy="21" r="3" fill="currentColor"/><path d="M32 29 V45" ${S}/>`,
+    seat: `<path d="M24 6 Q18 22 22 40 H42" ${S} stroke-width="5"/><path d="M22 40 Q24 52 34 54 H48" ${S} stroke-width="5"/><circle cx="26" cy="8" r="3" fill="currentColor"/>`,
+    mirrors: `<rect x="8" y="12" width="20" height="40" rx="2" ${S}/><rect x="36" y="12" width="20" height="40" rx="2" ${S}/><path d="M14 36 L22 26 M42 36 L50 26" ${S}/>`,
+    dash: `<rect x="10" y="12" width="44" height="40" rx="3" ${S}/><rect x="16" y="18" width="16" height="16" fill="currentColor"/><path d="M38 20 H48 M38 28 H48 M16 42 H48" ${S}/>`,
+    nav: `<path d="M54 10 L10 28 L30 34 L36 54 Z" ${S}/>`,
+    voice: `<path d="M8 12 H56 V42 H30 L18 54 V42 H8 Z" ${S}/><path d="M28 21 L36 27 L28 33 Z" fill="currentColor"/>`,
+    plusMinus: `<path d="M8 18 H28 M18 8 V28 M50 10 L20 56 M36 46 H56" ${S}/>`,
+    camera: `<rect x="6" y="20" width="36" height="26" rx="3" fill="currentColor"/><path d="M42 29 L58 20 V46 L42 37 Z" fill="currentColor"/>`,
+    engine: `<path d="M12 28 H20 V22 H38 V28 H44 L50 34 V46 H44 L40 52 H20 L12 44 Z" ${S}/><path d="M26 22 V16 H34 V22 M4 36 H12 M50 38 H58" ${S}/>
+             <path class="slash" d="M8 10 L56 56" ${S} stroke-width="5"/>`,
+    wiper: `<path d="M10 28 A30 30 0 0 1 54 28" ${S}/><path d="M30 52 L42 16" ${S} stroke-width="5"/><circle cx="30" cy="52" r="5" fill="currentColor"/>`,
+    axle: `<path d="M16 16 V48 M48 16 V48 M16 32 H48" ${S}/><rect x="10" y="8" width="12" height="12" rx="2" fill="currentColor"/><rect x="42" y="8" width="12" height="12" rx="2" fill="currentColor"/>
+           <rect x="10" y="44" width="12" height="12" rx="2" fill="currentColor"/><rect x="42" y="44" width="12" height="12" rx="2" fill="currentColor"/><path d="M27 27 L37 37 M37 27 L27 37" ${S} stroke-width="3"/>`,
+    liftAxle: `<path d="M12 10 H52" ${S} stroke-width="5"/><circle cx="24" cy="24" r="7" fill="currentColor"/><circle cx="40" cy="24" r="7" fill="currentColor"/><path d="M32 58 V38 M24 46 L32 38 L40 46" ${S}/>`,
+    trailerAxleDown: `<rect x="8" y="6" width="48" height="10" fill="currentColor"/><circle cx="24" cy="26" r="7" fill="currentColor"/><circle cx="40" cy="26" r="7" fill="currentColor"/><path d="M32 38 V58 M24 50 L32 58 L40 50" ${S}/>`,
+    trailerLiftAxle: `<rect x="8" y="6" width="48" height="10" fill="currentColor"/><circle cx="24" cy="26" r="7" fill="currentColor"/><circle cx="40" cy="26" r="7" fill="currentColor"/><path d="M32 58 V38 M24 46 L32 38 L40 46" ${S}/>`,
+    cruise: `<path d="M14 50 A22 22 0 1 1 50 50" ${S} stroke-width="6"/><path d="M32 40 L42 26" ${S}/><circle cx="32" cy="40" r="4" fill="currentColor"/><path d="M6 4 L18 16 M18 8 V16 H10" ${S}/>`,
+    retarder: parens(`<path d="M20 32 C20 25 28 25 32 32 C36 39 44 39 44 32 C44 25 36 25 32 32 C28 39 20 39 20 32 Z" ${S} stroke-width="3"/>`),
+    brake: parens(`<path d="M32 22 V35" ${S}/><circle cx="32" cy="42" r="3" fill="currentColor"/>`),
+    highBeam: `<path d="M30 12 C50 12 54 52 30 52 Z" ${S}/><path d="M8 18 H22 M8 28 H22 M8 38 H22 M8 48 H22" ${S}/>`,
+    lowBeam: `<path d="M34 12 C54 12 58 52 34 52 Z" ${S}/><path d="M8 18 L24 24 M8 28 L24 34 M8 38 L24 44" ${S}/>`,
+    parking: `<path d="M24 18 A12 14 0 0 0 24 46 Z M40 18 A12 14 0 0 1 40 46 Z" ${S}/><path d="M4 24 H12 M4 40 H12 M52 24 H60 M52 40 H60" ${S}/>`,
+    beacon: `<path d="M20 48 V34 A12 12 0 0 1 44 34 V48 Z" ${S}/><path d="M14 54 H50 M32 6 V14 M14 14 L19 19 M50 14 L45 19 M6 32 H12 M52 32 H58" ${S}/>`,
+    hazard: `<path d="M32 6 L60 56 H4 Z" fill="#e0262b" stroke="#7a0f12" stroke-width="2" stroke-linejoin="round"/><path d="M32 22 L46 48 H18 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>`,
+    spring: `<path d="M14 54 L20 48 M20 48 L34 44 L26 38 L40 34 L32 28 L46 24 L38 18 L50 12 M50 12 L54 8" ${S} stroke-width="3"/>`,
+    suspFrontUp: truck(50, true), suspFrontDown: truck(50, false), suspRearUp: truck(14, true), suspRearDown: truck(14, false),
+    parkingKnob: `<rect x="12" y="12" width="40" height="40" rx="4" transform="rotate(45 32 32)" fill="#e6d21c" stroke="#8a7d10" stroke-width="2"/>
+      <text x="32" y="31" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="8" fill="#222">PARKING</text>
+      <text x="32" y="40" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="6" fill="#222">BRAKE</text>`,
+    trailerKnob: `<path d="M22 6 H42 L58 22 V42 L42 58 H22 L6 42 V22 Z" fill="#d81f26" stroke="#7a0f12" stroke-width="2"/>
+      <text x="32" y="28" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="7" fill="#fff">TRAILER</text>
+      <text x="32" y="36" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-weight="800" font-size="7" fill="#fff">SUPPLY</text>
+      <text x="32" y="45" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-size="5" fill="#fff">pull to detach</text>`,
+  };
+  const svg = (name) => `<svg viewBox="0 0 64 64" aria-hidden="true">${ICONS[name]}</svg>`;
+  document.querySelectorAll(".key:not(.rotary):not(.bigsign):not(.valve):not(#engineBtn):not(#hazardBtn)").forEach((el) => el.classList.add("rocker"));
+  document.querySelectorAll(".key .sign").forEach((sign) => sign.parentElement.classList.add("signed"));
+  document.querySelectorAll("[data-icon]").forEach((el) => {
+    const icon = svg(el.dataset.icon);
+    if (el.tagName === "I") el.outerHTML = icon;
+    else if (el.hasAttribute("data-icon-after")) el.insertAdjacentHTML("beforeend", icon);
+    else el.insertAdjacentHTML("afterbegin", icon);
+  });
+
+  // ---- Fit the 2000 x 1500 board to the screen ----
+  const board = $("#board");
+  let boardScale = 1;
+  function fit() {
+    boardScale = Math.min(window.innerWidth / 2000, window.innerHeight / 1500);
+    const x = (window.innerWidth - 2000 * boardScale) / 2, y = (window.innerHeight - 1500 * boardScale) / 2;
+    board.style.transform = "translate(" + x + "px," + y + "px) scale(" + boardScale + ")";
+  }
+
+  window.addEventListener("resize", fit);
+  fit();
+
+  // Inside the iPad app (not Safari) the page can ask for haptics and the PC address screen.
+  const native = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.truckRemote;
+  function tellApp(message) { if (native) native.postMessage(message); }
+  if (native) document.body.classList.add("is-native");
+
+  function load(key, fallback) { try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch (e) { return fallback; } }
+  function save(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+  // ---- Talking to the PC ----
+  // Opened with its code in the address (the PC's window shows this page beside its iPad page): kept.
+  const givenCode = new URLSearchParams(location.search).get("code");
+  if (givenCode) save("truckRemoteCode", givenCode);
+  let token = load("truckRemoteCode", "");
+  let state = {};
+  let pending = 0;            // presses sent but not answered; switches trust themselves until then
+  let queue = Promise.resolve();
+
+  async function call(path, body) {
+    const res = await fetch(path, {
+      method: body ? "POST" : "GET",
+      headers: { "Content-Type": "application/json", "X-Token": token },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) { showLogin("That code didn't work."); throw new Error("Wrong connect code"); }
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }
+
+  function setLinked(ok) { $("#link").classList.toggle("ok", ok); }
+  function showError(err) {
+    setLinked(false);
+    $("#msg").textContent = err.message === "Failed to fetch" || err.message === "Load failed"
+      ? "Can't reach the PC. Is ATS GPS running?" : err.message;
+  }
+
+  // Presses go out one at a time so they reach the game in the order you tapped them.
+  function send(action, extra) {
+    pending++;
+    queue = queue.then(async () => {
+      let next = null;
+      try {
+        next = (await call("/api/action", Object.assign({ action }, extra))).state;
+        setLinked(true);
+        $("#msg").textContent = "";
+      } catch (err) {
+        showError(err);
+      } finally {
+        pending--;
+      }
+      if (next) render(next);
+    }).catch(() => {});   // one bad reply must not stop the presses after it
+  }
+
+  // Speeds in the game's units: ATS imperial, ETS2 metric.
+  function imperial() { return state.game === "ats"; }
+  // Telemetry speeds are m/s.
+  function fmtSpeed(ms) { return Math.round(ms * (imperial() ? 2.23694 : 3.6)); }
+
+  function render(s) {
+    state = s;
+    document.body.classList.toggle("live", !!s.live);
+    document.querySelectorAll("[data-led]").forEach((el) => el.classList.toggle("lit", !!s[el.dataset.led]));
+    $("#trailerAxleDown").classList.toggle("lit", !!(s.trailerAttached && !s.trailerLiftAxle));   // lowered, with a trailer
+    $("#refuelBtn").classList.toggle("lit", s.refuel);
+    $("#engineBtn").classList.toggle("running", s.engine);
+    $("#wiperLed").classList.toggle("on", !!s.wipers);
+    $("#cruiseLcd").textContent = s.cruise ? (s.cruiseSpeed !== undefined ? fmtSpeed(s.cruiseSpeed) : "ON") : "–";
+    $("#retarderLcd").textContent = s.retarder !== undefined ? s.retarder : "0";
+    // Dash backlight: on with the parking or low-beam lights while the truck has power.
+    document.body.classList.toggle("backlit", s.lights > 0 && !!s.power);
+    if (pending === 0) {
+      ignition.set(s.power ? 1 : 0);
+      lightSwitch.set(s.lights);
+    }
+  }
+
+  // Plain buttons fire on touch-down so they feel like a real button box.
+  // Keys marked data-repeat (cruise + / -) keep pressing while held: once straight away, then after a short pause
+  // about 7 times a second until you let go. A press is skipped if the PC is still busy, so they can't pile up.
+  function pressable(el, onPress) {
+    let holdTimer = null, repeatTimer = null;
+    const stopRepeat = () => { clearTimeout(holdTimer); clearInterval(repeatTimer); holdTimer = repeatTimer = null; };
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      el.classList.add("pressed");
+      tellApp("tap");
+      onPress();
+      if (el.hasAttribute("data-repeat")) {
+        stopRepeat();
+        holdTimer = setTimeout(() => { repeatTimer = setInterval(() => { if (pending < 2) onPress(); }, 140); }, 450);
+      }
+    });
+    const lift = () => { el.classList.remove("pressed"); stopRepeat(); };
+    el.addEventListener("pointerup", lift);
+    el.addEventListener("pointercancel", lift);
+    el.addEventListener("pointerleave", lift);
+  }
+  document.querySelectorAll("[data-action]:not([data-hold])").forEach((el) => pressable(el, () => send(el.dataset.action)));
+  // Nav Voice: ATS GPS switches its spoken directions; the lamp (lit while they're off) follows ATS GPS's answer.
+  pressable($("#navVoiceBtn"), () => {
+    $("#navVoiceBtn").classList.toggle("lit");
+    fetch("/api/westplay/voice", { method: "POST", headers: { "X-Token": token } }).catch(() => {});
+  });
+
+  // Keys marked data-hold (suspension up/down) hold their game key down for as long as your finger is on them.
+  // The PC lets go by itself if it stops hearing from the iPad, so a key can't get stuck.
+  document.querySelectorAll("[data-hold]").forEach((el) => {
+    const action = el.dataset.action;
+    let renew = null;
+    const stop = () => {
+      if (!renew) return;
+      clearInterval(renew); renew = null;
+      el.classList.remove("pressed");
+      send("release:" + action);
+    };
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (renew) return;
+      el.classList.add("pressed");
+      tellApp("tap");
+      send("hold:" + action);
+      renew = setInterval(() => send("hold:" + action), 500);
+    });
+    for (const type of ["pointerup", "pointercancel", "pointerleave"]) el.addEventListener(type, stop);
+    document.addEventListener("visibilitychange", stop);
+  });
+  pressable($("#engineBtn"), () => send(state.engine ? "engine_stop" : "engine_start"));
+
+  // Camera keys: the one you last picked stays pressed in and lit. The game doesn't report the camera, so this is
+  // the last camera chosen on the iPad (remembered on this iPad).
+  const cameraKeys = [...document.querySelectorAll('[data-action^="camera_"]')];
+  function showCamera(action) {
+    cameraKeys.forEach((k) => k.classList.toggle("lit", k.dataset.action === action));
+    save("truckRemoteCamera", action);
+  }
+  cameraKeys.forEach((k) => k.addEventListener("pointerdown", () => showCamera(k.dataset.action)));
+  showCamera(load("truckRemoteCamera", ""));
+  $("#resetStates").addEventListener("click", () => send("reset_state"));
+
+  // ---- Rotary switches: tap the knob to turn it to the next position, or tap a label to go straight there ----
+  function rotary(el, knob, positions, onTap, onChange) {
+    let current = 0;
+    const labels = positions.map((p, i) => {
+      const label = document.createElement("span");
+      label.className = "rot-label";
+      label.innerHTML = p.icon ? svg(p.icon) : p.label;
+      el.appendChild(label);
+      return label;
+    });
+    // Each label sits just outside the dial's chrome ring, at the angle the knob points to in that position.
+    const bezel = el.querySelector(".bezel");
+    const cx = el.clientWidth / 2, cy = el.clientHeight * parseFloat(bezel.style.top || "52") / 100;
+    let r = bezel.offsetWidth / 2 * 0.78 + 20;   // the bezel is drawn at 78% (see .rotary .bezel)
+    if (knob.classList.contains("key-shape")) r = Math.max(r, 128 * 0.86 + 14);   // the key head sticks out further
+    positions.forEach((p, i) => {
+      const a = p.angle * Math.PI / 180;
+      labels[i].style.left = Math.round(cx + Math.sin(a) * (r + (p.angle ? 14 : 0))) + "px";
+      labels[i].style.top = Math.round(cy - Math.cos(a) * r) + "px";
+    });
+    function draw() {
+      knob.style.transform = "rotate(" + positions[current].angle + "deg)";
+      el.dispatchEvent(new CustomEvent("turned", { detail: positions[current].angle }));
+      labels.forEach((l, i) => l.classList.toggle("on", i === current));
+    }
+    const control = {
+      get current() { return current; },
+      // Turn to position i and run the switch's action for that move.
+      turnTo(i) {
+        const before = current;
+        if (i === before) return;
+        current = i;
+        draw();
+        tellApp("tap");
+        onChange(i, before);
+      },
+      set(i) { current = i; draw(); },
+    };
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const label = labels.indexOf(e.target.closest(".rot-label"));
+      if (label >= 0) control.turnTo(label); else onTap(control);
+    });
+    draw();
+    return control;
+  }
+
+  // Ignition key: OFF / ON (electricity) / START. Each tap turns it like a real key:
+  // OFF -> ON, then ON -> START (cranks the engine and springs back to ON), and once the engine runs, back to OFF.
+  let keyBusy = false;
+  // The key fob hangs from the key's ring hole: move it with the key, swing it, and let it settle.
+  $("#ignition").addEventListener("turned", (e) => {
+    const knob = $("#ignitionKnob"), fob = $("#keyFob");
+    const scale = 0.86, a = e.detail * Math.PI / 180;
+    // Ring hole: (45, 22.5) in the 90 x 180 key, which turns about (45, 128) and is drawn at 86%.
+    const px = knob.offsetLeft + 45, py = knob.offsetTop + 128, d = (128 - 22.5) * scale;
+    fob.style.left = px + Math.sin(a) * d - fob.offsetWidth / 2 + "px";
+    fob.style.top = py - Math.cos(a) * d - 15 + "px";
+    fob.animate([{ transform: "rotate(" + (-e.detail * 0.6) + "deg)" }, { transform: "rotate(" + (e.detail * 0.25) + "deg)" },
+      { transform: "rotate(" + (-e.detail * 0.1) + "deg)" }, { transform: "rotate(0deg)" }], { duration: 900, easing: "ease-out" });
+  });
+  const ignition = rotary($("#ignition"), $("#ignitionKnob"), [
+    { label: "OFF", angle: -45, at: [52, 96] },
+    { label: "ON", angle: 0, at: [150, 10] },
+    { label: "START", angle: 45, at: [250, 96] },
+  ], (key) => {
+    if (keyBusy) return;
+    if (key.current === 0) key.turnTo(1);
+    else if (state.engine) key.turnTo(0);
+    else key.turnTo(2);
+  }, (i, before) => {
+    if (i === 0) { if (state.engine) send("engine_stop"); send("power_off"); }
+    if (i >= 1 && before === 0) send("power_on");
+    if (i === 2) {
+      send("engine_start");
+      keyBusy = true;
+      setTimeout(() => { ignition.set(1); keyBusy = false; }, 450);
+    }
+  });
+
+  // Light switch: OFF / PARKING / LOW BEAM. Each tap clicks it round one position (LOW goes back to OFF),
+  // just like the game's light key.
+  const lightSwitch = rotary($("#lightSwitch"), $("#lightKnob"), [
+    { label: "OFF", angle: -60, at: [52, 62] },
+    { icon: "parking", angle: 0, at: [150, 36] },
+    { icon: "lowBeam", angle: 60, at: [250, 62] },
+  ], (sw) => {
+    const next = (sw.current + 1) % 3;
+    sw.set(next);
+    tellApp("tap");
+    send("lights_next");
+  }, (i, before) => {
+    for (let step = before; step !== i; step += Math.sign(i - before)) send("lights", { delta: Math.sign(i - before) });
+  });
+
+  // ---- Keep the lamps up to date (the game can change things too: keyboard, wheel) ----
+  // In the iPad app: keep the screen on while the game is running; when it isn't (or the PC can't be reached),
+  // let the iPad's Auto-Lock dim and lock it as usual, to save battery.
+  let awakeShown = null;
+  function keepAwake(on) {
+    if (on === awakeShown) return;
+    awakeShown = on;
+    tellApp(on ? "awake" : "sleep-ok");
+  }
+  // ---- Connect code ----
+  function showLogin(message) {
+    $("#loginMsg").textContent = message || "";
+    $("#code").value = token;
+    $("#login").classList.add("show");
+  }
+  // ---- ATS GPS's screen (from ATS GPS, on the PC) ----
+  // The picture is the screen's 1280 x 720 frame; ATS GPS lays the page out taller on some screens and squeezes it
+  // into the frame, so it's shown stretched back to the page's shape (/info), the same shape taps are measured in.
+  const wp = { img: $("#wpScreen"), msg: $("#wpMsg"), page: null, up: false, lines: [], sending: false, fingers: new Map() };
+  function wpLayout() {
+    const box = $("#westplay"), inner = { w: box.clientWidth - 20, h: box.clientHeight - 20 };
+    const aspect = wp.page ? wp.page.width / wp.page.height : 16 / 9;
+    const w = Math.min(inner.w, inner.h * aspect), h = w / aspect;
+    Object.assign(wp.img.style, { width: w + "px", height: h + "px", left: 10 + (inner.w - w) / 2 + "px", top: 10 + (inner.h - h) / 2 + "px" });
+  }
+  function wpShow(message) {
+    wp.msg.textContent = message || "";
+    wp.img.style.visibility = message ? "hidden" : "visible";
+  }
+  // (Re)opens the stream; it ends when ATS GPS or the connection goes, and the check below opens it again.
+  function wpConnect() {
+    wp.img.src = document.hidden || !loggedIn() ? "" : "/api/westplay/screen?token=" + encodeURIComponent(token) + "&t=" + Date.now();
+  }
+  async function wpCheck() {
+    if (!loggedIn() || document.hidden || wp.checking) return;   // one at a time, or two would each open a stream
+    wp.checking = true;
+    try {
+      const res = await fetch("/api/westplay/info", { headers: { "X-Token": token } });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
+      const page = await res.json();
+      if (!wp.page || page.width !== wp.page.width || page.height !== wp.page.height) { wp.page = page; wpLayout(); }
+      $("#navVoiceBtn").classList.toggle("lit", page.voiceMuted === true);
+      if (!wp.up) {
+        wp.up = true;
+        wpShow("");
+        wpConnect();
+        // ATS GPS lays its screen out in this panel's shape while the iPad watches: no black bars.
+        const box = $("#westplay");
+        fetch("/api/westplay/page", { method: "POST", headers: { "X-Token": token, "Content-Type": "text/plain" },
+          body: "aspect " + ((box.clientWidth - 20) / (box.clientHeight - 20)).toFixed(4) }).catch(() => {});
+      }
+    } catch (err) {
+      wpShow(err.message === "Failed to fetch" || err.message === "Load failed" ? "Can't reach the PC" : err.message);
+      wp.up = false;
+    } finally {
+      wp.checking = false;
+    }
+  }
+  wp.img.addEventListener("error", () => { wp.up = false; });   // the stream broke: the next check reopens it
+  document.addEventListener("visibilitychange", () => { wp.up = false; wpConnect(); wpCheck(); });
+  wpLayout();
+
+  // Taps: one request at a time, the lines that came meanwhile go in the next; a move waiting is replaced by a newer one.
+  function wpSend(line) {
+    const last = wp.lines[wp.lines.length - 1];
+    if (line.startsWith("move ") && last && last.startsWith("move ")) wp.lines[wp.lines.length - 1] = line;
+    else wp.lines.push(line);
+    wpFlush();
+  }
+  async function wpFlush() {
+    if (wp.sending || !wp.lines.length) return;
+    wp.sending = true;
+    const body = wp.lines.join("\n") + "\n";
+    wp.lines = [];
+    try { await fetch("/api/westplay/touch", { method: "POST", headers: { "X-Token": token, "Content-Type": "text/plain" }, body }); }
+    catch (e) {}
+    wp.sending = false;
+    wpFlush();
+  }
+  function wpPoint(e) {
+    const r = wp.img.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    return x.toFixed(4) + " " + y.toFixed(4);
+  }
+  // One finger is the cursor (tap, drag); two fingers pinch, sent as mouse-wheel notches at their middle (maps zoom).
+  let pinch = null;
+  wp.img.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    wp.img.setPointerCapture(e.pointerId);
+    wp.fingers.set(e.pointerId, e);
+    if (wp.fingers.size === 1) wpSend("down " + wpPoint(e));
+    else if (wp.fingers.size === 2) {
+      const [a, b] = [...wp.fingers.values()];
+      wpSend("up " + wpPoint(a));   // the first finger's press ends: a pinch is no drag
+      pinch = { dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) };
+    }
+  });
+  wp.img.addEventListener("pointermove", (e) => {
+    if (!wp.fingers.has(e.pointerId)) return;
+    wp.fingers.set(e.pointerId, e);
+    if (wp.fingers.size === 1 && !pinch) wpSend("move " + wpPoint(e));
+    else if (pinch && wp.fingers.size === 2) {
+      const [a, b] = [...wp.fingers.values()];
+      const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const step = Math.log(dist / pinch.dist) / Math.log(1.25);   // a notch for each 25% of spread
+      if (Math.abs(step) >= 1) {
+        const mid = { clientX: (a.clientX + b.clientX) / 2, clientY: (a.clientY + b.clientY) / 2 };
+        wpSend("wheel " + wpPoint(mid) + " " + Math.trunc(step) * 120);
+        pinch.dist *= Math.pow(1.25, Math.trunc(step));
+      }
+    }
+  });
+  function wpLift(e) {
+    if (!wp.fingers.has(e.pointerId)) return;
+    wp.fingers.delete(e.pointerId);
+    if (!pinch) wpSend("up " + wpPoint(e));
+    else if (wp.fingers.size === 0) pinch = null;
+  }
+  wp.img.addEventListener("pointerup", wpLift);
+  wp.img.addEventListener("pointercancel", wpLift);
+
+  $("#loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    token = $("#code").value.trim();
+    save("truckRemoteCode", token);
+    $("#login").classList.remove("show");
+    loadState();
+    wpCheck();
+  });
+  $("#changeCode").addEventListener("click", () => showLogin());
+  $("#changePc").addEventListener("click", () => tellApp("settings"));
+
+  let stateBusy = false;
+  async function loadState() {
+    if (stateBusy) return;   // a slow reply mustn't let polls pile up
+    stateBusy = true;
+    try {
+      const s = (await call("/api/state")).state;
+      if (pending === 0) render(s);
+      setLinked(true);
+      keepAwake(!!s.live);
+      $("#msg").textContent = "";
+    } catch (err) {
+      setLinked(false);
+      keepAwake(false);
+    } finally {
+      stateBusy = false;
+    }
+  }
+
+  if (token) loadState(); else showLogin();
+  const loggedIn = () => token && !$("#login").classList.contains("show");
+  let stateTick = 0;
+  setInterval(() => {
+    if (!loggedIn()) return;
+    if (stateTick++ % (state.live ? 1 : 8) === 0) loadState();
+    if (stateTick % 8 === 0) wpCheck();   // every 2 s: ATS GPS up, the screen's shape
+  }, 250);
+  wpCheck();
+</script>
+</body>
+</html>

@@ -1,10 +1,10 @@
-//! WestPlay's screen mod, mounted by the plugin itself (PLAN.md: the plugin mounts `westplay.scs` in every
+//! WestPlay's screen mod, mounted by the plugin itself (PLAN.md: the plugin mounts `atsgps.scs` in every
 //! mode, never shown in the Mod Manager), through the game's own mount: the function that mounts one device
 //! from a request, as the game mounts its user folder with it. The archive goes into the mod pool, first. The
 //! game's functions are found in its code by what they are (`locate`), not where one version had them, so other
 //! builds work too (1.60.1.7, the VR branch's 1.61.1.1009s); a game whose code doesn't match is left alone.
 //!
-//! Mounted once a game process (an `sdk reload` doesn't mount it again), from `Documents\WestPlay\westplay.scs`
+//! Mounted once a game process (an `sdk reload` doesn't mount it again), from `Documents\WestPlay\atsgps.scs`
 //! (written there by WestPlay's setup, from the player's own game), when the plugin loads, before the game
 //! mounts the profile's mods; it stays through them and through a profile switch (tested 2026-10-20). Not while
 //! WestPlay 1.2's copy is still in the game's `mod` folder (the app takes it out when it installs): with both,
@@ -119,7 +119,7 @@ fn game_folder(game_id: &str) -> Option<&'static str> {
 /// On the game's main thread, from the plugin's init.
 pub unsafe fn mount(game_id: &str) {
     // Each game's mod is built from its own files (crates/setup `game_mod::file_name`).
-    let file = if game_id == "ats" { "westplay_ats.scs" } else { "westplay.scs" };
+    let file = if game_id == "ats" { "atsgps_ats.scs" } else { "atsgps.scs" };
     let path = crate::log::log_dir().parent().map(|dir| dir.join(file));
     let Some(path) = path.clone().filter(|path| path.is_file()) else {
         // The folder looked in whole, and what's in it: a player's "it's there" is then checked by this log.
@@ -137,9 +137,9 @@ pub unsafe fn mount(game_id: &str) {
         return;
     };
     let old =
-        game_folder(game_id).map(|folder| crate::log::documents_dir().join(folder).join("mod").join("westplay.scs"));
+        game_folder(game_id).map(|folder| crate::log::documents_dir().join(folder).join("mod").join("atsgps.scs"));
     if let Some(old) = old.filter(|old| old.is_file()) {
-        log!("mod mount: WestPlay 1.2's mod is still in {} (two would stop the game): nothing mounted", old.display());
+        log!("mod mount: ATS GPS 1.2's mod is still in {} (two would stop the game): nothing mounted", old.display());
         return;
     }
     // SAFETY: the game's own module, mapped for the process's life; its code read where the mount was found.

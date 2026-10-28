@@ -77,7 +77,7 @@ function runPage() {
 
 const cluster = (device: Loose) => ({
   active_device_id: 'abc',
-  devices: device ? { abc: { name: 'Web Player (WestPlay)', ...device } } : {},
+  devices: device ? { abc: { name: 'Web Player (ATS GPS)', ...device } } : {},
   player_state: { track: { uri: 'spotify:track:1' }, is_playing: true, is_paused: false, duration: 200000 },
 })
 

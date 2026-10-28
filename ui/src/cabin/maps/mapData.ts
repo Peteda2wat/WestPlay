@@ -7,7 +7,7 @@ import { isInHost } from '../../shared/host'
  * profile they play: crates/host maps.rs): vector tiles, and a small manifest with their zooms and bounds,
  * where the map starts, and the place names.
  *
- * In WestPlay the host names the map's folder (`map` messages), served at `https://westplay.maps/`; it names
+ * In ATS GPS the host names the map's folder (`map` messages), served at `https://westplay.maps/`; it names
  * another when the player plays another profile (another map, other map mods), and none until a map is built.
  * A plain browser (development) has the map exported into public/dev-map/ (git-ignored, never shipped).
  */
@@ -41,7 +41,7 @@ export interface MapData {
   /** Where the player can be routed (places.ts): the file's address, `null` without one. */
   places: string | null
   /** Which country each part of the map is in, and their time zones (state/timeZone.ts): the file's address,
-   * `null` without one (a map built before WestPlay read them). */
+   * `null` without one (a map built before ATS GPS read them). */
   countries: string | null
 }
 
@@ -53,7 +53,7 @@ const useMapFolder = create<{ base: string | null | undefined; built: number | n
   built: null,
 }))
 
-/** In WestPlay, not known until the host says; in a browser, the development map; elsewhere (tests), none. */
+/** In ATS GPS, not known until the host says; in a browser, the development map; elsewhere (tests), none. */
 function firstBase(): string | null | undefined {
   if (typeof window === 'undefined') return null
   return isInHost() ? undefined : `${location.origin}${DEV_MAP}`

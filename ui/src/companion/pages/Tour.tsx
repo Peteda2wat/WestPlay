@@ -3,7 +3,7 @@ import { Button, Note, Panel } from '../room/parts'
 import { n, useWords } from '../room/room'
 import { GLOW, ON_SCREEN, useScreenAt, useTour } from '../room/screen'
 import { finishSetup } from '../setup'
-import type { CompanionWords, SectionId } from './words'
+import type { CompanionWords, TourSectionId } from './words'
 
 /**
  * The tutorial's second part, in the room: each section of the companion in turn, open, with a card under
@@ -16,7 +16,7 @@ export function TourCard({
   next,
 }: {
   cw: CompanionWords
-  section: SectionId
+  section: TourSectionId
   last: boolean
   next(): void
 }) {

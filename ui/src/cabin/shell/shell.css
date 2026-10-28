@@ -1,6 +1,6 @@
-/* WestPlay shell, 1280x720 canvas (DAF 2021 GPS screen). Glass = blur + soft light rim. */
+/* ATS GPS shell, 1280x720 canvas (DAF 2021 GPS screen). Glass = blur + soft light rim. */
 
-/* Motion: Apple's own curve, the one every WestPlay transition and animation moves on. iOS animates with a
+/* Motion: Apple's own curve, the one every ATS GPS transition and animation moves on. iOS animates with a
    critically damped spring: fast, then settling with no bounce. This is that curve (x = 1 - (1 + wt)e^-wt,
    settled at the end), sampled for CSS. */
 :root {
@@ -166,7 +166,7 @@ body,
     visibility 0s;
 }
 
-/* Handed to the truck: CarPlay shrinks into WestPlay's button (its transform origin, Shell.tsx), staying
+/* Handed to the truck: CarPlay shrinks into ATS GPS's button (its transform origin, Shell.tsx), staying
    visible most of the way and fading only as it reaches the button, so it flows into it; the truck's own
    screen shows. Hidden once small, so the screen underneath is the truck's alone. */
 .carplay.handed-over {
@@ -182,7 +182,7 @@ body,
     visibility 0s var(--motion-spring-duration);
 }
 
-/* WestPlay's button on the truck's own screen, while it's handed over: brings CarPlay back. The stock
+/* ATS GPS's button on the truck's own screen, while it's handed over: brings CarPlay back. The stock
    screen isn't part of the page, so there is nothing to blur behind it: a dark disc instead of glass. */
 .return-button {
   position: absolute;

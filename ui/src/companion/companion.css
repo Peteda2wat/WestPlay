@@ -97,7 +97,7 @@ button {
   letter-spacing: -0.01em;
 }
 
-/* Where WestPlay is now: a dot, and a line. */
+/* Where ATS GPS is now: a dot, and a line. */
 .cp-state {
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@ button {
   margin-top: 4px;
 }
 
-/* WestPlay leaving: the whole room fades to black. */
+/* ATS GPS leaving: the whole room fades to black. */
 .cp[data-leaving-pc] > * {
   opacity: 0;
   transition: opacity 1600ms ease 200ms;
@@ -676,7 +676,7 @@ button {
   object-fit: cover;
 }
 
-/* Where a set has no icon of its own: WestPlay's, faded. */
+/* Where a set has no icon of its own: ATS GPS's, faded. */
 .cz-set:not(:first-child) .cz-strip img[data-own] {
   opacity: 0.35;
 }
@@ -766,4 +766,82 @@ button {
 
 .cp-keybind[data-listening] {
   box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+/* The iPad's page, live, where the screen stands (pages/TruckRemote.tsx, Buttons.tsx); the screen steps aside. */
+.cp-ipad .cp .ts {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cp-ipad-mirror {
+  position: fixed;
+  top: 50%;
+  margin: 0;
+  transform: translateY(-50%);
+  z-index: 3;
+}
+
+.cp-ipad-glass {
+  position: relative;
+  aspect-ratio: 1180 / 820;
+  overflow: hidden;
+  border: 12px solid #0b0b0d;
+  border-radius: 28px;
+  outline: 2px solid #2c2d31;
+  background: #16181b;
+  box-shadow: 0 30px 90px rgb(90 70 200 / 0.28);
+}
+
+.cp-ipad-glass iframe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: 0;
+  transform-origin: 0 0;
+}
+
+.cp-ipad-mirror figcaption {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+/* A button's key on the Buttons page: a keycap, orange without a key, blue while it listens. */
+.cp-keys {
+  display: flex;
+  gap: 8px;
+}
+
+.cp-key,
+.cp-key-clear {
+  flex-shrink: 0;
+  min-width: 34px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  color: #f2f2f7;
+  background: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.cp-key[data-unset] {
+  color: #ff9f0a;
+  background: rgb(255 159 10 / 0.15);
+  border-color: rgb(255 159 10 / 0.4);
+}
+
+.cp-key[data-listening] {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.cp-key-clear {
+  cursor: pointer;
+  color: var(--text-dim);
 }

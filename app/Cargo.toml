@@ -7,7 +7,7 @@ license.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "westplay"
+name = "ats-gps"
 path = "src/main.rs"
 
 [build-dependencies]
@@ -20,6 +20,7 @@ serde_json = "1"
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-updater = "2"
 windows = { version = "0.62", features = ["Win32_System_Registry", "Win32_System_Threading"] }
+westplay-buttonbox = { path = "../crates/buttonbox" }
 westplay-host = { path = "../crates/host" }
 westplay-mapdata = { path = "../crates/mapdata" }
 westplay-setup = { path = "../crates/setup" }

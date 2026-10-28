@@ -26,7 +26,7 @@ export const useRecents = create<Recents>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ places: state.places }),
-      // Stored by an earlier WestPlay (or edited): keep only what reads as a place.
+      // Stored by an earlier ATS GPS (or edited): keep only what reads as a place.
       merge: (stored, current) => ({ ...current, places: validPlaces((stored as { places?: unknown })?.places) }),
     },
   ),

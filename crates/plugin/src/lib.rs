@@ -1,4 +1,4 @@
-//! WestPlay SCS SDK plugin (`westplay.dll`).
+//! WestPlay SCS SDK plugin (`atsgps.dll`).
 //!
 //! Loaded by ETS2/ATS from `bin/win_x64/plugins`. The game calls `scs_telemetry_init` /
 //! `scs_telemetry_shutdown` on its main thread, possibly several times per process (`sdk reload`). Under

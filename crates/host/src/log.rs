@@ -18,7 +18,7 @@ static PLACE: OnceLock<PathBuf> = OnceLock::new();
 
 /// Where the log is kept: `Documents\WestPlay\logs`, none if Documents can't be found.
 pub fn dir() -> Option<PathBuf> {
-    Some(westplay_setup::places::documents()?.join("WestPlay").join("logs"))
+    Some(westplay_setup::places::documents()?.join("ATS GPS").join("logs"))
 }
 
 /// Where the log is kept when Documents refuses it: WestPlay's own data folder (`%LOCALAPPDATA%\app.westplay`,

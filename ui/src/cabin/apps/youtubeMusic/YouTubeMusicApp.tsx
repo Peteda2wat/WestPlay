@@ -26,7 +26,7 @@ const FIELD = 'youtube-music-search'
 const ALL_TABS: readonly Tab[] = [...TABS, 'search']
 
 /**
- * YouTube Music: WestPlay's own app in the look of YouTube Music's tablet app, sized for the cab. On top, its
+ * YouTube Music: ATS GPS's own app in the look of YouTube Music's tablet app, sized for the cab. On top, its
  * mark (Back over a page), Search and the account; under it the page, each tab's kept where it was left; at the
  * foot the mini player over the tabs (Home, Explore, Library); pressed, Now Playing rises over all.
  */

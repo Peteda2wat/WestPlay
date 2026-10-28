@@ -11,12 +11,12 @@ import type { Settings } from './useSettings'
  *
  * - `?onboarding`: the first run, from its start.
  * - `?game=off|on|live|unsupported`: the game not running, running (the cab not on the screen), the screen live, or
- *   the player in a truck WestPlay doesn't show in.
+ *   the player in a truck ATS GPS doesn't show in.
  * - `?map=building|ready|waiting|failed`: the map's state (`building` runs to `ready`).
  * - `?update`: an update found (its sheet offers it; installing it downloads, then stays installing).
  * - `?custom`: some wallpapers and an icon set of the player's (adding gives more, with a file left out).
  * - `?leftOut`: the played profile's map made without a map mod it couldn't read.
- * - `?updated` (or `?updated=admin`): WestPlay updated since it was set up: the new plugin goes into the game
+ * - `?updated` (or `?updated=admin`): ATS GPS updated since it was set up: the new plugin goes into the game
  *   once it's closed (with `admin`, Windows' permission is asked for first).
  *
  * Nothing here is ever in the app.
@@ -69,7 +69,7 @@ let settings: Settings = {
   graphics: { gpu: null },
 }
 
-// The player's own, made up from WestPlay's files (the preview's address: `FILES_BASE` is `/` here).
+// The player's own, made up from ATS GPS's files (the preview's address: `FILES_BASE` is `/` here).
 const custom: Customizations = query.has('custom')
   ? {
       wallpapers: [{ id: 'custom:Logo', name: 'Logo', dark: 'westplay.png', light: 'westplay.png' }],
@@ -120,7 +120,7 @@ function status(): HostStatus {
   return {
     webviewVersion: '141.0.3537.71',
     adapter: gameState === 'off' ? null : ADAPTERS[0].name,
-    // The one chosen, or WestPlay's pick: the game's.
+    // The one chosen, or ATS GPS's pick: the game's.
     cabAdapter: (ADAPTERS.find((adapter) => adapter.id === settings.graphics.gpu) ?? ADAPTERS[0]).name,
     gameAdapter: gameState === 'off' ? null : ADAPTERS[0].name,
     adapters: ADAPTERS,
@@ -128,7 +128,7 @@ function status(): HostStatus {
     droppedTotal: live ? 3 : 0,
     gameConnected: gameState !== 'off',
     screenDrawing: live,
-    // `?game=unsupported`: in a truck WestPlay doesn't show in.
+    // `?game=unsupported`: in a truck ATS GPS doesn't show in.
     truckSupported: gameState === 'unsupported' ? false : live ? true : null,
     westplayOpen: live ? westplayOpen : null,
     youtubeSignedIn: accounts.youtube,
@@ -226,7 +226,7 @@ const CHECK: GameCheck = {
     { id: 'renault-t-2024', name: 'Renault T (2024)', fit: 'ready', fromMod: false },
     { id: 'volvo-fh-2021', name: 'Volvo FH (2021)', fit: 'ready', fromMod: false },
     { id: 'volvo-fh-2024', name: 'Volvo FH (2024)', fit: 'ready', fromMod: false },
-    { id: 'any-truck-tablet', name: 'Any truck – with the WestPlay tablet', fit: 'ready', fromMod: false },
+    { id: 'any-truck-tablet', name: 'Any truck – with the ATS GPS tablet', fit: 'ready', fromMod: false },
   ],
   modProblem: null,
   plugin: 'current',
@@ -262,6 +262,30 @@ function previewKeyName(key: number): string | null {
   return named[key] ?? null
 }
 
+let remoteTestMode = false
+const remoteBindings: Record<string, string> = {
+  power_toggle: 'W',
+  engine_toggle: 'E',
+  lights_up: 'L',
+  lights_down: '',
+  high_beam: 'K',
+  beacon: 'O',
+  hazard: 'F',
+  refuel: 'Enter',
+  trailer_attach: 'T',
+  garage: 'G',
+  mirrors: 'F2',
+  sleep_anywhere: 'Ctrl+F8',
+  service_anywhere: 'Shift+F8',
+  tablet: 'MouseBack',
+  music_play_pause: 'F14',
+  music_next: 'F15',
+  wipers_up: '',
+  cruise_toggle: 'C',
+  parking_brake: 'Space',
+  diff_lock: 'V',
+}
+
 export function answer(command: string, args?: Record<string, unknown>): Promise<unknown> {
   switch (command) {
     case 'setup_state':
@@ -281,6 +305,32 @@ export function answer(command: string, args?: Record<string, unknown>): Promise
     case 'finish_setup':
       setup.finished = true
       return later(undefined)
+    // The iPad's button box: `?remoteCode=` shows the iPad's real page beside (the code of the PC's Truck Remote).
+    case 'buttonbox_status':
+      return later({
+        address: '127.0.0.1:8765',
+        code: query.get('remoteCode') ?? 'AB12CD',
+        ipad: true,
+        inFront: 'game',
+        lamps: 'game',
+        testMode: remoteTestMode,
+      })
+    case 'buttonbox_recent':
+      return later([
+        '21:15:51  engine_start',
+        '21:15:30  music_play_pause',
+        '21:12:04  service_anywhere   !! went to chrome, not the game: click the game window first',
+        '          refuel is now OFF',
+        '21:10:47  lights +1',
+      ])
+    case 'buttonbox_set_test_mode':
+      remoteTestMode = args?.on === true
+      return later(undefined)
+    case 'buttonbox_bindings':
+      return later(remoteBindings)
+    case 'buttonbox_set_binding':
+      remoteBindings[String(args?.name)] = String(args?.key)
+      return later(String(args?.key))
     case 'get_settings':
       return later(settings, 60)
     case 'key_name':
@@ -313,7 +363,7 @@ export function answer(command: string, args?: Record<string, unknown>): Promise
       window.open('https://kreosus.com/enes-less', '_blank', 'noopener')
       return later(undefined)
     case 'app_log_place':
-      return later('C:\\Users\\Player\\Documents\\WestPlay\\logs\\app.log')
+      return later('C:\\Users\\Player\\Documents\\ATS GPS\\logs\\app.log')
     case 'youtube_sign_out':
       setTimeout(() => {
         accounts.youtube = false

@@ -35,7 +35,7 @@ import { previewVoice, voicesForLanguage } from '../../maps/voiceGuidance'
 /**
  * The Settings app, in iOS 26's Settings look: a large title, inset grouped cards, coloured tiles, chevrons
  * and pill switches, in Apple's colours (shell/apple.css). Only the player's own CarPlay choices live here;
- * WestPlay's management (the cab's sound, the companion's options) belongs to the companion window.
+ * ATS GPS's management (the cab's sound, the companion's options) belongs to the companion window.
  *
  * Appearance (with Text Size), Wallpaper, the Dashboard's widgets, Now Playing's album art and the Equalizer.
  */
@@ -139,7 +139,7 @@ function AppearancePage() {
   const mode = useCabin((state) => state.appearanceMode)
   const setMode = useCabin((state) => state.setAppearanceMode)
   const wanted = useWantedAppearance()
-  // The Vehicle Bar: only on a screen that has one (the truck's own bar, beside WestPlay).
+  // The Vehicle Bar: only on a screen that has one (the truck's own bar, beside ATS GPS).
   const hasBar = useScreenProfile().oemStrip !== null
   const oemMode = useCabin((state) => state.oemMode)
   const chooseOemMode = useCabin((state) => state.chooseOemMode)
@@ -393,7 +393,7 @@ function levelName(level: VoiceLevel, text: ReturnType<typeof useText>): string 
 
 /**
  * Spoken Directions, as Apple Maps has them (owner 2026-10-27): No Voice or how loud (louder, the music ducks
- * deeper), and the voice: Automatic (WestPlay's pick, the most natural installed) or one of Windows' voices for
+ * deeper), and the voice: Automatic (ATS GPS's pick, the most natural installed) or one of Windows' voices for
  * the language. Each heard as it's picked.
  */
 function VoicePage() {

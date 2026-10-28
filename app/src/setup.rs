@@ -59,7 +59,7 @@ impl Inner {
     fn update(&self, change: impl FnOnce(&mut Record)) -> Result<(), String> {
         let mut record = self.record.lock().unwrap_or_else(|e| e.into_inner());
         change(&mut record);
-        record.save(&self.dir).map_err(|e| format!("Couldn't save WestPlay's setup: {e}"))?;
+        record.save(&self.dir).map_err(|e| format!("Couldn't save ATS GPS's setup: {e}"))?;
         self.game.set(record.game.clone());
         Ok(())
     }
@@ -344,7 +344,7 @@ pub fn watch_installed_mods(store: &SetupStore) {
         }
     };
     if let Err(error) = std::thread::Builder::new().name("westplay-mods".into()).spawn(watch) {
-        log!("setup: can't watch the installed mods for WestPlay's mod: {error}");
+        log!("setup: can't watch the installed mods for ATS GPS's mod: {error}");
     }
 }
 
@@ -405,7 +405,7 @@ fn look_at_mods(inner: &Inner, looked: &mut Option<ModsStamp>) {
         let built = match made {
             Ok(built) => built,
             // Tried again at the next look.
-            Err(error) => return log!("setup: WestPlay's mod not made again for the installed mods: {error}"),
+            Err(error) => return log!("setup: ATS GPS's mod not made again for the installed mods: {error}"),
         };
         let screens: Vec<&str> =
             built.patched.iter().copied().filter(|layout| game_mod::mod_screen_layout(layout)).collect();
@@ -501,7 +501,7 @@ fn install_mod(game: &Game) -> Result<(), String> {
         let userdata = places::steam().map(|steam| steam.join("userdata"));
         let profiles = westplay_setup::uninstall::remove_from_profiles(&documents, userdata.as_deref());
         for (file, error) in &profiles.failed {
-            log!("setup: WestPlay's old mod left in {}: {error}", file.display());
+            log!("setup: ATS GPS's old mod left in {}: {error}", file.display());
         }
     }
     Ok(())
@@ -640,7 +640,7 @@ pub async fn remove_data(keep: bool, app: AppHandle, store: State<'_, SetupStore
         }
         if !left.is_empty() {
             let names: Vec<String> = left.iter().map(|path| path.display().to_string()).collect();
-            log!("[uninstall] still in use, left for when WestPlay has ended: {}", names.join(", "));
+            log!("[uninstall] still in use, left for when ATS GPS has ended: {}", names.join(", "));
         }
         Ok(())
     })
@@ -683,7 +683,7 @@ pub fn leave_pc(keep: bool, app: AppHandle, store: State<SetupStore>) -> Result<
         vec![data, config]
     };
     if let Some(documents) = places::documents() {
-        paths.push(documents.join("WestPlay"));
+        paths.push(documents.join("ATS GPS"));
     }
     let uninstaller = std::env::current_exe().ok().and_then(|exe| Some(exe.parent()?.join("uninstall.exe")));
     after_exit(&paths, uninstaller.filter(|path| path.is_file()).as_deref())?;
@@ -707,7 +707,7 @@ fn after_exit(paths: &[PathBuf], uninstaller: Option<&Path>) -> Result<(), Strin
         .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map(|_| ())
-        .map_err(|e| format!("Couldn't remove WestPlay's data: {e}"))
+        .map_err(|e| format!("Couldn't remove ATS GPS's data: {e}"))
 }
 
 /// The step's script: wait for process `pid` to end (a minute at most), then remove each of `paths`, trying
@@ -763,10 +763,10 @@ mod tests {
 
     #[test]
     fn the_step_waits_for_westplay_then_removes_each_path_quoted() {
-        let script = after_exit_script(4242, &[PathBuf::from(r"C:\Users\O'Brien\WestPlay")]);
+        let script = after_exit_script(4242, &[PathBuf::from(r"C:\Users\O'Brien\ATS GPS")]);
         assert!(script.contains("Get-Process -Id 4242"));
         assert!(script.contains("WaitForExit"));
-        assert!(script.contains(r"@('C:\Users\O''Brien\WestPlay')"));
+        assert!(script.contains(r"@('C:\Users\O''Brien\ATS GPS')"));
     }
 
     /// The real step, hidden: it waits for a process still running (a short ping) to end, then removes a folder.

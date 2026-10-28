@@ -698,7 +698,7 @@ fn carry_out(
             logged_at = progress.done;
             logged_stage = Some(progress.stage);
             log!(
-                "map {folder}: {:?} {:.0}% at {:.0} s, WestPlay using {}",
+                "map {folder}: {:?} {:.0}% at {:.0} s, ATS GPS using {}",
                 progress.stage,
                 progress.done * 100.0,
                 started.elapsed().as_secs_f32(),
@@ -724,7 +724,7 @@ fn carry_out(
     let built = match building {
         Ok(built) => built,
         Err(panic) => {
-            let error = format!("WestPlay couldn't make it ({})", panic_message(&*panic));
+            let error = format!("ATS GPS couldn't make it ({})", panic_message(&*panic));
             log!("map {}: {error}", want.folder.display());
             failed.insert(want.folder.clone(), (want.source.clone(), error.clone()));
             states[next] = MapStatus::Failed { error };
@@ -756,7 +756,7 @@ fn carry_out(
         // again).
         Err(map::BuildError::Export(ExportError::Stopped)) => {
             let error =
-                format!("it needed more than {} of memory, more than WestPlay lets a map take", gigabytes(ceiling));
+                format!("it needed more than {} of memory, more than ATS GPS lets a map take", gigabytes(ceiling));
             log!("map {}: {error}", want.folder.display());
             failed.insert(want.folder.clone(), (want.source.clone(), error.clone()));
             states[next] = MapStatus::Failed { error };
@@ -779,7 +779,7 @@ fn panic_message(panic: &(dyn std::any::Any + Send)) -> String {
         .downcast_ref::<&str>()
         .map(|text| text.to_string())
         .or_else(|| panic.downcast_ref::<String>().cloned())
-        .unwrap_or_else(|| "an error WestPlay didn't expect".into())
+        .unwrap_or_else(|| "an error ATS GPS didn't expect".into())
 }
 
 /// The memory WestPlay has taken (its private bytes, what it holds whether in RAM or paged out).
@@ -849,7 +849,7 @@ mod tests {
             "min > max. min = 65536, max = 42304"
         );
         assert_eq!(caught(|| panic!("a plain message")), "a plain message");
-        assert_eq!(caught(|| std::panic::panic_any(7)), "an error WestPlay didn't expect");
+        assert_eq!(caught(|| std::panic::panic_any(7)), "an error ATS GPS didn't expect");
     }
 
     #[test]

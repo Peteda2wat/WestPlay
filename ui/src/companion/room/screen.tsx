@@ -31,7 +31,7 @@ export interface Screen {
   scan(on: boolean): void
   glow(colour: string): void
   cursor(cursor: { x: number; y: number; pressing: boolean } | null): void
-  /** Powers the screen off and on again: the WestPlay intro plays. */
+  /** Powers the screen off and on again: the ATS GPS intro plays. */
   reboot(): void
   powered: boolean
   leaving: boolean
@@ -70,7 +70,7 @@ export function useScreenAt(route: 'home' | 'dashboard' | AppId, glow: string, b
  * visits to its step, and a tour left halfway would leave it zoomed out, the next one zooming out further. */
 let mapZoom = 0
 
-/** What the cursor presses on the screen (CSS selectors in WestPlay's page). */
+/** What the cursor presses on the screen (CSS selectors in ATS GPS's page). */
 export const ON_SCREEN = {
   app: (app: AppId) => `.app[data-app="${app}"]`,
   icon: (app: AppId) => `.app[data-app="${app}"] img`,
@@ -91,7 +91,7 @@ export interface Press {
 
 /**
  * The cursor shows the screen being used, over and over while the step is up: it moves to each press's
- * target, presses it, and the real WestPlay answers (an app opens, Home turns its page, the map zooms).
+ * target, presses it, and the real ATS GPS answers (an app opens, Home turns its page, the map zooms).
  * Presses whose target isn't on the screen are passed over.
  */
 export function useTour(presses: Press[] | null, startAfter = 1200) {

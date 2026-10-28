@@ -576,7 +576,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 status.game_connected = plugin.pid.load(Ordering::Relaxed) != 0 && alive && bridge.matches();
                 // A plugin of another version (the game still running from before an update): not used.
                 if !bridge.matches() && plugin.pid.load(Ordering::Relaxed) != 0 {
-                    status.error = Some("the game's WestPlay plugin is another version: restart the game".into());
+                    status.error = Some("the game's ATS GPS plugin is another version: restart the game".into());
                 }
                 status.screen_drawing = status.game_connected && screen_frame != 0 && screen_age < 120;
                 status.truck_supported = match plugin.truck_supported.load(Ordering::Relaxed) {
@@ -1597,8 +1597,10 @@ pub fn tell_already_running() {
     unsafe {
         MessageBoxW(
             None,
-            windows::core::w!("WestPlay is already running. Find it in the taskbar or the notification area."),
-            windows::core::w!("WestPlay"),
+            windows::core::w!(
+                "American Truck Simulator GPS is already running. Find it in the taskbar or the notification area."
+            ),
+            windows::core::w!("American Truck Simulator GPS"),
             MB_OK | MB_ICONINFORMATION,
         );
     }
@@ -1627,7 +1629,7 @@ fn log_startup(bridge: &BridgeMapping, pipeline: Option<&Pipeline>, screen_frame
         (pipeline.is_some_and(|p| p.capture.frames.load(Ordering::Relaxed) > 0), "host: first frame captured"),
         (
             plugin.screen_frame.load(Ordering::Relaxed) != screen_frame_before,
-            "game: drawing WestPlay on the truck's screen",
+            "game: drawing ATS GPS on the truck's screen",
         ),
     ];
     for (reached, stage) in stages {

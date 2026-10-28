@@ -17,7 +17,7 @@ function glowAt(route: string): string {
 }
 
 /**
- * The tutorial's first part, in the screen, full size: how WestPlay is used in the cab. The player holds
+ * The tutorial's first part, in the screen, full size: how ATS GPS is used in the cab. The player holds
  * their key (the screen takes their mouse), opens an app, goes back Home, on to the Dashboard, and lets go;
  * each step moves on when it's done, its words under the screen and a banner on it. Let go too soon, and the
  * screen asks for the key again.
@@ -32,7 +32,7 @@ export function Lesson({
   cw: CompanionWords
   interactionKey: KeyCode
   held: boolean
-  /** Where WestPlay is (`home`, `dashboard`, `app:music`), as it says. */
+  /** Where ATS GPS is (`home`, `dashboard`, `app:music`), as it says. */
   route: string
   next(): void
 }) {
@@ -84,7 +84,7 @@ export function Lesson({
 /**
  * Over the screen while the player's key is held: their mouse, as a cursor on the glass that follows it
  * exactly (set on the element as the mouse moves: no easing, nothing drawn again but it), and their clicks
- * pressed on WestPlay (in the screen's own pixels). The window keeps the keyboard, to know the key's let go.
+ * pressed on ATS GPS (in the screen's own pixels). The window keeps the keyboard, to know the key's let go.
  */
 export function TouchLayer({ active, press }: { active: boolean; press(at: { x: number; y: number }): void }) {
   const cursor = useRef<HTMLDivElement>(null)

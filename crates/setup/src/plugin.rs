@@ -1,4 +1,4 @@
-//! WestPlay's game plugin (`westplay.dll`), in the game's `bin/win_x64/plugins` folder, where the game loads
+//! WestPlay's game plugin (`atsgps.dll`), in the game's `bin/win_x64/plugins` folder, where the game loads
 //! SDK plugins from (and TruckersMP's client too).
 //!
 //! Installing writes the new plugin beside the one there, then moves it over it, so the game never finds
@@ -19,7 +19,9 @@ use windows::core::{HSTRING, PCWSTR, w};
 use crate::game::Game;
 
 /// The plugin's file, in the game's plugins folder.
-pub const FILE_NAME: &str = "westplay.dll";
+pub const FILE_NAME: &str = "atsgps.dll";
+/// Its name before ATS GPS was named so (2026-10-28): taken out as the plugin is installed or removed.
+const LEGACY_FILE_NAME: &str = "westplay.dll";
 /// The argument WestPlay is started with, as administrator, to copy the plugin and nothing else.
 const COPY_ARGUMENT: &str = "--westplay-install-plugin";
 /// The same, to remove it and nothing else (uninstalling).
@@ -104,7 +106,7 @@ fn remove_from(plugins: &Path) -> Result<(), InstallError> {
     if target.exists() {
         std::fs::OpenOptions::new().write(true).open(&target)?;
     }
-    for file in [target, plugins.join(format!("{FILE_NAME}.partial"))] {
+    for file in [target, plugins.join(format!("{FILE_NAME}.partial")), plugins.join(LEGACY_FILE_NAME)] {
         match std::fs::remove_file(&file) {
             Ok(()) => {}
             Err(error) if error.kind() == io::ErrorKind::NotFound => {}
@@ -130,6 +132,8 @@ fn copy_into(ours: &Path, plugins: &Path) -> Result<PathBuf, InstallError> {
         let _ = std::fs::remove_file(&partial);
         return Err(error.into());
     }
+    // The plugin under its name before ATS GPS was named so: two would both take over the screens.
+    let _ = std::fs::remove_file(plugins.join(LEGACY_FILE_NAME));
     Ok(target)
 }
 

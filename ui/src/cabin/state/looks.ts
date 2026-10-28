@@ -42,7 +42,7 @@ const ROLES: AppIconRole[] = [
   'youtubeMusic',
 ]
 
-/** Every icon file an icon set (`null`: WestPlay's own) can show, in both looks. */
+/** Every icon file an icon set (`null`: ATS GPS's own) can show, in both looks. */
 function iconFiles(state: Looks, set: string | null): string[] {
   const chosen = state.custom.iconSets.find((iconSet) => iconSet.name === set)
   return ROLES.flatMap((role) =>
@@ -109,7 +109,7 @@ let settled = false
 /** The latest change of icons asked for. */
 let latest = 0
 
-/** Every wallpaper there is to choose: WestPlay's own, then the player's. */
+/** Every wallpaper there is to choose: ATS GPS's own, then the player's. */
 export function useWallpapers(): Wallpaper[] {
   const custom = useLooks((state) => state.custom.wallpapers)
   const base = useLooks((state) => state.base)

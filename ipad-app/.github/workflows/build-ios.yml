@@ -1,0 +1,48 @@
+# Builds an unsigned TruckRemote.ipa on a GitHub Mac.
+# Download it from the run's "Artifacts" section, then sideload it with Sideloadly or AltStore,
+# which sign it with your own Apple ID.
+name: Build iPad app
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Build app (unsigned)
+        working-directory: ios
+        run: |
+          xcodebuild build \
+            -project TruckRemote.xcodeproj \
+            -scheme TruckRemote \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package .ipa
+        working-directory: ios
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/TruckRemote.app Payload/
+          zip -qry TruckRemote.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TruckRemote-ipa
+          path: ios/TruckRemote.ipa
+          if-no-files-found: error

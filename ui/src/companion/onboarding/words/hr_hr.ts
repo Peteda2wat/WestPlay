@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Nastavi',
   welcome: {
     title: 'CarPlay u vašoj kabini',
-    sub: 'WestPlay donosi CarPlay na zaslon vašeg kamiona u igri Euro Truck Simulator 2. Postavljanje traje samo nekoliko minuta.',
+    sub: 'ATS GPS donosi CarPlay na zaslon vašeg kamiona u igri Euro Truck Simulator 2. Postavljanje traje samo nekoliko minuta.',
     start: 'Započni',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'Vaša igra',
     titleMissing: 'Gdje je vaša igra?',
-    found: 'WestPlay je pronašao Euro Truck Simulator 2 na ovom računalu.',
+    found: 'ATS GPS je pronašao Euro Truck Simulator 2 na ovom računalu.',
     foundMany: 'Euro Truck Simulator 2 instaliran je na više mjesta. Odaberite onaj koji igrate.',
     missing:
-      'WestPlay nije pronašao Euro Truck Simulator 2. Odaberite mapu u koju ste ga instalirali – onu s datotekom base.scs.',
+      'ATS GPS nije pronašao Euro Truck Simulator 2. Odaberite mapu u koju ste ga instalirali – onu s datotekom base.scs.',
     chooseAnother: 'Upotrijebi drugu mapu…',
     chooseFolder: 'Odaberi mapu…',
     picker: 'Odaberite mapu igre Euro Truck Simulator 2',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'Igra više nije u ovoj mapi.',
     closeToGoOn: {
       title: 'Zatvorite igru.',
-      text: 'WestPlay se može postaviti samo dok Euro Truck Simulator 2 nije pokrenut.',
+      text: 'ATS GPS se može postaviti samo dok Euro Truck Simulator 2 nije pokrenut.',
     },
   },
   check: {
@@ -43,13 +43,13 @@ export const words: Words = {
     notYet: 'Još nije podržano',
     title: 'Ovo je vaš komplet',
     titleNotYet: 'Još nije podržano',
-    cantInstall: 'WestPlay još ne podržava ovu verziju igre.',
+    cantInstall: 'ATS GPS još ne podržava ovu verziju igre.',
     version: 'Verzija',
     unknown: 'Nepoznata',
     dlcs: 'DLC-ovi',
     mapDlcs: 'DLC-ovi koji mijenjaju kartu',
     noMapDlcs: 'Nema',
-    untested: 'WestPlay je izrađen za verziju 1.61. Vaša još nije isprobana, ali će najvjerojatnije raditi.',
+    untested: 'ATS GPS je izrađen za verziju 1.61. Vaša još nije isprobana, ali će najvjerojatnije raditi.',
     trucks: 'Kamioni',
     truckNotYet: 'Još nije podržano',
     otherTrucks: 'Ostali kamioni u igri u stvarnosti ne podržavaju CarPlay.',
@@ -57,11 +57,11 @@ export const words: Words = {
     notInGame: 'Nema ga u vašoj igri',
     scania7: 'Scania S i R – zaslon od 7"',
     scaniaSmartDash: 'Scania S i R – Smart Dash',
-    anyTruckTablet: 'Bilo koji kamion – s tabletom WestPlay',
+    anyTruckTablet: 'Bilo koji kamion – s tabletom ATS GPS',
     profiles: 'Profili',
     profileCount: { one: '{n} profil', few: '{n} profila', other: '{n} profila' },
     noProfiles: 'Još nema profila',
-    noProfilesDetail: 'WestPlay će pripremiti kartu za prvi profil koji stvorite.',
+    noProfilesDetail: 'ATS GPS će pripremiti kartu za prvi profil koji stvorite.',
     baseMap: 'Izvorna karta',
     withMods: '{map} s modovima: {mods}',
     unreadable: {
@@ -70,20 +70,20 @@ export const words: Words = {
       other: '{n} modova karte nije moguće pročitati, pa se njihove promjene neće vidjeti',
     },
     mapNote:
-      'WestPlay priprema kartu za svaki vaš profil, jedan za drugim, počevši od onoga s kojim ste posljednji igrali. Karte se pripremaju dok je igra zatvorena.',
+      'ATS GPS priprema kartu za svaki vaš profil, jedan za drugim, počevši od onoga s kojim ste posljednji igrali. Karte se pripremaju dok je igra zatvorena.',
   },
   install: {
-    title: 'Instalirajte WestPlay',
-    titleDone: 'WestPlay je instaliran',
-    sub: 'WestPlay igri dodaje dodatak koji pri svakom igranju sam učitava WestPlayeve zaslone za kamione: u Upravitelju modova ne trebate ništa uključivati. Datoteke same igre ostaju netaknute, a deinstaliranjem WestPlaya sve se uklanja.',
+    title: 'Instalirajte ATS GPS',
+    titleDone: 'ATS GPS je instaliran',
+    sub: 'ATS GPS igri dodaje dodatak koji pri svakom igranju sam učitava ATS GPS-eve zaslone za kamione: u Upravitelju modova ne trebate ništa uključivati. Datoteke same igre ostaju netaknute, a deinstaliranjem ATS GPS-a sve se uklanja.',
     install: 'Instaliraj',
     tryAgain: 'Pokušaj ponovno',
     asAdministrator: 'Instaliraj kao administrator',
     plugin: 'Dodatak',
-    pluginDetail: 'Prikazuje WestPlay na zaslonu vašeg kamiona',
+    pluginDetail: 'Prikazuje ATS GPS na zaslonu vašeg kamiona',
     banners: {
       installing: { title: 'Instaliranje…' },
-      done: { title: 'WestPlay je instaliran', text: 'Vaša igra je spremna' },
+      done: { title: 'ATS GPS je instaliran', text: 'Vaša igra je spremna' },
       permission: { title: 'Potrebno je dopuštenje', text: 'Windows će pitati jednom' },
       inUse: { title: 'Zatvorite igru', text: 'Koristi dodatak' },
       failed: { title: 'Instalacija nije dovršena', text: 'Pojedinosti su lijevo' },
@@ -91,7 +91,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Zatvorite igru.',
-      text: 'WestPlay se ne može instalirati dok je Euro Truck Simulator 2 pokrenut.',
+      text: 'ATS GPS se ne može instalirati dok je Euro Truck Simulator 2 pokrenut.',
     },
     inUse: {
       title: 'Zatvorite igru.',
@@ -106,24 +106,24 @@ export const words: Words = {
       text: 'Bez njega se dodatak ne može instalirati. Pokušajte ponovno i odaberite „Da”.',
     },
     pluginFailed: 'Dodatak nije moguće instalirati.',
-    modFailed: 'WestPlayevi zasloni za kamion nisu se mogli pripremiti iz vaše igre.',
-    noPlugin: 'U ovoj kopiji WestPlaya nedostaje dodatak. Ponovno instalirajte WestPlay.',
+    modFailed: 'ATS GPS-evi zasloni za kamion nisu se mogli pripremiti iz vaše igre.',
+    noPlugin: 'U ovoj kopiji ATS GPS-a nedostaje dodatak. Ponovno instalirajte ATS GPS.',
     noDocuments: 'Mapa Dokumenti nije pronađena.',
   },
   map: {
     title: 'Pripremamo vašu kartu…',
     titleReady: 'Vaša karta je spremna',
-    sub: 'WestPlay izrađuje svoju kartu iz vaše igre, uključujući vaše DLC-ove i modove karte. To traje minutu-dvije.',
+    sub: 'ATS GPS izrađuje svoju kartu iz vaše igre, uključujući vaše DLC-ove i modove karte. To traje minutu-dvije.',
     banners: {
       building: 'Pripremamo vašu kartu',
       ready: { title: 'Vaša karta je spremna', text: 'S vašim DLC-ovima i modovima karte' },
       waiting: { title: 'Zatvorite igru', text: 'Karta se priprema dok je igra zatvorena' },
-      failed: { title: 'Kartu nije moguće pripremiti', text: 'WestPlay će pokušati ponovno kasnije' },
+      failed: { title: 'Kartu nije moguće pripremiti', text: 'ATS GPS će pokušati ponovno kasnije' },
       getting: 'Priprema…',
     },
     waiting: {
       title: 'Zatvorite igru.',
-      text: 'Za pripremu karte potrebno je mnogo memorije, pa WestPlay čeka da igra više ne bude pokrenuta.',
+      text: 'Za pripremu karte potrebno je mnogo memorije, pa ATS GPS čeka da igra više ne bude pokrenuta.',
     },
     stages: {
       reading: { now: 'Čitamo kartu vaše igre', done: 'Karta je pročitana' },
@@ -146,7 +146,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Prijava na YouTube',
-    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona vidjeli svoje preporuke, pretplate i povijest. Prijavljujete se putem Googlea u zasebnom prozoru, a WestPlay nikad ne vidi vaš račun.',
+    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona vidjeli svoje preporuke, pretplate i povijest. Prijavljujete se putem Googlea u zasebnom prozoru, a ATS GPS nikad ne vidi vaš račun.',
     signIn: 'Prijava',
     signOut: 'Odjava',
     signedIn: 'Prijavljeni ste',
@@ -157,13 +157,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Prijava na Spotify',
-    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona slušali Spotify sa svojim popisima za reprodukciju i zbirkom. Na Spotify se prijavljujete u zasebnom prozoru, a WestPlay nikad ne vidi vaš račun.',
+    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona slušali Spotify sa svojim popisima za reprodukciju i zbirkom. Na Spotify se prijavljujete u zasebnom prozoru, a ATS GPS nikad ne vidi vaš račun.',
     finishInWindow: 'Dovršite prijavu u prozoru Spotifyja',
     signingIn: { title: 'Prijava na Spotify', text: 'Nastavite u prozoru Spotifyja' },
   },
   appleMusic: {
     title: 'Prijava na Apple Music',
-    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona slušali Apple Music sa svojim popisima za reprodukciju i zbirkom. Na Apple Music se prijavljujete u zasebnom prozoru, a WestPlay nikad ne vidi vaš račun.',
+    sub: 'Neobavezno. Prijavite se kako biste na zaslonu kamiona slušali Apple Music sa svojim popisima za reprodukciju i zbirkom. Na Apple Music se prijavljujete u zasebnom prozoru, a ATS GPS nikad ne vidi vaš račun.',
     finishInWindow: 'Dovršite prijavu u prozoru usluge Apple Music',
     signingIn: { title: 'Prijava na Apple Music', text: 'Nastavite u prozoru usluge Apple Music' },
   },
@@ -173,11 +173,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Pokrenite igru',
-        text: 'Kad se pojavi „Otkriven je zahtjev za korištenjem naprednih SDK-a značajki.”, odaberite „U redu”. To je WestPlay.',
+        text: 'Kad se pojavi „Otkriven je zahtjev za korištenjem naprednih SDK-a značajki.”, odaberite „U redu”. To je ATS GPS.',
       },
       {
         title: 'Uđite u kamion',
-        text: 'Uključite struju i WestPlay će se pojaviti na zaslonu. Ostavite WestPlay otvoren dok igrate.',
+        text: 'Uključite struju i ATS GPS će se pojaviti na zaslonu. Ostavite ATS GPS otvoren dok igrate.',
       },
     ],
   },

@@ -9,7 +9,7 @@ import type { PageProps } from './page'
 
 /**
  * How the player uses the truck's screen: the key they hold (the onboarding's keycaps), how fast the pointer
- * goes, and whether the truck's own strip stays beside WestPlay; and every keybind (owner 2026-10-21): the
+ * goes, and whether the truck's own strip stays beside ATS GPS; and every keybind (owner 2026-10-21): the
  * screen's key, any key, held or pressed once, and the music's volume and play/pause. On the room's screen
  * the pointer uses it, opening an app and coming back Home, again and again.
  */

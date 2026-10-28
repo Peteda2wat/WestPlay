@@ -1,7 +1,7 @@
 import type { SpotifyItem } from '../../../shared/host'
 
 /**
- * What the Spotify app keeps of the account between WestPlay's runs (Spotify is slow to
+ * What the Spotify app keeps of the account between ATS GPS's runs (Spotify is slow to
  * answer): Home's Recently Played (its top tiles and its Recently played shelf) and Your Library's
  * list, shown at once as the app opens and replaced by Spotify's fresh answer as it comes. Cleared as Spotify
  * signs out. Nothing else of the account is kept.

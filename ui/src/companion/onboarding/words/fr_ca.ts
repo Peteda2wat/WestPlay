@@ -8,7 +8,7 @@ export const words: Words = {
   summary: { ...france.summary, chosen: 'Dossier personnalisé' },
   install: {
     ...france.install,
-    sub: 'WestPlay ajoute un plugiciel à votre jeu, qui charge lui-même les écrans de WestPlay pour les camions à chaque partie : rien à activer dans le Gestionnaire de mods. Les fichiers du jeu lui-même restent intacts, et désinstaller WestPlay retire tout.',
+    sub: 'ATS GPS ajoute un plugiciel à votre jeu, qui charge lui-même les écrans de ATS GPS pour les camions à chaque partie : rien à activer dans le Gestionnaire de mods. Les fichiers du jeu lui-même restent intacts, et désinstaller ATS GPS retire tout.',
     plugin: 'Plugiciel',
     banners: {
       ...france.install.banners,
@@ -28,6 +28,6 @@ export const words: Words = {
       text: 'Le plugiciel ne peut pas être installé sans elle. Réessayez et choisissez « Oui ».',
     },
     pluginFailed: 'Le plugiciel n’a pas pu être installé.',
-    noPlugin: 'Il manque le plugiciel dans cette copie de WestPlay. Veuillez réinstaller WestPlay.',
+    noPlugin: 'Il manque le plugiciel dans cette copie de ATS GPS. Veuillez réinstaller ATS GPS.',
   },
 }

@@ -28,7 +28,7 @@ export type {
 } from '../../../shared/host'
 
 /**
- * The Spotify app's state. The app is WestPlay's own, drawn in Spotify's look; Spotify's web player, run by
+ * The Spotify app's state. The app is ATS GPS's own, drawn in Spotify's look; Spotify's web player, run by
  * the host in a hidden WebView (crates/host spotify.rs), plays and answers the app's questions (Home, Your
  * Library, search, a playlist's songs) from its own page, as YouTube's does. The app shows what it asked for
  * at once (a song pressed plays here before Spotify says so) and then follows what Spotify says plays, here
@@ -76,7 +76,7 @@ export interface Playback {
   repeat: Repeat
   /** The playing device's volume, 0 to 1 (`null`: none Spotify can set). */
   volume: number | null
-  /** Playing in WestPlay itself, not on another of the account's devices (Spotify Connect). */
+  /** Playing in ATS GPS itself, not on another of the account's devices (Spotify Connect). */
   here: boolean
   /** The way the last change of song went (Now Playing's cover slides that way). */
   direction: 1 | -1
@@ -124,7 +124,7 @@ interface SpotifyState {
 }
 
 export const useSpotify = create<SpotifyState>()(() => ({
-  // Outside WestPlay (a plain browser) there's no host to say: the preview starts signed out.
+  // Outside ATS GPS (a plain browser) there's no host to say: the preview starts signed out.
   signedIn: isInHost() ? null : false,
   playing: null,
   signingIn: false,
@@ -649,7 +649,7 @@ export function useSpotifySource(): { source: MediaSource; artwork: string | nul
   }, [playback])
 }
 
-/** Whether music plays in WestPlay itself now (not on another of the account's devices), as its player says. */
+/** Whether music plays in ATS GPS itself now (not on another of the account's devices), as its player says. */
 export function playingHere(): boolean {
   const playback = useSpotify.getState().playback
   return Boolean(playback?.here && playingNow(playback))
@@ -699,7 +699,7 @@ export function useWebPlayer(): void {
 }
 
 /** While the app is open in a plain browser: the preview's songs end by themselves, the next one starting
- * (in WestPlay, Spotify plays on by itself). */
+ * (in ATS GPS, Spotify plays on by itself). */
 export function useSongsEnd(): void {
   const playing = useSpotify((state) => state.playback?.playing ?? false)
   useEffect(() => {

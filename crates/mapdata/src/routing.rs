@@ -359,7 +359,7 @@ impl Graph {
         let mut magic = [0u8; 4];
         input.read_exact(&mut magic)?;
         if &magic != MAGIC || read_u32(input)? != VERSION {
-            return Err(bad("not one this WestPlay reads"));
+            return Err(bad("not one this ATS GPS reads"));
         }
         let count = read_u32(input)? as usize;
         let mut nodes = Vec::with_capacity(count.min(1 << 24));

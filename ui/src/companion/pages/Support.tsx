@@ -4,7 +4,7 @@ import { GLOW, useScreenAt } from '../room/screen'
 import type { PageProps } from './page'
 
 /**
- * Support me: WestPlay is free, and its development can be supported on its maker's Kreosus page, which opens
+ * Support me: ATS GPS is free, and its development can be supported on its maker's Kreosus page, which opens
  * in the player's browser. On the room's screen, Home.
  */
 export function Support({ cw }: PageProps) {

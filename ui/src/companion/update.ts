@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { call, on } from './bridge'
 
-/** An update to WestPlay, found on its releases. Mirrors the app's `update::Offer`. */
+/** An update to ATS GPS, found on its releases. Mirrors the app's `update::Offer`. */
 export interface Offer {
   version: string
   /** What's new: the changelog's notes for it (Markdown, a list). */
@@ -39,7 +39,7 @@ export function lookForUpdate(): Promise<Offer | null> {
   return call('look_for_update')
 }
 
-/** Installs the update found: comes back only if it couldn't (WestPlay quits for the installer). */
+/** Installs the update found: comes back only if it couldn't (ATS GPS quits for the installer). */
 export function installUpdate(): Promise<void> {
   return call('install_update')
 }

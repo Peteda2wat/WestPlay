@@ -504,7 +504,7 @@ mod tests {
     }
 
     fn westplay(entry: &str) -> bool {
-        entry.split('|').next() == Some("westplay")
+        matches!(entry.split('|').next(), Some("atsgps" | "westplay"))
     }
 
     /// A profile without WestPlay's mod is the same profile in everything else, byte for byte where it's

@@ -15,7 +15,7 @@ const GROW_MS = 900
  *
  * The picture isn't part of the page, so it can't slide or fade with it: while its screen comes or goes
  * (Home and the Dashboard trading places), the video's thumbnail stands in, moving with the screen, and the
- * picture takes over where it stops. Outside WestPlay (a plain browser) the thumbnail is all there is.
+ * picture takes over where it stops. Outside ATS GPS (a plain browser) the thumbnail is all there is.
  */
 export function VideoHole({ className, crop = false }: { className: string; crop?: boolean }) {
   const thumbnail = useYouTube((store) => store.current?.thumbnail ?? null)

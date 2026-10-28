@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Weiter',
   welcome: {
     title: 'CarPlay in deinem Führerhaus',
-    sub: 'WestPlay bringt CarPlay auf den Bildschirm deines Lkw in Euro Truck Simulator 2. Die Einrichtung dauert nur wenige Minuten.',
+    sub: 'ATS GPS bringt CarPlay auf den Bildschirm deines Lkw in Euro Truck Simulator 2. Die Einrichtung dauert nur wenige Minuten.',
     start: 'Los geht’s',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'Dein Spiel',
     titleMissing: 'Wo ist dein Spiel?',
-    found: 'WestPlay hat Euro Truck Simulator 2 auf diesem PC gefunden.',
+    found: 'ATS GPS hat Euro Truck Simulator 2 auf diesem PC gefunden.',
     foundMany: 'Euro Truck Simulator 2 ist an mehreren Orten installiert. Wähle das, das du spielst.',
     missing:
-      'WestPlay konnte Euro Truck Simulator 2 nicht finden. Wähle den Ordner, in dem du es installiert hast – den mit der base.scs darin.',
+      'ATS GPS konnte Euro Truck Simulator 2 nicht finden. Wähle den Ordner, in dem du es installiert hast – den mit der base.scs darin.',
     chooseAnother: 'Anderen Ordner verwenden …',
     chooseFolder: 'Ordner wählen …',
     picker: 'Wähle deinen Euro-Truck-Simulator-2-Ordner',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'Das Spiel ist nicht mehr in diesem Ordner.',
     closeToGoOn: {
       title: 'Bitte schließe das Spiel.',
-      text: 'WestPlay kann sich nur einrichten, solange Euro Truck Simulator 2 nicht läuft.',
+      text: 'ATS GPS kann sich nur einrichten, solange Euro Truck Simulator 2 nicht läuft.',
     },
   },
   check: {
@@ -43,14 +43,14 @@ export const words: Words = {
     notYet: 'Noch nicht unterstützt',
     title: 'Das ist dein Setup',
     titleNotYet: 'Noch nicht unterstützt',
-    cantInstall: 'WestPlay unterstützt diese Version des Spiels noch nicht.',
+    cantInstall: 'ATS GPS unterstützt diese Version des Spiels noch nicht.',
     version: 'Version',
     unknown: 'Unbekannt',
     dlcs: 'DLCs',
     mapDlcs: 'Karten-DLCs',
     noMapDlcs: 'Keine',
     untested:
-      'WestPlay wurde für Version 1.61 entwickelt. Deine wurde noch nicht getestet, sollte aber sehr wahrscheinlich funktionieren.',
+      'ATS GPS wurde für Version 1.61 entwickelt. Deine wurde noch nicht getestet, sollte aber sehr wahrscheinlich funktionieren.',
     trucks: 'Lkw',
     truckNotYet: 'Noch nicht unterstützt',
     otherTrucks: 'Die anderen Lkw im Spiel unterstützen CarPlay in der Realität nicht.',
@@ -58,11 +58,11 @@ export const words: Words = {
     notInGame: 'Nicht in deinem Spiel',
     scania7: 'Scania S und R – 7"-Bildschirm',
     scaniaSmartDash: 'Scania S und R – Smart Dash',
-    anyTruckTablet: 'Jeder Lkw – mit dem WestPlay-Tablet',
+    anyTruckTablet: 'Jeder Lkw – mit dem ATS GPS-Tablet',
     profiles: 'Profile',
     profileCount: { one: '{n} Profil', other: '{n} Profile' },
     noProfiles: 'Noch keine Profile',
-    noProfilesDetail: 'WestPlay bereitet die Karte für das erste Profil vor, das du anlegst.',
+    noProfilesDetail: 'ATS GPS bereitet die Karte für das erste Profil vor, das du anlegst.',
     baseMap: 'Originalkarte',
     withMods: '{map} mit {mods}',
     unreadable: {
@@ -70,20 +70,20 @@ export const words: Words = {
       other: '{n} Karten-Mods konnten nicht gelesen werden, ihre Änderungen fehlen',
     },
     mapNote:
-      'WestPlay bereitet für jedes deiner Profile eine Karte vor, eine nach der anderen, beginnend mit dem zuletzt gespielten. Die Karten werden vorbereitet, während das Spiel geschlossen ist.',
+      'ATS GPS bereitet für jedes deiner Profile eine Karte vor, eine nach der anderen, beginnend mit dem zuletzt gespielten. Die Karten werden vorbereitet, während das Spiel geschlossen ist.',
   },
   install: {
-    title: 'WestPlay installieren',
-    titleDone: 'WestPlay ist installiert',
-    sub: 'WestPlay fügt deinem Spiel ein Plug-in hinzu, das die Lkw-Bildschirme von WestPlay bei jedem Spielen selbst lädt: Im Mod-Manager musst du nichts aktivieren. Die Dateien des Spiels selbst bleiben unverändert, und wenn du WestPlay deinstallierst, wird alles entfernt.',
+    title: 'ATS GPS installieren',
+    titleDone: 'ATS GPS ist installiert',
+    sub: 'ATS GPS fügt deinem Spiel ein Plug-in hinzu, das die Lkw-Bildschirme von ATS GPS bei jedem Spielen selbst lädt: Im Mod-Manager musst du nichts aktivieren. Die Dateien des Spiels selbst bleiben unverändert, und wenn du ATS GPS deinstallierst, wird alles entfernt.',
     install: 'Installieren',
     tryAgain: 'Erneut versuchen',
     asAdministrator: 'Als Administrator installieren',
     plugin: 'Plug-in',
-    pluginDetail: 'Zeigt WestPlay auf dem Bildschirm deines Lkw',
+    pluginDetail: 'Zeigt ATS GPS auf dem Bildschirm deines Lkw',
     banners: {
       installing: { title: 'Wird installiert …' },
-      done: { title: 'WestPlay ist installiert', text: 'Dein Spiel ist bereit' },
+      done: { title: 'ATS GPS ist installiert', text: 'Dein Spiel ist bereit' },
       permission: { title: 'Erlaubnis nötig', text: 'Windows fragt einmal nach' },
       inUse: { title: 'Schließe das Spiel', text: 'Es verwendet das Plug-in' },
       failed: { title: 'Installation nicht abgeschlossen', text: 'Details siehst du links' },
@@ -91,7 +91,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Bitte schließe das Spiel.',
-      text: 'WestPlay kann nicht installiert werden, während Euro Truck Simulator 2 läuft.',
+      text: 'ATS GPS kann nicht installiert werden, während Euro Truck Simulator 2 läuft.',
     },
     inUse: {
       title: 'Bitte schließe das Spiel.',
@@ -106,24 +106,24 @@ export const words: Words = {
       text: 'Ohne sie kann das Plug-in nicht installiert werden. Versuche es erneut und wähle „Ja“.',
     },
     pluginFailed: 'Das Plug-in konnte nicht installiert werden.',
-    modFailed: 'Die Lkw-Bildschirme von WestPlay konnten nicht aus deinem Spiel erstellt werden.',
-    noPlugin: 'In dieser Kopie von WestPlay fehlt das Plug-in. Bitte installiere WestPlay neu.',
+    modFailed: 'Die Lkw-Bildschirme von ATS GPS konnten nicht aus deinem Spiel erstellt werden.',
+    noPlugin: 'In dieser Kopie von ATS GPS fehlt das Plug-in. Bitte installiere ATS GPS neu.',
     noDocuments: 'Dein Dokumente-Ordner wurde nicht gefunden.',
   },
   map: {
     title: 'Deine Karte wird vorbereitet …',
     titleReady: 'Deine Karte ist fertig',
-    sub: 'WestPlay erstellt seine Karte aus deinem eigenen Spiel, mit deinen Karten-DLCs und Karten-Mods. Das dauert ein bis zwei Minuten.',
+    sub: 'ATS GPS erstellt seine Karte aus deinem eigenen Spiel, mit deinen Karten-DLCs und Karten-Mods. Das dauert ein bis zwei Minuten.',
     banners: {
       building: 'Deine Karte wird vorbereitet',
       ready: { title: 'Deine Karte ist fertig', text: 'Mit deinen DLCs und Karten-Mods' },
       waiting: { title: 'Schließe das Spiel', text: 'Die Karte entsteht, während es geschlossen ist' },
-      failed: { title: 'Die Karte konnte nicht erstellt werden', text: 'WestPlay versucht es später erneut' },
+      failed: { title: 'Die Karte konnte nicht erstellt werden', text: 'ATS GPS versucht es später erneut' },
       getting: 'Wird vorbereitet …',
     },
     waiting: {
       title: 'Bitte schließe das Spiel.',
-      text: 'Die Karte zu erstellen braucht viel Arbeitsspeicher, deshalb wartet WestPlay, bis das Spiel nicht mehr läuft.',
+      text: 'Die Karte zu erstellen braucht viel Arbeitsspeicher, deshalb wartet ATS GPS, bis das Spiel nicht mehr läuft.',
     },
     stages: {
       reading: { now: 'Die Karte deines Spiels wird gelesen', done: 'Karte aus deinem Spiel gelesen' },
@@ -146,7 +146,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Bei YouTube anmelden',
-    sub: 'Optional. Melde dich an, um deine eigenen Empfehlungen, Abos und deinen Verlauf auf dem Bildschirm des Lkw zu sehen. Du meldest dich in einem eigenen Fenster bei Google an, und WestPlay sieht dein Konto nie.',
+    sub: 'Optional. Melde dich an, um deine eigenen Empfehlungen, Abos und deinen Verlauf auf dem Bildschirm des Lkw zu sehen. Du meldest dich in einem eigenen Fenster bei Google an, und ATS GPS sieht dein Konto nie.',
     signIn: 'Anmelden',
     signOut: 'Abmelden',
     signedIn: 'Angemeldet',
@@ -157,13 +157,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Bei Spotify anmelden',
-    sub: 'Optional. Melde dich an, um Spotify auf dem Bildschirm des Lkw zu hören, mit deinen eigenen Playlists und deiner Bibliothek. Du meldest dich in einem eigenen Fenster bei Spotify an, und WestPlay sieht dein Konto nie.',
+    sub: 'Optional. Melde dich an, um Spotify auf dem Bildschirm des Lkw zu hören, mit deinen eigenen Playlists und deiner Bibliothek. Du meldest dich in einem eigenen Fenster bei Spotify an, und ATS GPS sieht dein Konto nie.',
     finishInWindow: 'Schließe die Anmeldung im Spotify-Fenster ab',
     signingIn: { title: 'Anmeldung bei Spotify', text: 'Weiter im Spotify-Fenster' },
   },
   appleMusic: {
     title: 'Bei Apple Music anmelden',
-    sub: 'Optional. Melde dich an, um Apple Music auf dem Bildschirm des Lkw zu hören, mit deinen eigenen Playlists und deiner Bibliothek. Du meldest dich in einem eigenen Fenster bei Apple Music an, und WestPlay sieht dein Konto nie.',
+    sub: 'Optional. Melde dich an, um Apple Music auf dem Bildschirm des Lkw zu hören, mit deinen eigenen Playlists und deiner Bibliothek. Du meldest dich in einem eigenen Fenster bei Apple Music an, und ATS GPS sieht dein Konto nie.',
     finishInWindow: 'Schließe die Anmeldung im Apple-Music-Fenster ab',
     signingIn: { title: 'Anmeldung bei Apple Music', text: 'Weiter im Apple-Music-Fenster' },
   },
@@ -173,11 +173,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Starte das Spiel',
-        text: 'Wenn es „Anfrage auf Verwendung erweiterter SDK-Features festgestellt.“ meldet, wähle „Ok“. Das ist WestPlay.',
+        text: 'Wenn es „Anfrage auf Verwendung erweiterter SDK-Features festgestellt.“ meldet, wähle „Ok“. Das ist ATS GPS.',
       },
       {
         title: 'Steig in deinen Lkw',
-        text: 'Schalte die Elektrik ein, und WestPlay erscheint auf dem Bildschirm. Lass WestPlay geöffnet, während du spielst.',
+        text: 'Schalte die Elektrik ein, und ATS GPS erscheint auf dem Bildschirm. Lass ATS GPS geöffnet, während du spielst.',
       },
     ],
   },

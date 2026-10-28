@@ -5,7 +5,7 @@ import { type CSSProperties, type ReactNode, type RefObject, useEffect, useState
  * be used (`full`, the tutorial). */
 export type Pose = 'hero' | 'side' | 'final' | 'dive' | 'aside' | 'full'
 
-/** A CarPlay-style banner on the screen: WestPlay telling the player what it's doing. */
+/** A CarPlay-style banner on the screen: ATS GPS telling the player what it's doing. */
 export interface Banner {
   title: string
   detail?: string
@@ -16,7 +16,7 @@ export interface Banner {
 
 /**
  * The truck's screen, as an object: a slab of glass in its bezel, standing in a dark room it lights, its
- * reflection on the floor, turning a little towards the player's mouse. On it, the live WestPlay, and over
+ * reflection on the floor, turning a little towards the player's mouse. On it, the live ATS GPS, and over
  * its glass whatever the step adds: a banner, the light of a scan, a cursor.
  */
 export function TruckScreen({
@@ -29,7 +29,7 @@ export function TruckScreen({
   children,
 }: {
   frame: RefObject<HTMLIFrameElement | null>
-  /** WestPlay in it has loaded: it fades in. */
+  /** ATS GPS in it has loaded: it fades in. */
   ready: boolean
   pose: Pose
   /** The colour the screen's light casts on the room. */
@@ -49,7 +49,7 @@ export function TruckScreen({
               <iframe
                 ref={frame}
                 src="/cabin.html?demo&power"
-                title="WestPlay"
+                title="ATS GPS"
                 tabIndex={-1}
                 data-ready={ready || undefined}
               />

@@ -40,8 +40,8 @@ const ICON_FILES: [AppIconRole, string][] = [
 ]
 
 /**
- * Customize: the player's own wallpapers and app icons. Wallpapers in a grid (WestPlay's, then theirs, and
- * one to add more), app icons as sets (WestPlay's own, then theirs, each showing its icons, and two ways to
+ * Customize: the player's own wallpapers and app icons. Wallpapers in a grid (ATS GPS's, then theirs, and
+ * one to add more), app icons as sets (ATS GPS's own, then theirs, each showing its icons, and two ways to
  * add one). Choosing one shows it on the room's screen as on the truck's: the companion tells its screen
  * (Companion.tsx), the app tells the truck's (`look` settings). On the room's screen, Home.
  */
@@ -228,7 +228,7 @@ function WallpaperTile({
   )
 }
 
-/** An icon set: its name, how many apps it has icons for, its icons in the look shown (WestPlay's where it
+/** An icon set: its name, how many apps it has icons for, its icons in the look shown (ATS GPS's where it
  * has none), and a tick when it's the one shown. */
 function IconSetRow({
   name,
@@ -240,7 +240,7 @@ function IconSetRow({
   remove,
 }: {
   name: string
-  /** `null`: WestPlay's own. */
+  /** `null`: ATS GPS's own. */
   icons: IconSet | null
   chosen: boolean
   shown: 'light' | 'dark'

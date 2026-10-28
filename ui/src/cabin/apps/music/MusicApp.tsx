@@ -35,7 +35,7 @@ import './appleMusic.css'
 const FIELD = 'apple-music-search'
 
 /**
- * Music: Apple Music, WestPlay's own app in the look of Apple's own on iPadOS 26, sized for the cab. On top,
+ * Music: Apple Music, ATS GPS's own app in the look of Apple's own on iPadOS 26, sized for the cab. On top,
  * the floating glass tab bar (Home, New, Radio, Library: each glyph over its word, as iOS 26's), Search its own glass circle beside it that opens
  * into the search field; each tab keeps its pages where they were left (Back, on the left, goes back through
  * them). Signed out, Sign In on the right. At the foot the glass mini player; pressed, Now Playing (CarPlay's

@@ -1,7 +1,7 @@
 @import '@fontsource-variable/instrument-sans';
 
-/* The companion's onboarding: the truck's screen in a dark room, WestPlay live on it, the steps beside it.
-   It speaks WestPlay's own language: Instrument Sans (the cabin's type), iOS's grouped lists and capsules,
+/* The companion's onboarding: the truck's screen in a dark room, ATS GPS live on it, the steps beside it.
+   It speaks ATS GPS's own language: Instrument Sans (the cabin's type), iOS's grouped lists and capsules,
    and Apple's curve for every move (cabin/shell/shell.css). One look, dark: a cab at night. */
 
 @property --glow {
@@ -177,7 +177,7 @@
   }
 }
 
-/* WestPlay's 1280x720, scaled into the glass, and everything over it in the same pixels. */
+/* ATS GPS's 1280x720, scaled into the glass, and everything over it in the same pixels. */
 .ts-frame {
   position: absolute;
   top: 0;

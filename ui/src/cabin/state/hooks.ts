@@ -59,7 +59,7 @@ export function useLookChanges(): void {
 
 /**
  * An app's icon, in the look the icon style asks for (`auto`: the screen's own): the chosen icon set's, or
- * WestPlay's own where the set has none for that look.
+ * ATS GPS's own where the set has none for that look.
  */
 export function useAppIcon(role: AppIconRole): string {
   const { appearance } = useLook()
@@ -71,7 +71,7 @@ export function useAppIcon(role: AppIconRole): string {
   })
 }
 
-/** How WestPlay fits the screen the game draws it on (screen layout + truck model). */
+/** How ATS GPS fits the screen the game draws it on (screen layout + truck model). */
 export function useScreenProfile(): ScreenProfile {
   const layout = useLive((state) => state.screenLayout)
   const truck = useLive((state) => state.truck)

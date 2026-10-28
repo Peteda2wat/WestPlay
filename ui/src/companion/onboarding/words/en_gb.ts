@@ -11,7 +11,7 @@ export const words: Words = {
     steps: [
       {
         title: 'Start the game',
-        text: 'When it says ‘Request to use advanced SDK features detected’, choose OK. That’s WestPlay.',
+        text: 'When it says ‘Request to use advanced SDK features detected’, choose OK. That’s ATS GPS.',
       },
       american.launch.steps[1],
     ],

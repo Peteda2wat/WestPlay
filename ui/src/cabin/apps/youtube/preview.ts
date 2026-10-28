@@ -3,7 +3,7 @@ import type { Question } from './youtube'
 
 /**
  * DEVELOPMENT PREVIEW: in a plain browser there's no host to ask YouTube, so invented videos answer (no
- * thumbnails: the app draws its own placeholder). Never used inside WestPlay.
+ * thumbnails: the app draws its own placeholder). Never used inside ATS GPS.
  */
 
 const CHANNELS = ['Nordic Haul', 'Road Diaries', 'Sim Roads', 'Bus Workshop', 'Convoy Club']

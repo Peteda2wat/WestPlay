@@ -6,9 +6,9 @@ import { checkGame, type InstallReport, installIntoGame } from '../setup'
 import { type PageProps, useGameCheck } from './page'
 
 /**
- * Where WestPlay is installed and how to put it right: the game it's in, the plugin as it is
+ * Where ATS GPS is installed and how to put it right: the game it's in, the plugin as it is
  * there, and a reinstall (the onboarding's install, again, while the game is closed). On the room's
- * screen, the check's scan while the game is looked at, and WestPlay booting again after a reinstall.
+ * screen, the check's scan while the game is looked at, and ATS GPS booting again after a reinstall.
  */
 export function Setup(props: PageProps) {
   const { setup, cw, check, checked, uninstall, tutorial } = props

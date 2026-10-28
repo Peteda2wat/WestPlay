@@ -5,7 +5,7 @@ import type { MapData } from './mapData'
 import './maps.css'
 
 /**
- * The live map: the game's own roads and land, drawn in WestPlay's style and following the truck (or
+ * The live map: the game's own roads and land, drawn in ATS GPS's style and following the truck (or
  * resting on the exported area when there's no truck, e.g. in a browser). One map serves every screen
  * (liveMap.ts); this is where it's shown. `interactive`: the player can move it (the Maps app).
  */

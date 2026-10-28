@@ -1,4 +1,4 @@
-/** The Spotify app's symbols, drawn for WestPlay in the manner of Spotify's own (24-unit grid, filled, round
+/** The Spotify app's symbols, drawn for ATS GPS in the manner of Spotify's own (24-unit grid, filled, round
  * ends), a little heavier for the truck's screen. */
 
 /** Home: the house, filled where it is. */
@@ -360,7 +360,7 @@ export function Equalizer({ playing }: { playing: boolean }) {
   )
 }
 
-/** The account, without its picture (WestPlay shows none of it): a person, as Spotify's own fallback. */
+/** The account, without its picture (ATS GPS shows none of it): a person, as Spotify's own fallback. */
 export function PersonGlyph() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">

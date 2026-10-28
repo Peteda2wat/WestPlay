@@ -7,7 +7,7 @@ import { BANDS, bandOf, guidanceOf, pickVoice, spokenDistance, type Step } from 
 
 /**
  * The route's turns spoken, as a car's navigation speaks them: by the cabin's page (the browser's own speech,
- * Windows' voices), so it's the WestPlay app that talks, not the game: nothing of it runs in the game (its own
+ * Windows' voices), so it's the ATS GPS app that talks, not the game: nothing of it runs in the game (its own
  * voice navigation crashed ATS here, owner 2026-10-27). While it talks, the music playing ducks under it.
  *
  * Each step is said far off, close and at it, by the time left to it (`bandOf`); with the step right after it

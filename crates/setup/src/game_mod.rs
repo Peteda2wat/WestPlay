@@ -1,4 +1,4 @@
-//! WestPlay's game mod (`westplay.scs`), built on the player's PC from their own game: for each screen layout
+//! WestPlay's game mod (`atsgps.scs`), built on the player's PC from their own game: for each screen layout
 //! (`westplay_shared::screen_layouts`), the game's GPS screen scripts with one image added as the top layer of
 //! their "screen on" group, the screen texture WestPlay draws into. Nothing of the game's is shipped: the
 //! scripts are the player's own copy's, patched, and the rest is WestPlay's.
@@ -29,14 +29,14 @@ use crate::cab_mark;
 
 /// The mod's file, in WestPlay's own folder (`places::westplay_documents`): ETS2's (and WestPlay 1.2's, in the
 /// game's `mod` folder).
-pub const FILE_NAME: &str = "westplay.scs";
+pub const FILE_NAME: &str = "atsgps.scs";
 
 /// The mod's file for `kind`: each game's built from its own files, both in WestPlay's folder (the plugin mounts
 /// the one of the game it's in).
 pub fn file_name(kind: crate::game::Kind) -> &'static str {
     match kind {
         crate::game::Kind::Ets2 => FILE_NAME,
-        crate::game::Kind::Ats => "westplay_ats.scs",
+        crate::game::Kind::Ats => "atsgps_ats.scs",
     }
 }
 /// Where the mod's screen materials and textures live in the game's file system.
@@ -464,7 +464,7 @@ pub fn build(
 ) -> Result<(Vec<u8>, Built), BuildError> {
     let mut files: Vec<(String, Vec<u8>)> = vec![
         ("manifest.sii".into(), manifest().into_bytes()),
-        ("description.txt".into(), b"WestPlay screens. Requires the WestPlay app and plugin.\n".to_vec()),
+        ("description.txt".into(), b"ATS GPS screens. Requires the ATS GPS app and plugin.\n".to_vec()),
     ];
     let mut built = Built::default();
     for (index, layout) in screen_layouts().iter().enumerate() {
@@ -581,7 +581,7 @@ pub fn build(
 
 /// Writes the mod into `mod_dir` (WestPlay's own folder), replacing the one there whole: written beside it
 /// first, then moved over it, so the plugin never finds half a file.
-/// A step that failed names itself and its path (`writing C:\…\WestPlay\westplay.scs.partial: …`), so a
+/// A step that failed names itself and its path (`writing C:\…\WestPlay\atsgps.scs.partial: …`), so a
 /// player's report says which.
 pub fn install(bytes: &[u8], mod_dir: &Path, kind: crate::game::Kind) -> std::io::Result<PathBuf> {
     let step = |what: &str, path: &Path| {
@@ -606,7 +606,7 @@ pub fn texture_name(layout: &ScreenLayout) -> String {
 /// player's own truck screen, so players with and without it join each other's convoys.
 fn manifest() -> String {
     format!(
-        "SiiNunit\n{{\nmod_package : .package_name\n{{\n\tpackage_version: \"{}\"\n\tdisplay_name: \"WestPlay\"\n\tauthor: \"Western\"\n\tcategory[]: \"ui\"\n\tdescription_file: \"description.txt\"\n\tmp_mod_optional: true\n}}\n}}\n",
+        "SiiNunit\n{{\nmod_package : .package_name\n{{\n\tpackage_version: \"{}\"\n\tdisplay_name: \"ATS GPS\"\n\tauthor: \"Western\"\n\tcategory[]: \"ui\"\n\tdescription_file: \"description.txt\"\n\tmp_mod_optional: true\n}}\n}}\n",
         env!("CARGO_PKG_VERSION")
     )
 }
@@ -971,7 +971,7 @@ mod tests {
         let mod_dir = root.join("Euro Truck Simulator 2").join("mod");
         let path = install(b"mod", &mod_dir, crate::game::Kind::Ets2).unwrap();
         assert_eq!(std::fs::read(&path).unwrap(), b"mod");
-        assert!(!mod_dir.join("westplay.scs.partial").exists());
+        assert!(!mod_dir.join("atsgps.scs.partial").exists());
         // A file where the folder should be: the step and its path in the error.
         let blocked = root.join("blocked");
         std::fs::write(&blocked, b"").unwrap();
@@ -1065,7 +1065,7 @@ mod tests {
         let files = GameFiles::new(vec![westplay_mapdata::files::Mount::Folder(root.clone())]);
         let (bytes, built) = build(&files, &[], &GameFiles::new(Vec::new()), &cab_mark::Marks::default()).unwrap();
         assert_eq!(built.not_sharp, None);
-        let out = root.join("westplay.scs");
+        let out = root.join("atsgps.scs");
         std::fs::write(&out, bytes).unwrap();
         let archive = westplay_mapdata::archive::Archive::open(&out).unwrap();
         let text = |path: &str| archive.read(path).unwrap().map(|bytes| String::from_utf8(bytes).unwrap());
@@ -1211,7 +1211,7 @@ mod tests {
         assert!(built.patched.contains(&"scania-2025") && built.patched.contains(&"scania-2025-advanced"));
         // No 7" interiors here (the Smart Dash's alone): the build says the 7" screen stays as the game has it.
         assert_eq!(built.not_sharp.as_deref(), Some("no 7\" interiors"));
-        let out = root.join("westplay.scs");
+        let out = root.join("atsgps.scs");
         std::fs::write(&out, bytes).unwrap();
         let archive = westplay_mapdata::archive::Archive::open(&out).unwrap();
         let text = |path: &str| archive.read(path).unwrap().map(|bytes| String::from_utf8(bytes).unwrap());
@@ -1242,7 +1242,7 @@ mod tests {
         let files = GameFiles::new(vec![westplay_mapdata::files::Mount::Folder(root.clone())]);
         let (bytes, built) = build(&files, &[], &GameFiles::new(Vec::new()), &cab_mark::Marks::default()).unwrap();
         assert!(built.patched.contains(&"scania-2025") && built.missing.contains(&"scania-2025-advanced"));
-        let out = root.join("westplay.scs");
+        let out = root.join("atsgps.scs");
         std::fs::write(&out, bytes).unwrap();
         let archive = westplay_mapdata::archive::Archive::open(&out).unwrap();
         assert_eq!(archive.read("ui/dashboard/westplay_scania_2025_advanced_gps.sii").unwrap(), None);
@@ -1335,7 +1335,7 @@ mod tests {
         // The others' mods aren't installed: their screens left out.
         // The Setra S 516 HD/2's screen is the game's toy GPS's, made whatever mods are installed.
         assert!(built.missing.contains(&"man-lions-coach") && built.patched.contains(&"setra-516"));
-        let out = root.join("westplay.scs");
+        let out = root.join("atsgps.scs");
         std::fs::write(&out, &bytes).unwrap();
         let archive = Archive::open(&out).unwrap();
         let text = |path: &str| archive.read(path).unwrap().map(|bytes| String::from_utf8(bytes).unwrap());
@@ -1397,7 +1397,7 @@ mod tests {
         let built_script = |game: &GameFiles| {
             let (bytes, built) = build(game, &[], &GameFiles::new(Vec::new()), &cab_mark::Marks::default()).unwrap();
             assert!(built.patched.contains(&"setra-516"), "{built:?}");
-            let out = root.join("westplay.scs");
+            let out = root.join("atsgps.scs");
             std::fs::write(&out, bytes).unwrap();
             let archive = westplay_mapdata::archive::Archive::open(&out).unwrap();
             // Nothing of the bus's mod: no part of it, no interior.
@@ -1435,7 +1435,7 @@ mod tests {
         let (bytes, built) =
             build(&GameFiles::new(Vec::new()), &[], &mod_screen_mods(&[lions]), &cab_mark::Marks::default()).unwrap();
         assert!(built.missing.contains(&"man-lions-coach"), "{built:?}");
-        let out = root.join("westplay.scs");
+        let out = root.join("atsgps.scs");
         std::fs::write(&out, &bytes).unwrap();
         let archive = Archive::open(&out).unwrap();
         assert_eq!(archive.read("ui/dashboard/westplay_man_lions_coach_gps.sii").unwrap(), None);

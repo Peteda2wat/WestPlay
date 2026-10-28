@@ -11,9 +11,9 @@ import { type PageProps, screenState } from './page'
 const COPIED_MS = 3200
 
 /**
- * WestPlay itself: its version and whether there's an update (looked for as the page opens; one found opens
- * its sheet), and the live details of WestPlay and the game for when something isn't
- * right, with a report of them to copy for whoever helps, and where the logs are (app.log in WestPlay's own
+ * ATS GPS itself: its version and whether there's an update (looked for as the page opens; one found opens
+ * its sheet), and the live details of ATS GPS and the game for when something isn't
+ * right, with a report of them to copy for whoever helps, and where the logs are (app.log in ATS GPS's own
  * folder where Documents refused it). On the room's screen, the Dashboard; a banner says when the report's
  * copied.
  */
@@ -81,7 +81,7 @@ export function About({ status, setup, cw, update, showUpdate }: PageProps) {
         <Row title={w.cabGpu} detail={status?.cabAdapter ?? '—'} />
         <Row title={w.gameGpu} detail={status?.gameAdapter ?? w.waitingForGame} />
         <Row title={w.webview} value={status?.webviewVersion || '—'} />
-        <Row title={w.log} detail="Documents\WestPlay\logs\plugin.log" />
+        <Row title={w.log} detail="Documents\ATS GPS\logs\plugin.log" />
         <Row title={w.appLog} detail={appLog ?? '—'} />
       </Group>
     </Panel>
@@ -97,7 +97,7 @@ function report(
   appLog: string | null,
 ): string {
   return [
-    `WestPlay ${version}`,
+    `ATS GPS ${version}`,
     `Game: ${game ?? 'unknown'}${dir ? ` (${dir})` : ''}`,
     `State: ${screenState(status)}`,
     `Engine: ${status?.error ? `stopped: ${status.error}` : status ? 'running' : 'starting'}`,

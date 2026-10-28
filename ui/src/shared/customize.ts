@@ -2,7 +2,7 @@ import type { AppIconRole } from './icons'
 
 /**
  * The player's own wallpapers and icon sets (the companion's Customize), as the app lists them
- * (`westplay_host::customize`). Their files' paths are relative to WestPlay's `customize` folder, served to
+ * (`westplay_host::customize`). Their files' paths are relative to ATS GPS's `customize` folder, served to
  * the cabin page at `https://westplay.customize/` and to the companion at its own address.
  */
 export interface Customizations {
@@ -21,7 +21,7 @@ export interface CustomWallpaper {
 export interface IconSet {
   name: string
   /** The icons it has, by role, for a light screen and a dark one (the same file for both when it's one
-   * icon); a role (or a look) it leaves out keeps WestPlay's own icon. */
+   * icon); a role (or a look) it leaves out keeps ATS GPS's own icon. */
   icons: Partial<Record<AppIconRole, { light: string | null; dark: string | null }>>
 }
 

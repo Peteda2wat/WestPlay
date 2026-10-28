@@ -21,7 +21,7 @@ import { pixelsPerMetre } from './projection'
  * everything (the page draws the sea on beyond it, as the game's world lies in the sea: `beyond`); `land`
  * polygons over it (everything the sea doesn't cover); `water` polygons, painted by the game; `area` polygons with `color` (0 paved, 1 light, 2 dark, 3 green)
  * and `over`; `road` lines with `class` and `width` in metres. Labels are drawn by the page (MapLabels), in
- * WestPlay's own type.
+ * ATS GPS's own type.
  */
 
 export const MAP_SOURCE = 'westplay-map'

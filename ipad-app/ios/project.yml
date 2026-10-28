@@ -1,0 +1,46 @@
+# XcodeGen spec. GitHub Actions turns this into TruckRemote.xcodeproj (see .github/workflows/build-ios.yml).
+name: TruckRemote
+options:
+  bundleIdPrefix: com.truckremote
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  TruckRemote:
+    type: application
+    platform: iOS
+    sources:
+      - TruckRemote
+    scheme: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.truckremote.app
+        PRODUCT_NAME: TruckRemote
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: TruckRemote/Info.plist
+      properties:
+        CFBundleDisplayName: ATS GPS
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # The PC program is a plain http:// server on your home network.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        NSLocalNetworkUsageDescription: ATS GPS connects to the ATS GPS program running on your PC.

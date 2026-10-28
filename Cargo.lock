@@ -4453,9 +4453,19 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-updater",
+ "westplay-buttonbox",
  "westplay-host",
  "westplay-mapdata",
  "westplay-setup",
+ "windows",
+]
+
+[[package]]
+name = "westplay-buttonbox"
+version = "2.1.2"
+dependencies = [
+ "serde",
+ "serde_json",
  "windows",
 ]
 

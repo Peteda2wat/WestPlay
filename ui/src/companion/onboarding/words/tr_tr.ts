@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Devam',
   welcome: {
     title: 'Kabininde CarPlay',
-    sub: 'WestPlay, Euro Truck Simulator 2’de CarPlay’i kamyonunun ekranına getirir. Kurulum yalnızca birkaç dakika sürer.',
+    sub: 'ATS GPS, Euro Truck Simulator 2’de CarPlay’i kamyonunun ekranına getirir. Kurulum yalnızca birkaç dakika sürer.',
     start: 'Başla',
   },
   summary: {
@@ -20,9 +20,9 @@ export const words: Words = {
   game: {
     title: 'Oyununu seç',
     titleMissing: 'Oyunun nerede?',
-    found: 'WestPlay, Euro Truck Simulator 2’yi bu bilgisayarda buldu.',
+    found: 'ATS GPS, Euro Truck Simulator 2’yi bu bilgisayarda buldu.',
     foundMany: 'Euro Truck Simulator 2 birden fazla yerde kurulu. Oynadığın kurulumu seç.',
-    missing: 'WestPlay, Euro Truck Simulator 2’yi bulamadı. Oyunu kurduğun klasörü, yani içinde base.scs olanı seç.',
+    missing: 'ATS GPS, Euro Truck Simulator 2’yi bulamadı. Oyunu kurduğun klasörü, yani içinde base.scs olanı seç.',
     chooseAnother: 'Başka bir klasör kullan…',
     chooseFolder: 'Klasör seç…',
     picker: 'Euro Truck Simulator 2 klasörünü seç',
@@ -31,7 +31,7 @@ export const words: Words = {
     gameGone: 'Oyun artık bu klasörde değil.',
     closeToGoOn: {
       title: 'Lütfen oyunu kapat.',
-      text: 'WestPlay, ancak Euro Truck Simulator 2 kapalıyken kurulabilir.',
+      text: 'ATS GPS, ancak Euro Truck Simulator 2 kapalıyken kurulabilir.',
     },
   },
   check: {
@@ -42,14 +42,14 @@ export const words: Words = {
     notYet: 'Henüz desteklenmiyor',
     title: 'İşte oyunun',
     titleNotYet: 'Henüz desteklenmiyor',
-    cantInstall: 'WestPlay, oyunun bu sürümünü henüz desteklemiyor.',
+    cantInstall: 'ATS GPS, oyunun bu sürümünü henüz desteklemiyor.',
     version: 'Sürüm',
     unknown: 'Bilinmiyor',
     dlcs: 'DLC’ler',
     mapDlcs: 'Harita DLC’leri',
     noMapDlcs: 'Yok',
     untested:
-      'WestPlay, 1.61 sürümü için geliştirildi. Senin sürümün henüz test edilmedi ama büyük ihtimalle sorunsuz çalışır.',
+      'ATS GPS, 1.61 sürümü için geliştirildi. Senin sürümün henüz test edilmedi ama büyük ihtimalle sorunsuz çalışır.',
     trucks: 'Kamyonlar',
     truckNotYet: 'Henüz desteklenmiyor',
     otherTrucks: 'Oyundaki diğer kamyonlar gerçek hayatta CarPlay’i desteklemiyor.',
@@ -57,11 +57,11 @@ export const words: Words = {
     notInGame: 'Oyununda yok',
     scania7: 'Scania S ve R – 7" ekran',
     scaniaSmartDash: 'Scania S ve R – Smart Dash',
-    anyTruckTablet: 'Her kamyon – WestPlay tabletiyle',
+    anyTruckTablet: 'Her kamyon – ATS GPS tabletiyle',
     profiles: 'Profiller',
     profileCount: { one: '{n} profil', other: '{n} profil' },
     noProfiles: 'Henüz profil yok',
-    noProfilesDetail: 'WestPlay, haritayı oluşturacağın ilk profil için hazırlayacak.',
+    noProfilesDetail: 'ATS GPS, haritayı oluşturacağın ilk profil için hazırlayacak.',
     baseMap: 'Orijinal harita',
     withMods: '{map}, {mods} ile',
     unreadable: {
@@ -69,20 +69,20 @@ export const words: Words = {
       other: '{n} harita modu okunamadı; yaptıkları değişiklikler görünmeyecek',
     },
     mapNote:
-      'WestPlay, her profilin için bir harita hazırlar; en son oynadığından başlayarak sırayla. Haritalar oyun kapalıyken hazırlanır.',
+      'ATS GPS, her profilin için bir harita hazırlar; en son oynadığından başlayarak sırayla. Haritalar oyun kapalıyken hazırlanır.',
   },
   install: {
-    title: 'WestPlay’i kur',
-    titleDone: 'WestPlay kuruldu',
-    sub: 'WestPlay oyununa bir eklenti ekler; eklenti, her oynadığında WestPlay’in kamyon ekranlarını oyuna kendisi getirir: Mod Yöneticisi’nde açman gereken bir şey yok. Oyunun kendi dosyalarına dokunulmaz ve WestPlay’i kaldırınca hepsi kaldırılır.',
+    title: 'ATS GPS’i kur',
+    titleDone: 'ATS GPS kuruldu',
+    sub: 'ATS GPS oyununa bir eklenti ekler; eklenti, her oynadığında ATS GPS’in kamyon ekranlarını oyuna kendisi getirir: Mod Yöneticisi’nde açman gereken bir şey yok. Oyunun kendi dosyalarına dokunulmaz ve ATS GPS’i kaldırınca hepsi kaldırılır.',
     install: 'Kur',
     tryAgain: 'Tekrar dene',
     asAdministrator: 'Yönetici olarak kur',
     plugin: 'Eklenti',
-    pluginDetail: 'WestPlay’i kamyonunun ekranında gösterir',
+    pluginDetail: 'ATS GPS’i kamyonunun ekranında gösterir',
     banners: {
       installing: { title: 'Kuruluyor…' },
-      done: { title: 'WestPlay kuruldu', text: 'Oyunun hazır' },
+      done: { title: 'ATS GPS kuruldu', text: 'Oyunun hazır' },
       permission: { title: 'İzin gerekiyor', text: 'Windows bir kez soracak' },
       inUse: { title: 'Oyunu kapat', text: 'Oyun eklentiyi kullanıyor' },
       failed: { title: 'Kurulum tamamlanmadı', text: 'Ayrıntılar solda' },
@@ -90,7 +90,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Lütfen oyunu kapat.',
-      text: 'Euro Truck Simulator 2 açıkken WestPlay kurulamaz.',
+      text: 'Euro Truck Simulator 2 açıkken ATS GPS kurulamaz.',
     },
     inUse: {
       title: 'Lütfen oyunu kapat.',
@@ -105,24 +105,24 @@ export const words: Words = {
       text: 'Eklenti izin olmadan kurulamaz. Tekrar dene ve Evet’i seç.',
     },
     pluginFailed: 'Eklenti kurulamadı.',
-    modFailed: 'WestPlay’in kamyon ekranları oyunundan hazırlanamadı.',
-    noPlugin: 'WestPlay’in bu kopyasında eklenti eksik. Lütfen WestPlay’i yeniden kur.',
+    modFailed: 'ATS GPS’in kamyon ekranları oyunundan hazırlanamadı.',
+    noPlugin: 'ATS GPS’in bu kopyasında eklenti eksik. Lütfen ATS GPS’i yeniden kur.',
     noDocuments: 'Belgeler klasörün bulunamadı.',
   },
   map: {
     title: 'Haritan hazırlanıyor…',
     titleReady: 'Haritan hazır',
-    sub: 'WestPlay, Haritalar uygulamasının haritasını kendi oyunundan, harita DLC’lerin ve harita modlarınla birlikte oluşturur. Bu bir iki dakika sürer.',
+    sub: 'ATS GPS, Haritalar uygulamasının haritasını kendi oyunundan, harita DLC’lerin ve harita modlarınla birlikte oluşturur. Bu bir iki dakika sürer.',
     banners: {
       building: 'Haritan hazırlanıyor',
       ready: { title: 'Haritan hazır', text: 'DLC’lerin ve harita modlarınla' },
       waiting: { title: 'Oyunu kapat', text: 'Harita, oyun kapalıyken hazırlanır' },
-      failed: { title: 'Harita hazırlanamadı', text: 'WestPlay daha sonra yeniden deneyecek' },
+      failed: { title: 'Harita hazırlanamadı', text: 'ATS GPS daha sonra yeniden deneyecek' },
       getting: 'Hazırlanıyor…',
     },
     waiting: {
       title: 'Lütfen oyunu kapat.',
-      text: 'Haritayı hazırlamak çok bellek gerektirir; bu yüzden WestPlay oyunun kapanmasını bekler.',
+      text: 'Haritayı hazırlamak çok bellek gerektirir; bu yüzden ATS GPS oyunun kapanmasını bekler.',
     },
     stages: {
       reading: { now: 'Oyununun haritası okunuyor', done: 'Oyununun haritası okundu' },
@@ -145,7 +145,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'YouTube’da oturum aç',
-    sub: 'İsteğe bağlı. Oturum açarsan kendi önerilerini, aboneliklerini ve geçmişini kamyonun ekranında görürsün. Google ile ayrı bir pencerede oturum açarsın; WestPlay hesabını asla görmez.',
+    sub: 'İsteğe bağlı. Oturum açarsan kendi önerilerini, aboneliklerini ve geçmişini kamyonun ekranında görürsün. Google ile ayrı bir pencerede oturum açarsın; ATS GPS hesabını asla görmez.',
     signIn: 'Oturum aç',
     signOut: 'Oturumu kapat',
     signedIn: 'Oturum açık',
@@ -156,13 +156,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Spotify’da oturum aç',
-    sub: 'İsteğe bağlı. Oturum açarsan kamyonun ekranında kendi çalma listelerin ve kitaplığınla Spotify dinlersin. Spotify’da ayrı bir pencerede oturum açarsın; WestPlay hesabını asla görmez.',
+    sub: 'İsteğe bağlı. Oturum açarsan kamyonun ekranında kendi çalma listelerin ve kitaplığınla Spotify dinlersin. Spotify’da ayrı bir pencerede oturum açarsın; ATS GPS hesabını asla görmez.',
     finishInWindow: 'Spotify penceresinde oturum açmayı tamamla',
     signingIn: { title: 'Spotify’da oturum açılıyor', text: 'Spotify penceresinden devam et' },
   },
   appleMusic: {
     title: 'Apple Music’te oturum aç',
-    sub: 'İsteğe bağlı. Oturum açarsan kamyonun ekranında kendi çalma listelerin ve kitaplığınla Apple Music dinlersin. Apple Music’te ayrı bir pencerede oturum açarsın; WestPlay hesabını asla görmez.',
+    sub: 'İsteğe bağlı. Oturum açarsan kamyonun ekranında kendi çalma listelerin ve kitaplığınla Apple Music dinlersin. Apple Music’te ayrı bir pencerede oturum açarsın; ATS GPS hesabını asla görmez.',
     finishInWindow: 'Apple Music penceresinde oturum açmayı tamamla',
     signingIn: { title: 'Apple Music’te oturum açılıyor', text: 'Apple Music penceresinden devam et' },
   },
@@ -172,11 +172,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Oyunu başlat',
-        text: '“İleri seviye SDK özelliklerini kullanma talebi tespit edildi.” uyarısını gördüğünde Tamam’ı seç. Bu, WestPlay.',
+        text: '“İleri seviye SDK özelliklerini kullanma talebi tespit edildi.” uyarısını gördüğünde Tamam’ı seç. Bu, ATS GPS.',
       },
       {
         title: 'Kamyonuna bin',
-        text: 'Elektrikleri aç; WestPlay ekranda belirir. Oynarken WestPlay’i açık tut.',
+        text: 'Elektrikleri aç; ATS GPS ekranda belirir. Oynarken ATS GPS’i açık tut.',
       },
     ],
   },

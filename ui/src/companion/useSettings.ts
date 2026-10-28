@@ -12,13 +12,13 @@ export interface Settings {
     /** Cursor speed multiplier, `SENSITIVITY.min`..`SENSITIVITY.max`. */
     sensitivity: number
   }
-  /** What WestPlay does from the game, by the player's keys. */
+  /** What ATS GPS does from the game, by the player's keys. */
   keybinds: Record<KeybindId, Binding>
   screen: {
     truckStrip: TruckStrip
   }
   /** How the screen looks (Customize): a wallpaper's id and one of the player's icon sets, by name; `null`:
-   * none chosen (the cab's default wallpaper, WestPlay's own icons). */
+   * none chosen (the cab's default wallpaper, ATS GPS's own icons). */
   look: {
     wallpaper: string | null
     iconSet: string | null
@@ -26,13 +26,13 @@ export interface Settings {
     iconStyle: IconStyle
   }
   /** The graphics card the screen is drawn on: one the player chose (an `Adapter`'s id), or `null`:
-   * WestPlay picks (the game's). */
+   * ATS GPS picks (the game's). */
   graphics: {
     gpu: string | null
   }
 }
 
-/** Mirrors `westplay_host::settings::TruckStrip`: the truck's own strip beside WestPlay, kept or not. */
+/** Mirrors `westplay_host::settings::TruckStrip`: the truck's own strip beside ATS GPS, kept or not. */
 export type TruckStrip = 'auto' | 'off'
 
 /** Mirrors `westplay_host::settings::KeyCode`: a key of the keyboard or a button of the mouse, as Windows
@@ -49,7 +49,7 @@ export const KEY_PRESETS: Record<KeyPreset, KeyCode> = {
   mouseForward: 0x06,
 }
 
-/** The key WestPlay starts with: Left Alt. */
+/** The key ATS GPS starts with: Left Alt. */
 export const DEFAULT_KEY = KEY_PRESETS.leftAlt
 
 /** Mirrors `westplay_host::settings::InteractionMode`. */

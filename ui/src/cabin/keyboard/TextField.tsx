@@ -25,7 +25,7 @@ interface TextFieldProps {
 
 /**
  * A field the keyboard types into. Not an `<input>`: the page never has the PC's keyboard (the game does),
- * so WestPlay draws its own field, caret and all, and the keyboard (store.ts) writes into it. Pressing it
+ * so ATS GPS draws its own field, caret and all, and the keyboard (store.ts) writes into it. Pressing it
  * selects it and brings the keyboard up; it lets go when it leaves the screen.
  */
 export function TextField({

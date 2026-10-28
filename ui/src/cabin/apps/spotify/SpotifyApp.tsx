@@ -13,7 +13,7 @@ import './spotify.css'
 const FIELD = 'spotify-search'
 
 /**
- * The Spotify app, WestPlay's own in Spotify's look, sized for the cab: Spotify's near-black and green, its
+ * The Spotify app, ATS GPS's own in Spotify's look, sized for the cab: Spotify's near-black and green, its
  * type's nearest open cousin (Figtree, for Spotify's Circular), its chips, shortcuts, shelves and green Play.
  *
  * On top, as Spotify's own app on a wide screen: Home, the search pill ("What do you want to play?", Browse

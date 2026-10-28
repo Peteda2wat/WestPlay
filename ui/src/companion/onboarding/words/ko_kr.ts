@@ -6,7 +6,7 @@ export const words: Words = {
   continue: '계속',
   welcome: {
     title: '운전석에 CarPlay를',
-    sub: 'WestPlay는 Euro Truck Simulator 2의 트럭 화면에 CarPlay를 보여 줍니다. 설정은 몇 분이면 끝나요.',
+    sub: 'ATS GPS는 Euro Truck Simulator 2의 트럭 화면에 CarPlay를 보여 줍니다. 설정은 몇 분이면 끝나요.',
     start: '시작하기',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: '내 게임',
     titleMissing: '게임이 어디에 있나요?',
-    found: 'WestPlay가 이 PC에서 Euro Truck Simulator 2를 찾았어요.',
+    found: 'ATS GPS가 이 PC에서 Euro Truck Simulator 2를 찾았어요.',
     foundMany: 'Euro Truck Simulator 2가 여러 곳에 설치되어 있어요. 플레이하는 것을 선택하세요.',
     missing:
-      'WestPlay가 Euro Truck Simulator 2를 찾지 못했어요. 게임을 설치한 폴더, 즉 base.scs가 들어 있는 폴더를 선택하세요.',
+      'ATS GPS가 Euro Truck Simulator 2를 찾지 못했어요. 게임을 설치한 폴더, 즉 base.scs가 들어 있는 폴더를 선택하세요.',
     chooseAnother: '다른 폴더 사용…',
     chooseFolder: '폴더 선택…',
     picker: 'Euro Truck Simulator 2 폴더를 선택하세요',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: '게임이 더 이상 이 폴더에 없어요.',
     closeToGoOn: {
       title: '게임을 종료하세요.',
-      text: 'WestPlay는 Euro Truck Simulator 2가 실행 중이 아닐 때만 설정할 수 있어요.',
+      text: 'ATS GPS는 Euro Truck Simulator 2가 실행 중이 아닐 때만 설정할 수 있어요.',
     },
   },
   check: {
@@ -43,14 +43,14 @@ export const words: Words = {
     notYet: '아직 지원되지 않음',
     title: '내 구성',
     titleNotYet: '아직 지원되지 않음',
-    cantInstall: 'WestPlay는 아직 이 버전의 게임을 지원하지 않아요.',
+    cantInstall: 'ATS GPS는 아직 이 버전의 게임을 지원하지 않아요.',
     version: '버전',
     unknown: '알 수 없음',
     dlcs: 'DLC',
     mapDlcs: '지도 DLC',
     noMapDlcs: '없음',
     untested:
-      'WestPlay는 1.61 버전용으로 만들어졌어요. 사용 중인 버전은 아직 테스트하지 않았지만 아마 잘 작동할 거예요.',
+      'ATS GPS는 1.61 버전용으로 만들어졌어요. 사용 중인 버전은 아직 테스트하지 않았지만 아마 잘 작동할 거예요.',
     trucks: '트럭',
     truckNotYet: '아직 지원되지 않음',
     otherTrucks: '게임 속 다른 트럭은 실제로 CarPlay를 지원하지 않아요.',
@@ -58,29 +58,29 @@ export const words: Words = {
     notInGame: '게임에 없음',
     scania7: 'Scania S·R – 7인치 화면',
     scaniaSmartDash: 'Scania S·R – Smart Dash',
-    anyTruckTablet: '모든 트럭 – WestPlay 태블릿 장착',
+    anyTruckTablet: '모든 트럭 – ATS GPS 태블릿 장착',
     profiles: '프로필',
     profileCount: { other: '프로필 {n}개' },
     noProfiles: '아직 프로필이 없어요',
-    noProfilesDetail: 'WestPlay가 처음 만드는 프로필에 맞춰 지도를 준비해요.',
+    noProfilesDetail: 'ATS GPS가 처음 만드는 프로필에 맞춰 지도를 준비해요.',
     baseMap: '원본 지도',
     withMods: '{map} + {mods}',
     unreadable: { other: '지도 MOD {n}개를 읽지 못해 해당 변경 사항은 표시되지 않아요' },
     mapNote:
-      'WestPlay는 마지막으로 플레이한 프로필부터 차례로, 프로필마다 지도를 하나씩 준비해요. 지도는 게임이 종료된 동안 준비돼요.',
+      'ATS GPS는 마지막으로 플레이한 프로필부터 차례로, 프로필마다 지도를 하나씩 준비해요. 지도는 게임이 종료된 동안 준비돼요.',
   },
   install: {
-    title: 'WestPlay 설치',
-    titleDone: 'WestPlay 설치 완료',
-    sub: 'WestPlay는 게임에 플러그인을 추가하고, 플러그인이 플레이할 때마다 WestPlay의 트럭 화면을 불러와요. MOD 관리자에서 켤 건 없어요. 게임 자체의 파일은 건드리지 않고, WestPlay를 제거하면 모두 지워져요.',
+    title: 'ATS GPS 설치',
+    titleDone: 'ATS GPS 설치 완료',
+    sub: 'ATS GPS는 게임에 플러그인을 추가하고, 플러그인이 플레이할 때마다 ATS GPS의 트럭 화면을 불러와요. MOD 관리자에서 켤 건 없어요. 게임 자체의 파일은 건드리지 않고, ATS GPS를 제거하면 모두 지워져요.',
     install: '설치',
     tryAgain: '다시 시도',
     asAdministrator: '관리자로 설치',
     plugin: '플러그인',
-    pluginDetail: '트럭 화면에 WestPlay를 표시해요',
+    pluginDetail: '트럭 화면에 ATS GPS를 표시해요',
     banners: {
       installing: { title: '설치 중…' },
-      done: { title: 'WestPlay 설치 완료', text: '게임 준비가 끝났어요' },
+      done: { title: 'ATS GPS 설치 완료', text: '게임 준비가 끝났어요' },
       permission: { title: '권한이 필요해요', text: 'Windows가 한 번 물어봐요' },
       inUse: { title: '게임을 종료하세요', text: '플러그인을 사용하는 중이에요' },
       failed: { title: '설치가 끝나지 않았어요', text: '자세한 내용은 왼쪽을 확인하세요' },
@@ -88,7 +88,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: '게임을 종료하세요.',
-      text: 'Euro Truck Simulator 2가 실행 중일 때는 WestPlay를 설치할 수 없어요.',
+      text: 'Euro Truck Simulator 2가 실행 중일 때는 ATS GPS를 설치할 수 없어요.',
     },
     inUse: {
       title: '게임을 종료하세요.',
@@ -103,24 +103,24 @@ export const words: Words = {
       text: '권한 없이는 플러그인을 설치할 수 없어요. 다시 시도하고 "예"를 선택하세요.',
     },
     pluginFailed: '플러그인을 설치하지 못했어요.',
-    modFailed: '게임에서 WestPlay의 트럭 화면을 준비하지 못했어요.',
-    noPlugin: '이 WestPlay에는 플러그인이 없어요. WestPlay를 다시 설치하세요.',
+    modFailed: '게임에서 ATS GPS의 트럭 화면을 준비하지 못했어요.',
+    noPlugin: '이 ATS GPS에는 플러그인이 없어요. ATS GPS를 다시 설치하세요.',
     noDocuments: '문서 폴더를 찾지 못했어요.',
   },
   map: {
     title: '지도를 준비하는 중…',
     titleReady: '지도가 준비됐어요',
-    sub: 'WestPlay는 지도 DLC와 지도 MOD를 포함해 내 게임으로 지도를 만들어요. 1~2분 정도 걸려요.',
+    sub: 'ATS GPS는 지도 DLC와 지도 MOD를 포함해 내 게임으로 지도를 만들어요. 1~2분 정도 걸려요.',
     banners: {
       building: '지도를 준비하는 중',
       ready: { title: '지도가 준비됐어요', text: 'DLC와 지도 MOD 반영' },
       waiting: { title: '게임을 종료하세요', text: '지도는 게임이 꺼져 있을 때 만들어져요' },
-      failed: { title: '지도를 준비하지 못했어요', text: 'WestPlay가 나중에 다시 시도해요' },
+      failed: { title: '지도를 준비하지 못했어요', text: 'ATS GPS가 나중에 다시 시도해요' },
       getting: '준비하는 중…',
     },
     waiting: {
       title: '게임을 종료하세요.',
-      text: '지도를 준비하려면 메모리가 많이 필요해서 WestPlay는 게임이 종료될 때까지 기다려요.',
+      text: '지도를 준비하려면 메모리가 많이 필요해서 ATS GPS는 게임이 종료될 때까지 기다려요.',
     },
     stages: {
       reading: { now: '게임의 지도를 읽는 중', done: '지도를 읽었어요' },
@@ -143,7 +143,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'YouTube에 로그인',
-    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 추천, 구독, 시청 기록을 볼 수 있어요. Google 로그인은 별도의 창에서 하며, WestPlay는 내 계정을 절대 볼 수 없어요.',
+    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 추천, 구독, 시청 기록을 볼 수 있어요. Google 로그인은 별도의 창에서 하며, ATS GPS는 내 계정을 절대 볼 수 없어요.',
     signIn: '로그인',
     signOut: '로그아웃',
     signedIn: '로그인됨',
@@ -154,13 +154,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Spotify에 로그인',
-    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 플레이리스트와 라이브러리로 Spotify를 들을 수 있어요. Spotify 로그인은 별도의 창에서 하며, WestPlay는 내 계정을 절대 볼 수 없어요.',
+    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 플레이리스트와 라이브러리로 Spotify를 들을 수 있어요. Spotify 로그인은 별도의 창에서 하며, ATS GPS는 내 계정을 절대 볼 수 없어요.',
     finishInWindow: 'Spotify 창에서 로그인을 마치세요',
     signingIn: { title: 'Spotify에 로그인하는 중', text: 'Spotify 창에서 계속하세요' },
   },
   appleMusic: {
     title: 'Apple Music에 로그인',
-    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 플레이리스트와 라이브러리로 Apple Music을 들을 수 있어요. Apple Music 로그인은 별도의 창에서 하며, WestPlay는 내 계정을 절대 볼 수 없어요.',
+    sub: '선택 사항이에요. 로그인하면 트럭 화면에서 내 플레이리스트와 라이브러리로 Apple Music을 들을 수 있어요. Apple Music 로그인은 별도의 창에서 하며, ATS GPS는 내 계정을 절대 볼 수 없어요.',
     finishInWindow: 'Apple Music 창에서 로그인을 마치세요',
     signingIn: { title: 'Apple Music에 로그인하는 중', text: 'Apple Music 창에서 계속하세요' },
   },
@@ -170,11 +170,11 @@ export const words: Words = {
     steps: [
       {
         title: '게임 시작',
-        text: '"확장된 SDK 기능을 사용하기 위한 요청이 감지되었습니다."라는 메시지가 나오면 "확인"을 선택하세요. WestPlay예요.',
+        text: '"확장된 SDK 기능을 사용하기 위한 요청이 감지되었습니다."라는 메시지가 나오면 "확인"을 선택하세요. ATS GPS예요.',
       },
       {
         title: '트럭에 타기',
-        text: '전원을 켜면 화면에 WestPlay가 나타나요. 플레이하는 동안 WestPlay를 켜 두세요.',
+        text: '전원을 켜면 화면에 ATS GPS가 나타나요. 플레이하는 동안 ATS GPS를 켜 두세요.',
       },
     ],
   },

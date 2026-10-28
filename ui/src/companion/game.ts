@@ -1,4 +1,4 @@
-/** Which of SCS's games WestPlay is set up in (mirrors the app's `game::Kind`). */
+/** Which of SCS's games ATS GPS is set up in (mirrors the app's `game::Kind`). */
 export type GameKind = 'ets2' | 'ats'
 
 export const GAME_NAMES: Record<GameKind, string> = {

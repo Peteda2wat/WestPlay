@@ -27,9 +27,9 @@ const planning = new Map<number, (routes: PlannedRoute[]) => void>()
 const following = new Map<number, (followed: { follows: boolean; answer: string }) => void>()
 
 /**
- * WestPlay's own routes to `node` (a map node's uid, hex) from where the truck is (crates/host planner.rs),
+ * ATS GPS's own routes to `node` (a map node's uid, hex) from where the truck is (crates/host planner.rs),
  * to offer before Go, with the request's `id` for following one. None outside the host, or where the map
- * has no road graph (built by an older WestPlay): then Go goes straight to the game.
+ * has no road graph (built by an older ATS GPS): then Go goes straight to the game.
  */
 export function planRoutes(node: string): Promise<{ id: number; routes: PlannedRoute[] }> {
   if (!isInHost()) return Promise.resolve({ id: 0, routes: [] })

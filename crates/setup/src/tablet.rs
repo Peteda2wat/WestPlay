@@ -384,7 +384,7 @@ fn vehicle_apart(truck: &str) -> bool {
     westplay_shared::vehicle_marked(truck, APART_VEHICLES)
 }
 
-/// The trucks' slots a built mod (`westplay.scs`'s bytes' file, `path`) has the tablet at, sorted; none if it
+/// The trucks' slots a built mod (`atsgps.scs`'s bytes' file, `path`) has the tablet at, sorted; none if it
 /// can't be read.
 pub fn trucks_in_mod(path: &Path) -> Vec<Spot> {
     let Ok(archive) = Archive::open(path) else { return Vec::new() };
@@ -404,7 +404,7 @@ pub fn trucks_in_mod(path: &Path) -> Vec<Spot> {
 fn accessory(spot: &Spot, model: &str) -> String {
     let (truck, slot) = (&spot.truck, spot.slot.folder());
     format!(
-        "SiiNunit\n{{\naccessory_addon_data : {UNIT}.{truck}.{slot}\n{{\n\tname: \"WestPlay tablet\"\n\tprice: 1\n\tunlock: 0\n\ticon: \"{NAME}\"\n\tpart_type: aftermarket\n\n\tinterior_model: \"/{DIR}/{model}.pmd\"\n}}\n}}\n"
+        "SiiNunit\n{{\naccessory_addon_data : {UNIT}.{truck}.{slot}\n{{\n\tname: \"ATS GPS tablet\"\n\tprice: 1\n\tunlock: 0\n\ticon: \"{NAME}\"\n\tpart_type: aftermarket\n\n\tinterior_model: \"/{DIR}/{model}.pmd\"\n}}\n}}\n"
     )
 }
 
@@ -418,7 +418,7 @@ fn hookup() -> String {
 {{
 accessory_hookup_int_data : {UNIT}.addon_hookup
 {{
-	name: \"WestPlay tablet\"
+	name: \"ATS GPS tablet\"
 	price: 1
 	unlock: 0
 	icon: \"{NAME}\"
@@ -1119,7 +1119,7 @@ mod tests {
         )
         .unwrap();
         assert!(built.patched.contains(&westplay_shared::TABLET));
-        let built_at = root.join("westplay.scs");
+        let built_at = root.join("atsgps.scs");
         std::fs::write(&built_at, bytes).unwrap();
         assert_eq!(trucks_in_mod(&built_at), hanging(&["daf.xf", "hw.actros_l", "jasper.daf_2021"]));
         assert!(trucks_in_mod(&root.join("none.scs")).is_empty());

@@ -108,7 +108,7 @@ mod tests {
 00:00:03.363 : [fs] device C:\Users\someone\AppData\Roaming\TruckersMP\installation/data/ets2/mods/hq_final.mp mounted to mod pool.
 00:00:03.513 : [ufs] mod pool: 25 packs, 15514 files, 2540 dirs
 00:00:12.784 : [fs] device D:/Games/Euro Truck Simulator 2/dlc_east.scs mounted to scs pool.
-00:00:29.354 : [fs] device C:/Users/someone/Documents/WestPlay/westplay.scs mounted to mod pool.
+00:00:29.354 : [fs] device C:/Users/someone/Documents/WestPlay/atsgps.scs mounted to mod pool.
 ";
 
     #[test]

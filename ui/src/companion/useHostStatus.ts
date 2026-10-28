@@ -6,7 +6,7 @@ import { followRound } from './mapRound'
 export interface HostStatus {
   webviewVersion: string
   adapter: string | null
-  /** The graphics card WestPlay's screen is drawn on, and the game's (`null` until the game runs). */
+  /** The graphics card ATS GPS's screen is drawn on, and the game's (`null` until the game runs). */
   cabAdapter: string | null
   gameAdapter: string | null
   /** The PC's graphics cards, the high-performance ones first (mirrors `westplay_host::graphics::Adapter`). */
@@ -15,9 +15,9 @@ export interface HostStatus {
   droppedTotal: number
   gameConnected: boolean
   screenDrawing: boolean
-  /** Whether the truck the player is in is one WestPlay shows in, as the plugin last saw (`null`: not known yet). */
+  /** Whether the truck the player is in is one ATS GPS shows in, as the plugin last saw (`null`: not known yet). */
   truckSupported: boolean | null
-  /** Whether WestPlay is open on the truck's screen (otherwise the truck's original screen shows), as the
+  /** Whether ATS GPS is open on the truck's screen (otherwise the truck's original screen shows), as the
    * cabin page last said; `null` until it has. */
   westplayOpen: boolean | null
   /** Whether YouTube is signed in (`null`: not known yet: YouTube hasn't run), and whether Google's sign-in
@@ -32,11 +32,11 @@ export interface HostStatus {
   appleMusicSigningIn: boolean
   /** The map of the profile played (mirrors `westplay_host::maps::MapStatus`). */
   map: MapStatus
-  /** The map the cab shows: its folder in WestPlay's maps, and when it was built (seconds since 1970;
+  /** The map the cab shows: its folder in ATS GPS's maps, and when it was built (seconds since 1970;
    * `null`: none yet). */
   mapFolder: string | null
   mapBuilt: number | null
-  /** Every profile's map (mirrors `westplay_host::maps::ProfileMap`): WestPlay makes one for each, one by
+  /** Every profile's map (mirrors `westplay_host::maps::ProfileMap`): ATS GPS makes one for each, one by
    * one, the profile played first. */
   profileMaps: ProfileMap[]
   error: string | null
@@ -64,7 +64,7 @@ export type MapStage = 'reading' | 'drawing' | 'tiles' | 'saving'
 
 export type MapStatus =
   | { state: 'unknown' }
-  /** WestPlay isn't set up in a game yet. */
+  /** ATS GPS isn't set up in a game yet. */
   | { state: 'noGame' }
   | { state: 'ready' }
   /** How far, 0 to 1. */
@@ -136,7 +136,7 @@ export function openSupportPage(): Promise<void> {
   return call('open_support_page')
 }
 
-/** Where this run's app.log is: Documents\WestPlay\logs, or WestPlay's own folder where Documents refused it. */
+/** Where this run's app.log is: Documents\ATS GPS\logs, or ATS GPS's own folder where Documents refused it. */
 export function appLogPlace(): Promise<string | null> {
   return call('app_log_place')
 }
@@ -146,7 +146,7 @@ export function appleMusicCheck(): Promise<void> {
   return call('apple_music_check')
 }
 
-/** Opens or closes WestPlay on the truck's screen (the status then reports it, once the cabin has). */
+/** Opens or closes ATS GPS on the truck's screen (the status then reports it, once the cabin has). */
 export function setWestplayOpen(open: boolean): Promise<void> {
   return call('set_westplay_open', { open })
 }

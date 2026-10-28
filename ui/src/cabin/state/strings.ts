@@ -381,7 +381,7 @@ export interface Strings {
     mute: string
     unmute: string
   }
-  /** YouTube Music: WestPlay's own app, in the look of YouTube Music's tablet app. */
+  /** YouTube Music: ATS GPS's own app, in the look of YouTube Music's tablet app. */
   youtubeMusic: {
     tabs: { home: string; explore: string; library: string; search: string }
     searchHint: string
@@ -460,7 +460,7 @@ export interface Strings {
     roads: string
     roadStates: { dry: string; damp: string; wet: string }
     roadTrends: { drying: string; gettingWet: string }
-    /** No game, or one whose weather WestPlay can't read. */
+    /** No game, or one whose weather ATS GPS can't read. */
     unavailable: string
   }
   /** The Settings app: its pages, rows and the words under them. */
@@ -470,7 +470,7 @@ export interface Strings {
     dark: string
     automatic: string
     automaticFooter: string
-    /** The truck's information bar beside WestPlay (the DAF's, the Scania Smart Dash's), and what it is. */
+    /** The truck's information bar beside ATS GPS (the DAF's, the Scania Smart Dash's), and what it is. */
     vehicleBar: string
     vehicleBarFooter: string
     textSize: string
@@ -494,7 +494,7 @@ export interface Strings {
     mid: string
     high: string
     resetEqualizer: string
-    /** Sound › Spoken Directions, as Apple Maps has them: no voice or how loud, and which voice (WestPlay's pick
+    /** Sound › Spoken Directions, as Apple Maps has them: no voice or how loud, and which voice (ATS GPS's pick
      * or one of Windows'), each heard as it's picked. */
     spokenDirections: string
     noVoice: string
@@ -990,9 +990,9 @@ export const STRINGS: Record<Language, Strings> = {
       automatic: 'Automatic',
       automaticFooter: 'Dark at night and whenever the headlights are on, the way the truck’s light sensor does it.',
       vehicleBar: 'Vehicle Bar',
-      vehicleBarFooter: 'The truck’s information bar beside WestPlay. Turned off, WestPlay fills the whole screen.',
+      vehicleBarFooter: 'The truck’s information bar beside ATS GPS. Turned off, ATS GPS fills the whole screen.',
       textSize: 'Text Size',
-      textSizeAbout: 'WestPlay’s apps will adjust to your preferred reading size below.',
+      textSizeAbout: 'ATS GPS’s apps will adjust to your preferred reading size below.',
       wallpaper: 'Wallpaper',
       dashboard: 'Dashboard',
       widgets: 'Widgets',
@@ -1004,7 +1004,7 @@ export const STRINGS: Record<Language, Strings> = {
       recommended: 'Recommended',
       custom: 'Custom',
       equalizerFooter:
-        'WestPlay plays your music through each truck’s own speakers, tuned for its cab. If you prefer a different sound, you can customise how every music app sounds, in every truck.',
+        'ATS GPS plays your music through each truck’s own speakers, tuned for its cab. If you prefer a different sound, you can customise how every music app sounds, in every truck.',
       low: 'Low',
       mid: 'Mid',
       high: 'High',
@@ -1514,9 +1514,9 @@ export const STRINGS: Record<Language, Strings> = {
       automatic: 'Otomatik',
       automaticFooter: 'Geceleri ve farlar her yandığında koyu; tıpkı kamyonun ışık sensörü gibi.',
       vehicleBar: 'Araç Çubuğu',
-      vehicleBarFooter: 'WestPlay’in yanındaki kamyon bilgi çubuğu. Kapatırsan WestPlay tüm ekranı kaplar.',
+      vehicleBarFooter: 'ATS GPS’in yanındaki kamyon bilgi çubuğu. Kapatırsan ATS GPS tüm ekranı kaplar.',
       textSize: 'Metin Boyutu',
-      textSizeAbout: 'WestPlay’in uygulamaları aşağıda seçtiğin okuma boyutuna göre ayarlanır.',
+      textSizeAbout: 'ATS GPS’in uygulamaları aşağıda seçtiğin okuma boyutuna göre ayarlanır.',
       wallpaper: 'Duvar Kâğıdı',
       dashboard: 'Gösterge Paneli',
       widgets: 'Widget’lar',
@@ -1528,7 +1528,7 @@ export const STRINGS: Record<Language, Strings> = {
       recommended: 'Önerilen',
       custom: 'Özel',
       equalizerFooter:
-        'WestPlay müziğini her kamyonun kendi hoparlörlerinden, kabinine göre ayarlanmış olarak çalar. Farklı bir ses istersen, her müzik uygulamasının her kamyonda nasıl çalacağını özelleştirebilirsin.',
+        'ATS GPS müziğini her kamyonun kendi hoparlörlerinden, kabinine göre ayarlanmış olarak çalar. Farklı bir ses istersen, her müzik uygulamasının her kamyonda nasıl çalacağını özelleştirebilirsin.',
       low: 'Düşük',
       mid: 'Orta',
       high: 'Yüksek',

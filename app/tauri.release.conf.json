@@ -5,7 +5,7 @@
     "targets": ["nsis"],
     "createUpdaterArtifacts": true,
     "resources": {
-      "../target/release/westplay.dll": "westplay.dll",
+      "../target/release/atsgps.dll": "atsgps.dll",
       "../LICENSE": "LICENSE.txt",
       "../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md",
       "../THIRD_PARTY_LICENSES.md": "THIRD_PARTY_LICENSES.md"

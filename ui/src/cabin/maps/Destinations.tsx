@@ -406,7 +406,7 @@ function PlaceCard({
   const remember = useRecents((state) => state.remember)
   const { job, route } = useRouteState()
   const [asking, setAsking] = useState(false)
-  // Go first offers the routes there (Directions, as Apple Maps): WestPlay's own, the one picked then handed
+  // Go first offers the routes there (Directions, as Apple Maps): ATS GPS's own, the one picked then handed
   // to the game's GPS (PLAN.md: Navigation plan, B). `finding` while they're planned.
   const [directions, setDirections] = useState<
     { id: number; routes: PlannedRoute[]; picked: number } | 'finding' | null
@@ -431,7 +431,7 @@ function PlaceCard({
     setProblem(null)
     setDirections('finding')
     const { id, routes } = await planRoutes(place.node)
-    // None (a map built before WestPlay planned routes, no way there): straight to the game, as before.
+    // None (a map built before ATS GPS planned routes, no way there): straight to the game, as before.
     if (routes.length === 0) {
       setDirections(null)
       await ask('go')

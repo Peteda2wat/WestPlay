@@ -9,7 +9,7 @@ export interface Rect {
   height: number
 }
 
-/** The live WestPlay in the screen (cabin.html in demo mode, cabin/demo.ts): commands to it, its icons'
+/** The live ATS GPS in the screen (cabin.html in demo mode, cabin/demo.ts): commands to it, its icons'
  * places from it. */
 export function useDemo(): {
   frame: RefObject<HTMLIFrameElement | null>

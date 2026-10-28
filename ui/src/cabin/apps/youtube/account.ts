@@ -12,7 +12,7 @@ export interface Account {
 }
 
 /**
- * The account as it was kept (shown at once as WestPlay starts, replaced as YouTube's page says it): signed in or out, and a picture only from Google's image hosts; anything else, nothing.
+ * The account as it was kept (shown at once as ATS GPS starts, replaced as YouTube's page says it): signed in or out, and a picture only from Google's image hosts; anything else, nothing.
  */
 export function keptAccount(kept: unknown): Account | null {
   if (!kept || typeof kept !== 'object') return null

@@ -5,6 +5,8 @@ import { setGameKind } from './game'
 import { Onboarding } from './onboarding/Onboarding'
 import { languageOf, percent, type Words, wordsFor } from './onboarding/words'
 import { About } from './pages/About'
+import { Buttons } from './pages/Buttons'
+import { TruckRemote } from './pages/TruckRemote'
 import { useHeldKey } from './pages/heldKey'
 import { Lesson, TouchLayer } from './pages/Lesson'
 import { Launch, TourCard } from './pages/Tour'
@@ -19,7 +21,7 @@ import { Setup } from './pages/Setup'
 import { Support } from './pages/Support'
 import { UninstallSheet } from './pages/UninstallSheet'
 import { FinishUpdate, UpdateSheet } from './pages/UpdateSheet'
-import { type CompanionWords, companionWords, type SectionId } from './pages/words'
+import { type CompanionWords, companionWords, type SectionId, type TourSectionId } from './pages/words'
 import { RoomText, n, WordsContext } from './room/room'
 import './room/room.css'
 import { GLOW, type Screen, ScreenContext } from './room/screen'
@@ -35,7 +37,7 @@ import { DEFAULT_KEY, type SettingsState, useSettings } from './useSettings'
 
 /**
  * The companion window: its onboarding on the first run (until it's gone through), then the room it ends in.
- * The truck's screen stays in its dark room, turned aside at the right, the live WestPlay on it; the
+ * The truck's screen stays in its dark room, turned aside at the right, the live ATS GPS on it; the
  * sections are a list at the left, each with what it is now; the page in between. Each section shows on the
  * screen what it's about (its app, its banner, the cursor using it), as the onboarding's steps did.
  */
@@ -79,13 +81,15 @@ export function Companion() {
 }
 
 const SECTIONS: SectionId[][] = [
+  ['truckRemote', 'buttons'],
   ['screen', 'controls', 'customize'],
   ['accounts', 'map'],
   ['setup', 'about'],
   ['support'],
 ]
-/** The sections in order: the tutorial's tour goes through them. */
-const TOUR = SECTIONS.flat()
+/** The sections in order: the tutorial's tour goes through them (not the iPad's: the tour came before them). */
+const TOUR = SECTIONS.flat().filter((id): id is TourSectionId => id !== 'truckRemote' && id !== 'buttons')
+const inTour = (id: SectionId): id is TourSectionId => (TOUR as SectionId[]).includes(id)
 
 /** The room as it is: the tutorial's lesson (the screen full size), its tour of the sections, its end
  * (what to do in the game), or the companion. */
@@ -96,6 +100,8 @@ const POSE: Record<Phase, Pose> = { lesson: 'full', tour: 'aside', launch: 'fina
 
 /** The light the screen casts while each section is up. */
 const SECTION_GLOW: Record<SectionId, string> = {
+  truckRemote: GLOW.dashboard,
+  buttons: GLOW.dashboard,
   screen: GLOW.home,
   controls: GLOW.home,
   customize: GLOW.home,
@@ -129,7 +135,8 @@ function Room({
   setGameKind(setup.game?.kind)
   const words = wordsFor(code)
   const cw = companionWords(code)
-  const [section, setSection] = useState<SectionId>('screen')
+  // The iPad's page first (owner 2026-10-27: the iPad is the screen); the tutorial's tour starts at its own.
+  const [section, setSection] = useState<SectionId>(tutorial ? 'screen' : 'truckRemote')
   const [leaving, setLeaving] = useState(false)
   const [phase, setPhase] = useState<Phase>(tutorial ?? 'room')
   // The screen comes out of the dive the onboarding ended in, to where the phase has it.
@@ -148,7 +155,7 @@ function Room({
   // Who's signed in, known at once (what was last known), and asked as the companion opens if never known.
   const signedIn = useSignedIn(status)
   useAskOnce()
-  // The uninstall sheet over the room, and the room fading as WestPlay leaves.
+  // The uninstall sheet over the room, and the room fading as ATS GPS leaves.
   const [uninstalling, setUninstalling] = useState(false)
   const [leavingPc, setLeavingPc] = useState(false)
   // An update found, offered in its sheet once per version (Later puts it off; About opens it again).
@@ -208,7 +215,7 @@ function Room({
     settling: () => Math.max(0, arrived.current - performance.now()),
   }
 
-  // On as soon as WestPlay in it is ready: it's been on all along (the player dove into it).
+  // On as soon as ATS GPS in it is ready: it's been on all along (the player dove into it).
   useEffect(() => {
     if (!demo.ready || powered) return
     send({ type: 'power', on: true })
@@ -243,7 +250,7 @@ function Room({
   }
 
   const nextInTour = () => {
-    const at = TOUR.indexOf(section)
+    const at = inTour(section) ? TOUR.indexOf(section) : -1
     if (at === TOUR.length - 1) setPhase('launch')
     else open(TOUR[at + 1])
   }
@@ -329,6 +336,8 @@ function Room({
                 mapProgress={mapProgress}
               />
             )}
+            {roomShown && section === 'truckRemote' && <TruckRemote />}
+            {roomShown && section === 'buttons' && <Buttons />}
             {roomShown && section === 'screen' && <ScreenPage {...page} />}
             {roomShown && section === 'controls' && <Controls {...page} />}
             {roomShown && section === 'customize' && <Customize {...page} />}
@@ -337,7 +346,7 @@ function Room({
             {roomShown && section === 'setup' && <Setup {...page} />}
             {roomShown && section === 'about' && <About {...page} />}
             {roomShown && section === 'support' && <Support {...page} />}
-            {phase === 'tour' && (
+            {phase === 'tour' && inTour(section) && (
               <TourCard cw={cw} section={section} last={section === TOUR[TOUR.length - 1]} next={nextInTour} />
             )}
             {uninstalling && (
@@ -355,8 +364,8 @@ function Room({
 }
 
 /**
- * The sections, at the left: WestPlay's name and where it is now, then each section with what it is now
- * (WestPlay on or off, the key, who's signed in, the map, the game's version, WestPlay's own or an update), in
+ * The sections, at the left: ATS GPS's name and where it is now, then each section with what it is now
+ * (ATS GPS on or off, the key, who's signed in, the map, the game's version, ATS GPS's own or an update), in
  * groups. The one that's open is lit by a capsule of glass that glides from section to section.
  */
 function SectionList({
@@ -394,6 +403,8 @@ function SectionList({
   }, [section])
 
   const value: Record<SectionId, string> = {
+    truckRemote: '',
+    buttons: '',
     screen:
       state === 'live'
         ? cw.values.on
@@ -420,11 +431,11 @@ function SectionList({
 
   let place = 2
   return (
-    <nav ref={list} className="cp-list" aria-label="WestPlay">
+    <nav ref={list} className="cp-list" aria-label="ATS GPS">
       <header className="cp-brand ob-in" style={n(0)}>
         <img src="/westplay.png" alt="" />
         <span>
-          <b>WestPlay</b>
+          <b>American Truck Simulator GPS</b>
           <span className="cp-state" data-state={state}>
             <i />
             {cw.state[state]}
@@ -472,7 +483,7 @@ function mapValue(status: HostStatus | null, progress: MapProgress, cw: Companio
   }
 }
 
-/** WestPlay's version, once the app has said. */
+/** ATS GPS's version, once the app has said. */
 function useVersion(): string {
   const [version, setVersion] = useState('')
   useEffect(() => {

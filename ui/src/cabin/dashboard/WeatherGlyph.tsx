@@ -1,6 +1,6 @@
 import type { WeatherSymbol } from './weather'
 
-/** The weather's symbol: WestPlay's own drawing, in the colours of the sky (a sun, a moon, a rain cloud). */
+/** The weather's symbol: ATS GPS's own drawing, in the colours of the sky (a sun, a moon, a rain cloud). */
 export function WeatherGlyph({ symbol, size }: { symbol: WeatherSymbol; size: number }) {
   return (
     <svg className={`weather-glyph ${symbol}`} width={size} height={size} viewBox="0 0 64 64" aria-hidden>

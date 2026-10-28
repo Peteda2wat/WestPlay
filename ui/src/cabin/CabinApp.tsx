@@ -41,7 +41,7 @@ export function CabinApp() {
   useEffect(() => pauseYouTubeMusicWithGame(), [])
   // One of them at a time: the newest to start plays on, the others pause (apps/oneAtATime.ts).
   useEffect(() => oneAtATime([youtubePlayer, spotifyPlayer, appleMusicPlayer, youtubeMusicPlayer]), [])
-  // The route's turns spoken by WestPlay (not the game), the music ducked under the voice (maps/voiceGuidance.ts).
+  // The route's turns spoken by ATS GPS (not the game), the music ducked under the voice (maps/voiceGuidance.ts).
   useEffect(() => speakGuidance([youtubePlayer, spotifyPlayer, appleMusicPlayer, youtubeMusicPlayer]), [])
   // The player's keybinds pressed in the game: the music's volume, play/pause, previous/next (apps/keybinds.ts).
   useEffect(() => followKeybinds(), [])

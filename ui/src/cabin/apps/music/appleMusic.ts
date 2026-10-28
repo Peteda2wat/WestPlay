@@ -33,7 +33,7 @@ export type {
 } from '../../../shared/host'
 
 /**
- * The Music app's state: Apple Music, WestPlay's own app in the look of Apple's own (iPadOS 26's Music, its
+ * The Music app's state: Apple Music, ATS GPS's own app in the look of Apple's own (iPadOS 26's Music, its
  * Now Playing CarPlay's). Apple Music's web player, run by the host in a hidden WebView (crates/host
  * apple_music.rs), plays and answers the app's questions (Home, New, Radio, the Library, a search, an album's
  * songs) from its own page, through MusicKit. The app shows what it asked for at once (a song pressed plays
@@ -150,7 +150,7 @@ interface AppleMusicState {
 const NO_VIEWS: Record<Tab, View[]> = { home: [], new: [], radio: [], library: [], search: [] }
 
 export const useAppleMusic = create<AppleMusicState>()(() => ({
-  // Outside WestPlay (a plain browser) there's no host to say: the preview starts signed out.
+  // Outside ATS GPS (a plain browser) there's no host to say: the preview starts signed out.
   signedIn: isInHost() ? null : false,
   playing: null,
   signingIn: false,

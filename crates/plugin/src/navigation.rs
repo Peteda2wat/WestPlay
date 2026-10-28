@@ -324,7 +324,7 @@ unsafe fn locate() -> Option<Game> {
         Some(Game { core: core as *const *mut u8, navigator, set_targets, find_node })
     })();
     if found.is_none() {
-        log!("waypoint: the game's waypoint code isn't the version WestPlay knows; waypoints can't be added");
+        log!("waypoint: the game's waypoint code isn't the version ATS GPS knows; waypoints can't be added");
     }
     found
 }

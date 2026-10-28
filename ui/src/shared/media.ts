@@ -1,5 +1,5 @@
 /**
- * What one of WestPlay's music players is playing (Apple Music, Spotify, YouTube Music), as Now Playing on the
+ * What one of ATS GPS's music players is playing (Apple Music, Spotify, YouTube Music), as Now Playing on the
  * Dashboard shows it, and its controls.
  */
 

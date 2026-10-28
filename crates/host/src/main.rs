@@ -25,8 +25,8 @@ fn main() {
     }
 
     let data_dir = std::env::var_os("LOCALAPPDATA")
-        .map(|dir| PathBuf::from(dir).join("WestPlay"))
-        .unwrap_or_else(|| std::env::temp_dir().join("WestPlay"));
+        .map(|dir| PathBuf::from(dir).join("ATS GPS"))
+        .unwrap_or_else(|| std::env::temp_dir().join("ATS GPS"));
     let config = Config {
         width,
         height,
@@ -53,10 +53,10 @@ fn main() {
     };
     // One WestPlay at a time (the app, or this).
     let Some(_instance) = westplay_host::Instance::claim() else {
-        eprintln!("WestPlay is already running; quit it first.");
+        eprintln!("ATS GPS is already running; quit it first.");
         std::process::exit(1);
     };
-    println!("WestPlay host {width}x{height}; Ctrl+C to quit");
+    println!("ATS GPS host {width}x{height}; Ctrl+C to quit");
     if let Err(e) = run(config, Arc::new(AtomicBool::new(false))) {
         eprintln!("host failed: {e}");
         std::process::exit(1);

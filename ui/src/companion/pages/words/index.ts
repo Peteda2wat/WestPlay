@@ -2,7 +2,7 @@ import { forGame } from '../../game'
 /**
  * The companion's own words, past the onboarding: its sections, their pages, the tutorial and the uninstall,
  * in each of the game's 43 languages (by the game's codes, as the onboarding's words), in the game's language
- * as WestPlay speaks it in the cab; English for a language the game doesn't have. Each language says "you"
+ * as ATS GPS speaks it in the cab; English for a language the game doesn't have. Each language says "you"
  * as its onboarding does (informally or not) and names things as it does (the truck, the game's Mod Manager).
  * What the onboarding already says (the keys, the sign-ins, the map's stages, the game's summary) is the
  * onboarding's words.
@@ -11,12 +11,12 @@ import { forGame } from '../../game'
  */
 export interface CompanionWords {
   sections: Record<SectionId, string>
-  /** The list's line under WestPlay's name: where WestPlay is now. */
+  /** The list's line under ATS GPS's name: where ATS GPS is now. */
   state: {
     starting: string
     stopped: string
     noGame: string
-    /** The player's truck isn't one WestPlay shows in. */
+    /** The player's truck isn't one ATS GPS shows in. */
     unsupported: string
     notInCab: string
     live: string
@@ -65,10 +65,10 @@ export interface CompanionWords {
     truckScreen: string
     /** `{fps}` */
     screenLive: string
-    /** The truck screen's row, in a truck WestPlay doesn't show in. */
+    /** The truck screen's row, in a truck ATS GPS doesn't show in. */
     screenUnsupported: string
     screenNotInView: string
-    /** The graphics card the screen is drawn on (its group is titled with `about.gpu`): WestPlay's pick, or
+    /** The graphics card the screen is drawn on (its group is titled with `about.gpu`): ATS GPS's pick, or
      * one the player chose. */
     gpuAuto: string
     gpuAutoDetail: string
@@ -164,7 +164,7 @@ export interface CompanionWords {
     webview: string
     waitingForGame: string
     log: string
-    /** The app's own log (app.log), with where it is: Documents, or WestPlay's folder where Documents refused it. */
+    /** The app's own log (app.log), with where it is: Documents, or ATS GPS's folder where Documents refused it. */
     appLog: string
     copy: string
     copied: { title: string; text: string }
@@ -196,7 +196,7 @@ export interface CompanionWords {
     nothingAdded: string
     problems: { notAnImage: string; tooLarge: string; unknownName: string; twice: string; unreadable: string }
   }
-  /** WestPlay's updates: the About page's row, the list's note, the sheet offering one, and finishing one
+  /** ATS GPS's updates: the About page's row, the list's note, the sheet offering one, and finishing one
    * (its plugin and mod into the game). `{version}`: the update's. */
   update: {
     row: string
@@ -215,7 +215,7 @@ export interface CompanionWords {
     banners: { updating: { title: string; text: string }; updated: { title: string; text: string } }
     finish: { title: string; text: string; button: string }
   }
-  /** Support me: WestPlay's development, supported on its maker's Kreosus page (opened in the browser). */
+  /** Support me: ATS GPS's development, supported on its maker's Kreosus page (opened in the browser). */
   support: {
     title: string
     sub: string
@@ -261,11 +261,14 @@ export interface TutorialWords {
   holdAgain: { title: string; text: string }
   next: string
   /** Each section, as the tour shows it. */
-  tour: Record<SectionId, string>
+  tour: Record<TourSectionId, string>
   finish: string
 }
 
-export type SectionId = 'screen' | 'controls' | 'customize' | 'accounts' | 'map' | 'setup' | 'about' | 'support'
+export type SectionId =
+  'truckRemote' | 'buttons' | 'screen' | 'controls' | 'customize' | 'accounts' | 'map' | 'setup' | 'about' | 'support'
+/** The sections the tutorial's tour goes through: all but the iPad's (the tour came before them). */
+export type TourSectionId = Exclude<SectionId, 'truckRemote' | 'buttons'>
 
 const WORDS: Record<string, CompanionWords> = Object.fromEntries(
   Object.entries(import.meta.glob<CompanionWords>('./[a-z][a-z]_[a-z][a-z].ts', { eager: true, import: 'words' })).map(

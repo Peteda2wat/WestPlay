@@ -9,15 +9,15 @@ import type { CompanionWords } from './words'
 const TICK_MS = 380
 /** The goodbye on the screen, before it goes dark. */
 const GOODBYE_MS = 1700
-/** The screen dark and the room fading, before WestPlay quits. */
+/** The screen dark and the room fading, before ATS GPS quits. */
 const FAREWELL_MS = 1900
 
 const STEPS = ['profiles', 'plugin', 'data'] as const
 
 /**
- * Uninstalling WestPlay, in a sheet over the room: what goes (and a choice to keep settings and maps), then
+ * Uninstalling ATS GPS, in a sheet over the room: what goes (and a choice to keep settings and maps), then
  * each step ticked off as it's done, the screen saying so. Done, the screen says goodbye and goes dark, the
- * room fades, and WestPlay leaves the PC and quits (`leavePc`). The game has to be closed; the plugin may
+ * room fades, and ATS GPS leaves the PC and quits (`leavePc`). The game has to be closed; the plugin may
  * need Windows' permission, as when it was installed.
  */
 export function UninstallSheet({
@@ -27,7 +27,7 @@ export function UninstallSheet({
 }: {
   cw: CompanionWords
   close(): void
-  /** The room fades: WestPlay is leaving. */
+  /** The room fades: ATS GPS is leaving. */
   farewell(): void
 }) {
   const w = cw.uninstall
@@ -41,7 +41,7 @@ export function UninstallSheet({
   const [ticked, setTicked] = useState(0)
   const done = report?.done ?? false
 
-  // Done: the steps tick off in turn, the screen says goodbye and goes dark, and WestPlay leaves.
+  // Done: the steps tick off in turn, the screen says goodbye and goes dark, and ATS GPS leaves.
   useEffect(() => {
     if (!done) return
     const timers = STEPS.map((_, at) => window.setTimeout(() => setTicked(at + 1), (at + 1) * TICK_MS))
@@ -68,7 +68,7 @@ export function UninstallSheet({
     screen.banner(banner(w.banners.working, true))
     try {
       const result = await uninstallFromGame(administrator)
-      // Out of the game: WestPlay's own data goes now, the red button turning (the maps and the browsers'
+      // Out of the game: ATS GPS's own data goes now, the red button turning (the maps and the browsers'
       // sign-ins can take a while), before anything says it's done.
       if (result.done) await removeData(keep)
       setReport(result)

@@ -2,7 +2,7 @@ import { type CustomWallpaper, fileUrl } from '../shared/customize'
 import type { Appearance } from './state/appearance'
 
 /**
- * Wallpapers by id: WestPlay's own here, and the player's (the companion's Customize, `customWallpaper`). Like
+ * Wallpapers by id: ATS GPS's own here, and the player's (the companion's Customize, `customWallpaper`). Like
  * icons (icons.ts), the UI refers to wallpapers through this registry only.
  *
  * A wallpaper has a dark and a light variant: two pictures, or one picture for both (a player's own image).
@@ -20,7 +20,7 @@ function plain(colour: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-/** WestPlay's own wallpapers: Silk (the default), and Plain, no artwork, one colour for each look. The player
+/** ATS GPS's own wallpapers: Silk (the default), and Plain, no artwork, one colour for each look. The player
  * adds their own in the companion's Customize. */
 export const BUILT_IN_WALLPAPERS: Wallpaper[] = [
   { id: 'silk', name: 'Silk', variants: { dark: '/wallpapers/silk.dark.jpg', light: '/wallpapers/silk.jpg' } },

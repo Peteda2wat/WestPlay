@@ -156,7 +156,7 @@ function NowPlaying() {
   const state = useYouTube((store) => store.state)
   if (!current || open) return null
   const playing = state?.video === current.video && state.state === 1
-  // The video itself once YouTube's player has it (in WestPlay), its thumbnail until then.
+  // The video itself once YouTube's player has it (in ATS GPS), its thumbnail until then.
   const live = isInHost() && state?.video === current.video
   return (
     <div className="yt-now">

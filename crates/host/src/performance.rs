@@ -139,7 +139,7 @@ impl Meter {
         let ours = std::process::id();
         let parts = self.parts.borrow();
         let used = cores_by_part(&window.cpu, &processor_times(&processes()), seconds, |pid| {
-            if pid == ours { "WestPlay app" } else { parts.get(&pid).copied().unwrap_or("other") }
+            if pid == ours { "ATS GPS app" } else { parts.get(&pid).copied().unwrap_or("other") }
         });
         let total: f64 = used.iter().map(|(_, cores)| cores).sum();
         let threads = std::thread::available_parallelism().map_or(0, |n| n.get());

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 /**
- * The YouTube Music app's glyphs: WestPlay's own drawings, in the manner of YouTube Music's (filled shapes,
+ * The YouTube Music app's glyphs: ATS GPS's own drawings, in the manner of YouTube Music's (filled shapes,
  * rounded ends), on a 24-unit grid, in the text's colour.
  */
 

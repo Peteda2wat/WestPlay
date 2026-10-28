@@ -104,7 +104,7 @@ pub unsafe fn locate() {
         })
     })();
     if found.is_none() {
-        log!("camera: the game's camera code isn't the version WestPlay knows; the camera isn't known");
+        log!("camera: the game's camera code isn't the version ATS GPS knows; the camera isn't known");
     }
     POSITION.store(found.unwrap_or(0), Ordering::Release);
 }

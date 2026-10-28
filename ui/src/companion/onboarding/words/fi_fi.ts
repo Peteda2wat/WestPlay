@@ -6,7 +6,7 @@ export const words: Words = {
   continue: 'Jatka',
   welcome: {
     title: 'CarPlay ohjaamossasi',
-    sub: 'WestPlay tuo CarPlayn rekkasi näytölle Euro Truck Simulator 2:ssa. Käyttöönotto vie vain muutaman minuutin.',
+    sub: 'ATS GPS tuo CarPlayn rekkasi näytölle Euro Truck Simulator 2:ssa. Käyttöönotto vie vain muutaman minuutin.',
     start: 'Aloitetaan',
   },
   summary: {
@@ -20,10 +20,10 @@ export const words: Words = {
   game: {
     title: 'Pelisi',
     titleMissing: 'Missä pelisi on?',
-    found: 'WestPlay löysi Euro Truck Simulator 2:n tältä tietokoneelta.',
+    found: 'ATS GPS löysi Euro Truck Simulator 2:n tältä tietokoneelta.',
     foundMany: 'Euro Truck Simulator 2 on asennettu useaan paikkaan. Valitse se, jota pelaat.',
     missing:
-      'WestPlay ei löytänyt Euro Truck Simulator 2:ta. Valitse kansio, johon asensit sen – se, jossa on base.scs.',
+      'ATS GPS ei löytänyt Euro Truck Simulator 2:ta. Valitse kansio, johon asensit sen – se, jossa on base.scs.',
     chooseAnother: 'Käytä toista kansiota…',
     chooseFolder: 'Valitse kansio…',
     picker: 'Valitse Euro Truck Simulator 2:n kansio',
@@ -32,7 +32,7 @@ export const words: Words = {
     gameGone: 'Peli ei ole enää tässä kansiossa.',
     closeToGoOn: {
       title: 'Sulje peli.',
-      text: 'WestPlay voi ottaa itsensä käyttöön vain, kun Euro Truck Simulator 2 ei ole käynnissä.',
+      text: 'ATS GPS voi ottaa itsensä käyttöön vain, kun Euro Truck Simulator 2 ei ole käynnissä.',
     },
   },
   check: {
@@ -43,13 +43,13 @@ export const words: Words = {
     notYet: 'Ei vielä tuettu',
     title: 'Tässä on kokoonpanosi',
     titleNotYet: 'Ei vielä tuettu',
-    cantInstall: 'WestPlay ei vielä tue tätä pelin versiota.',
+    cantInstall: 'ATS GPS ei vielä tue tätä pelin versiota.',
     version: 'Versio',
     unknown: 'Tuntematon',
     dlcs: 'DLC:t',
     mapDlcs: 'Kartta-DLC:t',
     noMapDlcs: 'Ei yhtään',
-    untested: 'WestPlay on tehty versiolle 1.61. Versiotasi ei ole vielä testattu, mutta se toimii todennäköisesti.',
+    untested: 'ATS GPS on tehty versiolle 1.61. Versiotasi ei ole vielä testattu, mutta se toimii todennäköisesti.',
     trucks: 'Rekat',
     truckNotYet: 'Ei vielä tuettu',
     otherTrucks: 'Pelin muut rekat eivät tue CarPlayta oikeassa elämässä.',
@@ -57,11 +57,11 @@ export const words: Words = {
     notInGame: 'Ei pelissäsi',
     scania7: 'Scania S ja R – 7":n näyttö',
     scaniaSmartDash: 'Scania S ja R – Smart Dash',
-    anyTruckTablet: 'Mikä tahansa kuorma-auto – WestPlay-tabletilla',
+    anyTruckTablet: 'Mikä tahansa kuorma-auto – ATS GPS-tabletilla',
     profiles: 'Profiilit',
     profileCount: { one: '{n} profiili', other: '{n} profiilia' },
     noProfiles: 'Ei vielä profiileja',
-    noProfilesDetail: 'WestPlay valmistelee kartan ensimmäiselle profiilille, jonka luot.',
+    noProfilesDetail: 'ATS GPS valmistelee kartan ensimmäiselle profiilille, jonka luot.',
     baseMap: 'Alkuperäinen kartta',
     withMods: '{map} ja {mods}',
     unreadable: {
@@ -69,20 +69,20 @@ export const words: Words = {
       other: '{n} karttamodia jäi lukematta, joten niiden muutokset eivät näy',
     },
     mapNote:
-      'WestPlay valmistelee kartan jokaiselle profiilillesi yksi kerrallaan, alkaen siitä, jolla pelasit viimeksi. Kartat valmistellaan, kun peli on suljettuna.',
+      'ATS GPS valmistelee kartan jokaiselle profiilillesi yksi kerrallaan, alkaen siitä, jolla pelasit viimeksi. Kartat valmistellaan, kun peli on suljettuna.',
   },
   install: {
-    title: 'Asenna WestPlay',
-    titleDone: 'WestPlay on asennettu',
-    sub: 'WestPlay lisää peliisi laajennuksen, joka lataa WestPlayn rekkanäytöt itse aina, kun pelaat: Modien hallinnassa ei tarvitse ottaa mitään käyttöön. Pelin omiin tiedostoihin ei kosketa, ja kun poistat WestPlayn, kaikki poistetaan.',
+    title: 'Asenna ATS GPS',
+    titleDone: 'ATS GPS on asennettu',
+    sub: 'ATS GPS lisää peliisi laajennuksen, joka lataa ATS GPS-n rekkanäytöt itse aina, kun pelaat: Modien hallinnassa ei tarvitse ottaa mitään käyttöön. Pelin omiin tiedostoihin ei kosketa, ja kun poistat ATS GPS-n, kaikki poistetaan.',
     install: 'Asenna',
     tryAgain: 'Yritä uudelleen',
     asAdministrator: 'Asenna järjestelmänvalvojana',
     plugin: 'Laajennus',
-    pluginDetail: 'Näyttää WestPlayn rekkasi näytöllä',
+    pluginDetail: 'Näyttää ATS GPS-n rekkasi näytöllä',
     banners: {
       installing: { title: 'Asennetaan…' },
-      done: { title: 'WestPlay on asennettu', text: 'Pelisi on valmis' },
+      done: { title: 'ATS GPS on asennettu', text: 'Pelisi on valmis' },
       permission: { title: 'Lupa tarvitaan', text: 'Windows kysyy kerran' },
       inUse: { title: 'Sulje peli', text: 'Se käyttää laajennusta' },
       failed: { title: 'Asennus ei valmistunut', text: 'Katso tiedot vasemmalta' },
@@ -90,7 +90,7 @@ export const words: Words = {
     },
     closeToInstall: {
       title: 'Sulje peli.',
-      text: 'WestPlayta ei voi asentaa, kun Euro Truck Simulator 2 on käynnissä.',
+      text: 'ATS GPS-ta ei voi asentaa, kun Euro Truck Simulator 2 on käynnissä.',
     },
     inUse: {
       title: 'Sulje peli.',
@@ -105,24 +105,24 @@ export const words: Words = {
       text: 'Ilman sitä laajennusta ei voi asentaa. Yritä uudelleen ja valitse ”Kyllä”.',
     },
     pluginFailed: 'Laajennusta ei voitu asentaa.',
-    modFailed: 'WestPlayn rekkanäyttöjä ei voitu valmistaa pelistäsi.',
-    noPlugin: 'Tästä WestPlayn kopiosta puuttuu laajennus. Asenna WestPlay uudelleen.',
+    modFailed: 'ATS GPS-n rekkanäyttöjä ei voitu valmistaa pelistäsi.',
+    noPlugin: 'Tästä ATS GPS-n kopiosta puuttuu laajennus. Asenna ATS GPS uudelleen.',
     noDocuments: 'Tiedostot-kansiota ei löytynyt.',
   },
   map: {
     title: 'Karttaasi valmistellaan…',
     titleReady: 'Karttasi on valmis',
-    sub: 'WestPlay tekee karttansa omasta pelistäsi kartta-DLC:t ja karttamodit mukaan lukien. Se vie minuutin tai kaksi.',
+    sub: 'ATS GPS tekee karttansa omasta pelistäsi kartta-DLC:t ja karttamodit mukaan lukien. Se vie minuutin tai kaksi.',
     banners: {
       building: 'Karttaasi valmistellaan',
       ready: { title: 'Karttasi on valmis', text: 'DLC:t ja karttamodit mukana' },
       waiting: { title: 'Sulje peli', text: 'Kartta tehdään, kun peli on suljettuna' },
-      failed: { title: 'Karttaa ei voitu valmistella', text: 'WestPlay yrittää myöhemmin uudelleen' },
+      failed: { title: 'Karttaa ei voitu valmistella', text: 'ATS GPS yrittää myöhemmin uudelleen' },
       getting: 'Valmistellaan…',
     },
     waiting: {
       title: 'Sulje peli.',
-      text: 'Kartan valmistelu vie paljon muistia, joten WestPlay odottaa, kunnes peli ei ole käynnissä.',
+      text: 'Kartan valmistelu vie paljon muistia, joten ATS GPS odottaa, kunnes peli ei ole käynnissä.',
     },
     stages: {
       reading: { now: 'Luetaan pelisi karttaa', done: 'Kartta luettu pelistäsi' },
@@ -145,7 +145,7 @@ export const words: Words = {
   },
   accounts: {
     title: 'Kirjaudu YouTubeen',
-    sub: 'Valinnainen. Kirjaudu sisään, niin näet omat suosituksesi, tilauksesi ja historiasi rekan näytöllä. Kirjaudut Googleen erillisessä ikkunassa, eikä WestPlay koskaan näe tiliäsi.',
+    sub: 'Valinnainen. Kirjaudu sisään, niin näet omat suosituksesi, tilauksesi ja historiasi rekan näytöllä. Kirjaudut Googleen erillisessä ikkunassa, eikä ATS GPS koskaan näe tiliäsi.',
     signIn: 'Kirjaudu sisään',
     signOut: 'Kirjaudu ulos',
     signedIn: 'Kirjautunut',
@@ -156,13 +156,13 @@ export const words: Words = {
   },
   spotify: {
     title: 'Kirjaudu Spotifyhin',
-    sub: 'Valinnainen. Kirjaudu sisään, niin voit kuunnella Spotifyta rekan näytöllä omilla soittolistoillasi ja kirjastollasi. Kirjaudut Spotifyhin erillisessä ikkunassa, eikä WestPlay koskaan näe tiliäsi.',
+    sub: 'Valinnainen. Kirjaudu sisään, niin voit kuunnella Spotifyta rekan näytöllä omilla soittolistoillasi ja kirjastollasi. Kirjaudut Spotifyhin erillisessä ikkunassa, eikä ATS GPS koskaan näe tiliäsi.',
     finishInWindow: 'Viimeistele kirjautuminen Spotify-ikkunassa',
     signingIn: { title: 'Kirjaudutaan Spotifyhin', text: 'Jatka Spotify-ikkunassa' },
   },
   appleMusic: {
     title: 'Kirjaudu Apple Musiciin',
-    sub: 'Valinnainen. Kirjaudu sisään, niin voit kuunnella Apple Musicia rekan näytöllä omilla soittolistoillasi ja kirjastollasi. Kirjaudut Apple Musiciin erillisessä ikkunassa, eikä WestPlay koskaan näe tiliäsi.',
+    sub: 'Valinnainen. Kirjaudu sisään, niin voit kuunnella Apple Musicia rekan näytöllä omilla soittolistoillasi ja kirjastollasi. Kirjaudut Apple Musiciin erillisessä ikkunassa, eikä ATS GPS koskaan näe tiliäsi.',
     finishInWindow: 'Viimeistele kirjautuminen Apple Music-ikkunassa',
     signingIn: { title: 'Kirjaudutaan Apple Musiciin', text: 'Jatka Apple Music-ikkunassa' },
   },
@@ -172,11 +172,11 @@ export const words: Words = {
     steps: [
       {
         title: 'Käynnistä peli',
-        text: 'Kun se sanoo ”Pyyntö käyttää edistyneempiä SDK-ominaisuuksia havaittu.”, valitse ”Ok”. Se on WestPlay.',
+        text: 'Kun se sanoo ”Pyyntö käyttää edistyneempiä SDK-ominaisuuksia havaittu.”, valitse ”Ok”. Se on ATS GPS.',
       },
       {
         title: 'Nouse rekkaasi',
-        text: 'Kytke sähköt päälle, niin WestPlay ilmestyy näytölle. Pidä WestPlay auki pelatessasi.',
+        text: 'Kytke sähköt päälle, niin ATS GPS ilmestyy näytölle. Pidä ATS GPS auki pelatessasi.',
       },
     ],
   },

@@ -8,6 +8,6 @@ export const words: CompanionWords = {
   uninstall: {
     ...polish.uninstall,
     profilesFailed:
-      'Nie udało się zmienić profili ({n}) i nadal zawierają WestPlay. Usuń go tam w menu „Mynedżer modōw”.',
+      'Nie udało się zmienić profili ({n}) i nadal zawierają ATS GPS. Usuń go tam w menu „Mynedżer modōw”.',
   },
 }

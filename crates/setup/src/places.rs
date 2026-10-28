@@ -115,7 +115,7 @@ fn homedir(options: &str) -> Option<PathBuf> {
 /// WestPlay's own folder in Documents (in Windows' Documents, as the plugin finds it): its logs, and its
 /// screens mod, which the plugin mounts into the game itself (`game_mod`).
 pub fn westplay_documents() -> Option<PathBuf> {
-    Some(documents()?.join("WestPlay"))
+    Some(documents()?.join("ATS GPS"))
 }
 
 /// The game's own folder in Documents: its profiles, mods and settings. Of the folders that may be Documents
@@ -296,7 +296,7 @@ mod tests {
 
     #[test]
     fn names_folders_plainly() {
-        assert_eq!(plain(Path::new(r"\\?\C:\Users\a\WestPlay\ui")), Path::new(r"C:\Users\a\WestPlay\ui"));
+        assert_eq!(plain(Path::new(r"\\?\C:\Users\a\ATS GPS\ui")), Path::new(r"C:\Users\a\ATS GPS\ui"));
         assert_eq!(plain(Path::new(r"\\?\UNC\server\share\ui")), Path::new(r"\\server\share\ui"));
         assert_eq!(plain(Path::new(r"C:\Users\a\ui")), Path::new(r"C:\Users\a\ui"));
         assert_eq!(plain(Path::new(r"\\server\share\ui")), Path::new(r"\\server\share\ui"));

@@ -612,7 +612,7 @@ mod tests {
     #[test]
     fn serves_taps_info_and_frames_over_http() {
         let Some(remote) = start() else {
-            eprintln!("skipped: port {PORT} is taken (WestPlay running)");
+            eprintln!("skipped: port {PORT} is taken (ATS GPS running)");
             return;
         };
         let ask = |request: &str| {

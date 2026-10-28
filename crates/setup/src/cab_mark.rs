@@ -187,7 +187,7 @@ mod tests {
         let found = marks(&game.mounted(), &[], &BTreeSet::from(["scania.r"]));
         let (bytes, built) = crate::game_mod::build(&game.mounted(), &[], &GameFiles::new(Vec::new()), &found).unwrap();
         assert_eq!(built.cab_marks, 1);
-        let at = game.0.join("westplay.scs");
+        let at = game.0.join("atsgps.scs");
         std::fs::write(&at, bytes).unwrap();
         let archive = Archive::open(&at).unwrap();
         let read = |path: &str| archive.read(path).unwrap();

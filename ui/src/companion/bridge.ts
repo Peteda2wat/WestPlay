@@ -37,7 +37,7 @@ export function on<T>(event: string, handler: (payload: T) => void): () => void 
   }
 }
 
-/** WestPlay's version: the app's own; in the preview, the workspace's (vite.config.ts). */
+/** ATS GPS's version: the app's own; in the preview, the workspace's (vite.config.ts). */
 export function appVersion(): Promise<string> {
   if (IN_APP) return import('@tauri-apps/api/app').then((app) => app.getVersion())
   return Promise.resolve(__WESTPLAY_VERSION__)

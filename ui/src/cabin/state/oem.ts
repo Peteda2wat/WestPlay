@@ -3,7 +3,7 @@ import { frameRowAt, SCREEN_HEIGHT, type ScreenLayoutId } from './screen'
 /**
  * The truck brands' own screen strips that stay on screen around CarPlay (Glass style).
  *
- * WestPlay never draws them: it leaves the strip's area transparent, and the game's own screen shows
+ * ATS GPS never draws them: it leaves the strip's area transparent, and the game's own screen shows
  * through there, so the strip is the truck's real one (Shell.tsx).
  */
 export type OemStripId = 'daf-2021' | 'scania-2025'

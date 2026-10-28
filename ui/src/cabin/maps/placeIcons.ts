@@ -5,7 +5,7 @@ import type { Appearance } from '../state/appearance'
  * Maps: a round badge in the category's colour with a white glyph (dark on a light badge), lifted off the
  * map by a soft shadow, and its name beside it in the same colour: its own (a dealer's brand, a company, a
  * port), or else what it is (the game's map legend, in the player's language). Transit and parking are rounded squares, as there: ferry ports, train terminals, truck
- * parks. Drawn here, in WestPlay's own shapes and type, at the screen's pixel ratio, when the map first asks
+ * parks. Drawn here, in ATS GPS's own shapes and type, at the screen's pixel ratio, when the map first asks
  * for them; drawn again when the appearance changes (the names' colours follow it).
  */
 

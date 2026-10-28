@@ -8,16 +8,16 @@ const GAME_LANGUAGES =
   )
 
 describe('the HVT map message', () => {
-  it('is in every language the game has, naming HVT and WestPlay', () => {
+  it('is in every language the game has, naming HVT and ATS GPS', () => {
     expect(Object.keys(HVT_MAP_MESSAGES).sort()).toEqual(GAME_LANGUAGES)
     for (const message of Object.values(HVT_MAP_MESSAGES)) {
       expect(message).toContain('HVT')
-      expect(message).toContain('WestPlay')
+      expect(message).toContain('ATS GPS')
     }
   })
 
   it('says it in the game language, or English', () => {
-    expect(hvtMapMessage('en_us')).toBe('Maps by HVT are not allowed in WestPlay. Contact WestPlay to learn more.')
+    expect(hvtMapMessage('en_us')).toBe('Maps by HVT are not allowed in ATS GPS. Contact ATS GPS to learn more.')
     expect(hvtMapMessage('tr_tr')).toMatch(/^HVT haritalarına/)
     expect(hvtMapMessage('xx_mod')).toBe(HVT_MAP_MESSAGES.en_us)
     expect(hvtMapMessage(null)).toBe(HVT_MAP_MESSAGES.en_us)

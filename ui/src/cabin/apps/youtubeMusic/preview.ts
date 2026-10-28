@@ -9,7 +9,7 @@ import type {
 } from '../../../shared/host'
 
 /**
- * YouTube Music's preview, outside WestPlay (a plain browser): an invented catalogue (made-up artists, albums,
+ * YouTube Music's preview, outside ATS GPS (a plain browser): an invented catalogue (made-up artists, albums,
  * playlists and songs, no pictures: the app draws their covers) answering every question as YouTube Music
  * would, after a moment, and playing it here (youtubeMusic.ts).
  */

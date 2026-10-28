@@ -1,4 +1,4 @@
-//! Bridge between the game plugin (`westplay.dll`, inside ETS2/ATS) and the WestPlay app.
+//! Bridge between the game plugin (`atsgps.dll`, inside ETS2/ATS) and the WestPlay app.
 //!
 //! - **Frames** travel through a shared D3D11 texture created by the app and opened by the plugin by
 //!   name ([`frame_texture_name`]). Its keyed mutex is used as a plain lock (both sides use
@@ -96,7 +96,7 @@ pub fn tablet_layout() -> usize {
     screen_layouts().iter().position(|layout| layout.id == TABLET).expect("screen_layouts.txt has the tablet")
 }
 
-/// The file in WestPlay's own folder, beside `westplay.scs`, of the vehicles WestPlay's tablet shows nothing in (owner
+/// The file in WestPlay's own folder, beside `atsgps.scs`, of the vehicles WestPlay's tablet shows nothing in (owner
 /// 2026-10-26: the tablet a hookup any vehicle's dashboard set takes, so blank where it mustn't show): their ids'
 /// hashes ([`cityhash::city_hash64`]), each in hex on a line of its own. Written by setup with the mod, read by the
 /// plugin as the truck changes.

@@ -20,7 +20,7 @@ export function lineAt(lines: Lyrics['lines'], position: number): number {
   return found
 }
 
-/** The preview's words (WestPlay's own, of the road), a line every few seconds from the song's start, in stanzas
+/** The preview's words (ATS GPS's own, of the road), a line every few seconds from the song's start, in stanzas
  * of four: as a song's synced words come. */
 const PREVIEW_STANZAS = [
   [
@@ -53,7 +53,7 @@ export function previewLyrics(colors?: Lyrics['colors'], provider?: string): Lyr
   return {
     synced: true,
     lines,
-    writers: ['WestPlay'],
+    writers: ['ATS GPS'],
     ...(colors ? { colors } : {}),
     ...(provider ? { provider } : {}),
   }

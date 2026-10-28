@@ -191,8 +191,8 @@ unsafe fn init(host: *const Host, desc: *mut PluginDesc) -> bool {
         if let Some(desc) = desc.as_mut()
             && desc.size as usize >= size_of::<PluginDesc>()
         {
-            fill(&mut desc.name, "WestPlay");
-            fill(&mut desc.author, "WestPlay");
+            fill(&mut desc.name, "ATS GPS");
+            fill(&mut desc.author, "ATS GPS");
             fill(&mut desc.version, env!("CARGO_PKG_VERSION"));
             fill(&mut desc.description, "The truck's screen as CarPlay: shows the players around you on its map.");
         }
@@ -238,7 +238,7 @@ unsafe fn init(host: *const Host, desc: *mut PluginDesc) -> bool {
             }
         }
         streamed.remove(&0);
-        let text = format!("WestPlay {}: the players around you go to its map", env!("CARGO_PKG_VERSION"));
+        let text = format!("ATS GPS {}: the players around you go to its map", env!("CARGO_PKG_VERSION"));
         (core.log_message)(host.ctx, LOG_INFO, SdkString { ptr: text.as_ptr().cast(), size: text.len() as u32 });
         log!("TruckersMP: SDK session open, {} players streamed in", streamed.len());
         *session() = Some(Session { ctx: host.ctx, core, players, handle, vehicle, network, streamed });
@@ -381,7 +381,7 @@ mod tests {
     #[test]
     fn fills_a_descriptors_field_cut_and_terminated() {
         let mut field = [0xffu8; 8];
-        fill(&mut field, "WestPlay plugin");
-        assert_eq!(&field, b"WestPla\0");
+        fill(&mut field, "ATS GPS plugin");
+        assert_eq!(&field, b"ATS GPS\0");
     }
 }

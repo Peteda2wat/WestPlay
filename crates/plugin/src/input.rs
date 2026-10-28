@@ -632,7 +632,7 @@ pub fn on_frame() {
     let off = if !toggle_mode() {
         Some("held mode")
     } else if !bridge::screen_on() {
-        Some("WestPlay not on the screen")
+        Some("ATS GPS not on the screen")
     } else if crate::telemetry::paused() {
         // Its menu wants the mouse; back in the game, a press uses the screen again.
         Some("the game paused")

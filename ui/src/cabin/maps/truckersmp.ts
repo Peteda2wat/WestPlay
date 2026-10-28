@@ -26,7 +26,7 @@ export type { Area, OtherPlayer } from './truckersmpFeed'
  * Names and the rest are dropped as they're read: only where each truck is, where it's heading and how it
  * moves are kept, and its number, to measure that and to leave the player's own truck out.
  *
- * Only what WestPlay shows is read (owner 2026-10-21): every second, the part of the map a screen shows
+ * Only what ATS GPS shows is read (owner 2026-10-21): every second, the part of the map a screen shows
  * (the map says which: [`setMapView`]) and the player's own surroundings; while a route is offered, its
  * corridor (the card says which: [`setRouteCorridor`]) every few seconds, for its traffic. The player's
  * server is the one with a truck where theirs is, looked for in a small square round it.

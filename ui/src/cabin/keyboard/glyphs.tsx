@@ -1,6 +1,6 @@
 import type { Shift } from './editing'
 
-/** The keyboard's symbols, drawn for WestPlay (no SF Symbols): shift (outlined, filled, locked), delete,
+/** The keyboard's symbols, drawn for ATS GPS (no SF Symbols): shift (outlined, filled, locked), delete,
  * the globe and hide. */
 
 export function ShiftGlyph({ shift }: { shift: Shift }) {

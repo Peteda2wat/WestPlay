@@ -262,7 +262,7 @@ function playlistItem(playlist: Playlist): AppleMusicItem {
 }
 
 const STATIONS: AppleMusicItem[] = [
-  { name: 'WestPlay Radio 1', by: 'The new music that matters.', color: '#e0324a', live: true },
+  { name: 'ATS GPS Radio 1', by: 'The new music that matters.', color: '#e0324a', live: true },
   { name: 'Highway Hits', by: 'Hits for the whole route.', color: '#2a6fd6', live: true },
   { name: 'Rock Station', by: '', color: '#8a2e1e', live: false },
   { name: 'Chill Station', by: '', color: '#3a8a7a', live: false },

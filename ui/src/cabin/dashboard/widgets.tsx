@@ -108,7 +108,7 @@ function SpotifyWidget({ spotify }: { spotify: NonNullable<ReturnType<typeof use
 /**
  * Now Playing's music: a source's track, tinted by its album art (a blurred copy behind the glass). Track
  * changes animate (the new cover waited for, the text sliding, cover and tint crossfading). The track opens
- * its app (if WestPlay has one for it); the controls work in place, on what's playing now.
+ * its app (if ATS GPS has one for it); the controls work in place, on what's playing now.
  */
 function MusicWidget({
   source,

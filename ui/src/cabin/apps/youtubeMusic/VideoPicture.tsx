@@ -8,7 +8,7 @@ import { youtubeMusic, useYouTubeMusic } from './youtubeMusic'
  * The music video's picture, in Now Playing (its Video side): YouTube Music's own, placed under the page by the
  * host, the CarPlay area cut open over this element (Shell.tsx), its rounding included. Placed again whenever
  * it may have moved (Now Playing rising, the window's size); gone as it goes, or as the screen is handed to the
- * truck. Outside WestPlay (a plain browser), the cover stands in.
+ * truck. Outside ATS GPS (a plain browser), the cover stands in.
  */
 export function VideoPicture({ cover }: { cover: string | undefined }) {
   const frame = useRef<HTMLSpanElement>(null)

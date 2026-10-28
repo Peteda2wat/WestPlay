@@ -62,7 +62,7 @@ pub struct Site {
 /// sets its cookies on the way).
 pub const YOUTUBE: Site = Site {
     sign_in: "https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fwww.youtube.com%2F",
-    title: "Sign in to YouTube - WestPlay",
+    title: "Sign in to YouTube - ATS GPS",
     home: "https://www.youtube.com/",
     not_yet: Some("signin"),
     page_says: None,
@@ -70,12 +70,12 @@ pub const YOUTUBE: Site = Site {
 
 /// Google's sign-in for YouTube Music: YouTube's own (YouTube Music shares YouTube's sign-in: its cookies are
 /// YouTube's), coming back to YouTube, which sets them.
-pub const YOUTUBE_MUSIC: Site = Site { title: "Sign in to YouTube Music - WestPlay", ..YOUTUBE };
+pub const YOUTUBE_MUSIC: Site = Site { title: "Sign in to YouTube Music - ATS GPS", ..YOUTUBE };
 
 /// Spotify's sign-in, coming back to its web player.
 pub const SPOTIFY: Site = Site {
     sign_in: "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
-    title: "Sign in to Spotify - WestPlay",
+    title: "Sign in to Spotify - ATS GPS",
     home: "https://open.spotify.com/",
     not_yet: None,
     page_says: None,
@@ -84,7 +84,7 @@ pub const SPOTIFY: Site = Site {
 /// Spotify's sign-up, coming back to its web player signed in to the new account.
 pub const SPOTIFY_SIGN_UP: Site = Site {
     sign_in: "https://www.spotify.com/signup?forward_url=https%3A%2F%2Fopen.spotify.com%2F",
-    title: "Sign up for Spotify - WestPlay",
+    title: "Sign up for Spotify - ATS GPS",
     home: "https://open.spotify.com/",
     not_yet: None,
     page_says: None,
@@ -93,7 +93,7 @@ pub const SPOTIFY_SIGN_UP: Site = Site {
 /// Apple Music's sign-in: the dialog of its own web player, opened at once (`apple_music_sign_in.js`).
 pub const APPLE_MUSIC: Site = Site {
     sign_in: "https://music.apple.com/",
-    title: "Sign in to Apple Music - WestPlay",
+    title: "Sign in to Apple Music - ATS GPS",
     home: "https://music.apple.com/",
     not_yet: None,
     page_says: Some(include_str!("apple_music_sign_in.js")),

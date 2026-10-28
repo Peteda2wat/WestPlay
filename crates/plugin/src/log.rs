@@ -132,7 +132,7 @@ fn queue(job: Job) -> Result<(), Job> {
 }
 
 pub fn log_dir() -> &'static PathBuf {
-    LOG_DIR.get_or_init(|| documents_dir().join("WestPlay").join("logs"))
+    LOG_DIR.get_or_init(|| documents_dir().join("ATS GPS").join("logs"))
 }
 
 /// The player's Documents folder (Windows' own, wherever it's moved).
