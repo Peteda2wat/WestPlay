@@ -2,7 +2,7 @@
 //! SDK plugins from (and TruckersMP's client too).
 //!
 //! Installing writes the new plugin beside the one there, then moves it over it, so the game never finds
-//! half a file. Two things can stand in the way, and each is told apart: the game running (it holds the
+//! half a file. One still held with the game closed is renamed out of the way first. Two things can stand in the way, and each is told apart: the game running (it holds the
 //! plugin it loaded: close it first), and a folder that needs administrator rights (Steam installed under
 //! Program Files). For the latter WestPlay starts itself again with them, for that one copy only
 //! ([`install_as_administrator`]): Windows asks the player once, and nothing else runs with those rights.
@@ -92,7 +92,7 @@ pub fn state(game: &Game, ours: &Path) -> io::Result<State> {
 
 /// Installs WestPlay's plugin (`ours`) in `game`: written beside the one there, then moved over it.
 pub fn install(game: &Game, ours: &Path) -> Result<PathBuf, InstallError> {
-    copy_into(ours, &game.plugins_dir())
+    copy_into(ours, &game.plugins_dir(), crate::game::running())
 }
 
 /// Takes the plugin out of `game` (only WestPlay's own file, and a copy left half-written).
@@ -106,6 +106,7 @@ fn remove_from(plugins: &Path) -> Result<(), InstallError> {
     if target.exists() {
         std::fs::OpenOptions::new().write(true).open(&target)?;
     }
+    remove_set_aside(plugins);
     for file in [target, plugins.join(format!("{FILE_NAME}.partial")), plugins.join(LEGACY_FILE_NAME)] {
         match std::fs::remove_file(&file) {
             Ok(()) => {}
@@ -116,14 +117,39 @@ fn remove_from(plugins: &Path) -> Result<(), InstallError> {
     Ok(())
 }
 
-fn copy_into(ours: &Path, plugins: &Path) -> Result<PathBuf, InstallError> {
+/// Plugins set aside while something still held them ([`copy_into`]): `atsgps.dll.old-<n>`, which the game
+/// doesn't load (not `.dll`). Taken out once nothing holds them; those still held are left for next time.
+fn remove_set_aside(plugins: &Path) {
+    let Ok(entries) = std::fs::read_dir(plugins) else { return };
+    for entry in entries.flatten() {
+        if entry.file_name().to_string_lossy().starts_with(&format!("{FILE_NAME}.old-")) {
+            let _ = std::fs::remove_file(entry.path());
+        }
+    }
+}
+
+/// `game_running`: the game is running (it holds the plugin it loaded: it's replaced once the game is closed).
+fn copy_into(ours: &Path, plugins: &Path, game_running: bool) -> Result<PathBuf, InstallError> {
     let target = plugins.join(FILE_NAME);
+    remove_set_aside(plugins);
     // The game holds the plugin it loaded: tell that apart from a folder needing rights (moving over a
     // loaded file is refused as "access denied" too). Opening it to write, as nobody may while it's loaded,
     // says "in use"; it's closed again untouched. (Append alone isn't enough: Windows lets a loaded DLL be
     // opened for that.)
-    if target.exists() {
-        std::fs::OpenOptions::new().write(true).open(&target)?;
+    if target.exists()
+        && let Err(error) = std::fs::OpenOptions::new().write(true).open(&target)
+    {
+        let error = InstallError::from(error);
+        // Held with the game closed: an ended game kept by another program (it happens here, 2026-10-28). A
+        // loaded DLL can still be renamed: set aside, and the new one goes in under the name.
+        if game_running || !matches!(error, InstallError::InUse) {
+            return Err(error);
+        }
+        let mut n = 0;
+        while plugins.join(format!("{FILE_NAME}.old-{n}")).exists() {
+            n += 1;
+        }
+        std::fs::rename(&target, plugins.join(format!("{FILE_NAME}.old-{n}")))?;
     }
     std::fs::create_dir_all(plugins)?;
     let partial = plugins.join(format!("{FILE_NAME}.partial"));
@@ -189,7 +215,7 @@ fn as_administrator(arguments: String) -> Result<(), InstallError> {
 pub fn run_as_administrator_copy(args: &[String]) -> Option<i32> {
     let done = match args {
         [_, argument, ours, plugins] if argument == COPY_ARGUMENT => {
-            copy_into(Path::new(ours), Path::new(plugins)).map(|_| ())
+            copy_into(Path::new(ours), Path::new(plugins), crate::game::running()).map(|_| ())
         }
         [_, argument, plugins] if argument == REMOVE_ARGUMENT => remove_from(Path::new(plugins)),
         _ => return None,
@@ -255,12 +281,18 @@ mod tests {
         std::fs::copy(r"C:\Windows\System32\version.dll", &installed).unwrap();
         // SAFETY: a copy of a system DLL, loaded only to hold the file open, and freed below.
         let module = unsafe { LoadLibraryW(&HSTRING::from(installed.as_os_str())) }.unwrap();
-        assert!(matches!(install(&game, &ours), Err(InstallError::InUse)));
+        let plugins = game.plugins_dir();
+        assert!(matches!(copy_into(&ours, &plugins, true), Err(InstallError::InUse)));
         assert!(matches!(uninstall(&game), Err(InstallError::InUse) | Err(InstallError::NeedsAdministrator)));
+        // Held with the game closed (an ended game another program keeps): set aside, the new one put in.
+        copy_into(&ours, &plugins, false).unwrap();
+        assert_eq!(state(&game, &ours).unwrap(), State::Current);
+        assert!(plugins.join(format!("{FILE_NAME}.old-0")).exists());
         // SAFETY: the module was loaded above and is freed once.
         unsafe { FreeLibrary(module) }.unwrap();
+        // Let go of, the one set aside goes at the next install.
         install(&game, &ours).unwrap();
-        assert_eq!(state(&game, &ours).unwrap(), State::Current);
+        assert!(!plugins.join(format!("{FILE_NAME}.old-0")).exists());
         let _ = std::fs::remove_dir_all(root);
     }
 

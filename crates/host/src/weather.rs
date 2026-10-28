@@ -89,7 +89,10 @@ impl WeatherWatch {
             let mut failed: Option<(u32, Instant)> = None;
             let mut sent: Option<Option<Weather>> = None;
             loop {
-                let pid = bridge.bridge().plugin.pid.load(Ordering::Acquire);
+                // A crashed game leaves its pid behind: let go of it, so it can end.
+                let pid = Some(bridge.bridge().plugin.pid.load(Ordering::Acquire))
+                    .filter(|&pid| crate::is_running(pid))
+                    .unwrap_or(0);
                 if game.as_ref().map(|(process, _)| process.pid) != Some(pid) {
                     game = None;
                     let retry = failed.is_none_or(|(failed_pid, at)| failed_pid != pid || at.elapsed() >= RETRY_AFTER);

@@ -70,6 +70,10 @@ static SNAPSHOT: Mutex<Telemetry> = Mutex::new(Telemetry {
     steering: 0.0,
     multiplayer_time_offset: 0,
     next_rest_stop: 0,
+    trailer_known: false,
+    trailer_connected: false,
+    trailer_x: 0.0,
+    trailer_z: 0.0,
 });
 
 /// Where the driver's head is by default in the truck's cab (the "truck" configuration's `head.position`).
@@ -108,10 +112,14 @@ enum Field {
     Steering,
     MultiplayerTimeOffset,
     RestStop,
+    TrailerPlacement,
+    TrailerConnected,
 }
 
 const CHANNELS: &[(&str, u32, Field)] = &[
     ("truck.world.placement", SCS_VALUE_TYPE_DPLACEMENT, Field::Placement),
+    ("trailer.0.world.placement", SCS_VALUE_TYPE_DPLACEMENT, Field::TrailerPlacement),
+    ("trailer.0.connected", SCS_VALUE_TYPE_BOOL, Field::TrailerConnected),
     ("truck.speed", SCS_VALUE_TYPE_FLOAT, Field::Speed),
     ("truck.engine.rpm", SCS_VALUE_TYPE_FLOAT, Field::EngineRpm),
     ("truck.engine.gear", SCS_VALUE_TYPE_S32, Field::Gear),
@@ -425,6 +433,11 @@ unsafe fn on_channel_value(value: *const ScsValue, context: *mut c_void) {
             Field::Steering => s.steering = value.float(),
             Field::MultiplayerTimeOffset => s.multiplayer_time_offset = value.s32(),
             Field::RestStop => s.next_rest_stop = value.s32(),
+            Field::TrailerPlacement => {
+                let p = value.dplacement();
+                (s.trailer_known, s.trailer_x, s.trailer_z) = (true, p.x, p.z);
+            }
+            Field::TrailerConnected => s.trailer_connected = value.bool(),
         }
     }
 }
@@ -463,5 +476,7 @@ fn reset(s: &mut Telemetry, field: Field) {
         Field::Steering => s.steering = d.steering,
         Field::MultiplayerTimeOffset => s.multiplayer_time_offset = d.multiplayer_time_offset,
         Field::RestStop => s.next_rest_stop = d.next_rest_stop,
+        Field::TrailerPlacement => (s.trailer_known, s.trailer_x, s.trailer_z) = (false, d.trailer_x, d.trailer_z),
+        Field::TrailerConnected => s.trailer_connected = d.trailer_connected,
     }
 }

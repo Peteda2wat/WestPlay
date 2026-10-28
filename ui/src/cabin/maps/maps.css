@@ -187,6 +187,23 @@
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.35);
 }
 
+.map-trailer {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #34c759;
+  background: rgb(255 255 255 / 0.92);
+  border: 3px solid #fff;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.35);
+}
+
+.map-trailer svg {
+  width: 18px;
+  height: 18px;
+}
+
 .map-destination svg {
   width: 22px;
   height: 22px;

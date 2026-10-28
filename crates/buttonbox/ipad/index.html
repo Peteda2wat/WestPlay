@@ -191,7 +191,7 @@
   @keyframes glow { 50% { box-shadow: 0 0 22px var(--lit-glow); } }
   .wide-key { flex-direction: row; gap: 22px; font-size: 37px; }
   /* The key grid sits where the trip card was, narrower: smaller labels and icons. */
-  .keys .key { font-size: 18px; gap: 4px; letter-spacing: 0; padding: 0 2px; }
+  .keys .key { font-size: 16px; gap: 4px; letter-spacing: 0; padding: 0 2px; }
   .keys .key svg { width: 44px; height: 44px; }
   .keys .wide-key { font-size: 22px; gap: 12px; }
 
@@ -259,7 +259,7 @@
   </div>
 
   <!-- all the switches above the dials: a 5 x 6 grid of keys -->
-  <div class="panel keys" style="left:1422px;top:40px;width:540px;height:862px;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(6,1fr)">
+  <div class="panel keys" style="left:1422px;top:40px;width:540px;height:862px;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(6,1fr)">
     <div class="key" data-action="window_left_close" title="Left window close"><span>Window</span><i data-icon="doorUp"></i></div>
     <div class="key" data-action="window_right_close" title="Right window close"><span>Window</span><i data-icon="doorUpR"></i></div>
     <div class="key" id="refuelBtn" data-action="refuel"><span>Refuel</span><i data-icon="fuel"></i></div>

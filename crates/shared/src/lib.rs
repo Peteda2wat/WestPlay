@@ -27,7 +27,7 @@ pub fn bridge_name() -> String {
     format!("Local\\WestPlay.Bridge.v{BRIDGE_VERSION}")
 }
 pub const BRIDGE_MAGIC: u32 = u32::from_le_bytes(*b"WPB7");
-pub const BRIDGE_VERSION: u32 = 27;
+pub const BRIDGE_VERSION: u32 = 28;
 
 /// Size of the app's frames, and the base size of the screen textures in the mod (`westplay_setup::game_mod`
 /// builds them from these).
@@ -619,6 +619,12 @@ pub struct Telemetry {
     pub multiplayer_time_offset: i32,
     /// In-game minutes until the driver needs a break (the SDK's `rest.stop`; 0 with fatigue off).
     pub next_rest_stop: i32,
+    /// The first trailer (a job's is in the world from when the job is taken, hooked up or not): whether the
+    /// game reports one, whether it's hooked up, and where it is (metres, as `x`, `z`).
+    pub trailer_known: bool,
+    pub trailer_connected: bool,
+    pub trailer_x: f64,
+    pub trailer_z: f64,
 }
 
 /// Identity of the current truck, from the SDK's "truck" configuration.

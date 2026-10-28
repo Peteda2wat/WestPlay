@@ -36,6 +36,12 @@ export interface Telemetry {
   localScale: number
   /** In-game minutes until the driver needs a break (0 with fatigue off). */
   nextRestStop: number
+  /** The first trailer (a job's is there from when it's taken, hooked up or not): whether the game reports
+   * one, whether it's hooked up, and where it is (metres, as `x`, `z`). */
+  trailerKnown: boolean
+  trailerConnected: boolean
+  trailerX: number
+  trailerZ: number
   dashboardBacklight: number
   electricEnabled: boolean
   engineEnabled: boolean

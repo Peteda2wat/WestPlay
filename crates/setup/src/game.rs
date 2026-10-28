@@ -235,7 +235,8 @@ pub fn running() -> bool {
     while more {
         let length = entry.szExeFile.iter().position(|&c| c == 0).unwrap_or(entry.szExeFile.len());
         let name = String::from_utf16_lossy(&entry.szExeFile[..length]);
-        if Kind::ALL.iter().any(|kind| name.eq_ignore_ascii_case(kind.process())) {
+        // An ended game stays listed while anything holds a handle to it: not running.
+        if Kind::ALL.iter().any(|kind| name.eq_ignore_ascii_case(kind.process())) && alive(entry.th32ProcessID) {
             found = true;
             break;
         }
@@ -247,6 +248,22 @@ pub fn running() -> bool {
         let _ = CloseHandle(snapshot);
     }
     found
+}
+
+/// Whether the process `pid` (0: none) is running, not ended.
+pub fn alive(pid: u32) -> bool {
+    use windows::Win32::Foundation::{CloseHandle, WAIT_TIMEOUT};
+    use windows::Win32::System::Threading::{OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject};
+    if pid == 0 {
+        return false;
+    }
+    // SAFETY: a handle opened here, waited on without waiting (signalled: the process has ended), and closed.
+    unsafe {
+        let Ok(process) = OpenProcess(PROCESS_SYNCHRONIZE, false, pid) else { return false };
+        let running = WaitForSingleObject(process, 0) == WAIT_TIMEOUT;
+        let _ = CloseHandle(process);
+        running
+    }
 }
 
 /// The game's folder name in its Steam library, from its `appmanifest_<app id>.acf`.

@@ -1656,19 +1656,8 @@ fn is_in_front(game: u32) -> bool {
 
 /// Whether the process `game` (its pid; 0: no game) is running: the plugin clears its pid as the game closes,
 /// and a game that crashed leaves it behind, its process gone.
-fn is_running(game: u32) -> bool {
-    use windows::Win32::Foundation::{CloseHandle, WAIT_TIMEOUT};
-    use windows::Win32::System::Threading::{OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject};
-    if game == 0 {
-        return false;
-    }
-    // SAFETY: a handle opened here, waited on without waiting (signalled: the process has ended), and closed.
-    unsafe {
-        let Ok(process) = OpenProcess(PROCESS_SYNCHRONIZE, false, game) else { return false };
-        let running = WaitForSingleObject(process, 0) == WAIT_TIMEOUT;
-        let _ = CloseHandle(process);
-        running
-    }
+pub(crate) fn is_running(game: u32) -> bool {
+    westplay_setup::game::alive(game)
 }
 
 /// TruckersMP's client modules (ETS2's, ATS's): one loaded in the game, it runs under TruckersMP.

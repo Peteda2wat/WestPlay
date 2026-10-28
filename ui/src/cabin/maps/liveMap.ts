@@ -97,6 +97,9 @@ const TEXT_SIZE_SETTLE_MS = 350
 let stopTextSize: (() => void) | undefined
 /** Zoom levels per wheel notch (120 units). */
 const WHEEL_ZOOM = 0.5
+/** A flag: the route's end, and (green) where a job's trailer waits to be picked up, as the game's own map. */
+const FLAG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 21V4.2c3.6-1.9 6.6 1.6 11 0v8.6c-4.4 1.6-7.4-1.9-11 0" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
 const MIN_ZOOM = 9
 const MAX_ZOOM = 19.5
 /** How far the truck moves along the route before the route's head is drawn again from it, metres. */
@@ -114,6 +117,8 @@ interface LiveMap {
   puck: maplibregl.Marker
   /** The end of the route. */
   destination: maplibregl.Marker
+  /** Where the job's trailer waits, until it's hooked up. */
+  trailer: maplibregl.Marker
   /** The route drawn (`route`, as the store has it), as spans, with the span the rest of it is drawn after
    * and where its head was last drawn from (`null`: not drawn yet). */
   routeShown: { route: LiveState['route']; spans: Spans; restAfter: number | null; headFrom: Point | null } | null
@@ -291,10 +296,18 @@ function create(data: MapData, appearance: Appearance): LiveMap {
   const puck = new maplibregl.Marker({ element: puckElement, pitchAlignment: 'viewport', rotationAlignment: 'map' })
   const destinationElement = document.createElement('div')
   destinationElement.className = 'map-destination'
-  destinationElement.innerHTML =
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 21V4.2c3.6-1.9 6.6 1.6 11 0v8.6c-4.4 1.6-7.4-1.9-11 0" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+  destinationElement.innerHTML = FLAG
   const destination = new maplibregl.Marker({
     element: destinationElement,
+    pitchAlignment: 'viewport',
+    rotationAlignment: 'viewport',
+  })
+
+  const trailerElement = document.createElement('div')
+  trailerElement.className = 'map-trailer'
+  trailerElement.innerHTML = FLAG
+  const trailer = new maplibregl.Marker({
+    element: trailerElement,
     pitchAlignment: 'viewport',
     rotationAlignment: 'viewport',
   })
@@ -305,6 +318,7 @@ function create(data: MapData, appearance: Appearance): LiveMap {
     element,
     puck,
     destination,
+    trailer,
     routeShown: null,
     progress: null,
     raised: { roads: [], read: '', stale: true, at: -Infinity },
@@ -1002,7 +1016,13 @@ function syncRoute(target: LiveMap, now: number) {
   const head = map.getSource<GeoJSONSource>(ROUTE_HEAD_SOURCE)
   target.progress = null
   if (!rest || !head) return
-  const { route, routeNext } = useLive.getState()
+  const { route, routeNext, job, telemetry } = useLive.getState()
+  // (A freight market job's cargo counts as loaded already, on its trailer waiting at the company.)
+  const trailer = telemetry?.trailerKnown && !telemetry.trailerConnected && job?.active
+  if (trailer) {
+    target.trailer.setLngLat(toLngLat(telemetry.trailerX, telemetry.trailerZ))
+    if (!target.trailer.getElement().isConnected) target.trailer.addTo(map)
+  } else target.trailer.remove()
   if (target.routeShown?.route !== route) {
     target.routeShown = {
       route,
