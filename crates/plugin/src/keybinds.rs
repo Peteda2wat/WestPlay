@@ -42,10 +42,15 @@ pub fn on_frame() {
     }
 }
 
-/// Whether a binding counts now: with WestPlay on the screen, and either the screen in use (one with the
-/// interaction key) or the player not typing into WestPlay (one without it).
+/// Whether a binding counts now: one with the interaction key while WestPlay's screen in the truck is in use;
+/// one without it while WestPlay is on and the player isn't typing into it, in-game screen or not (the owner
+/// shows WestPlay only on the iPad, its media keys sent from there, 2026-10-28).
 fn counts(with_interaction_key: bool) -> bool {
-    bridge::screen_on() && if with_interaction_key { input::interaction_active() } else { !typing::typing() }
+    if with_interaction_key {
+        bridge::screen_on() && input::interaction_active()
+    } else {
+        bridge::switched_on() && !typing::typing()
+    }
 }
 
 /// Whether the game is kept from `key` (a virtual-key code; the generic Shift, Ctrl and Alt stand for both

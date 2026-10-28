@@ -60,7 +60,11 @@ pub fn host_alive() -> bool {
 /// Whether WestPlay is on the truck's screen: the app is running, the player hasn't switched it off, and the
 /// truck is one WestPlay supports.
 pub fn screen_on() -> bool {
-    host_alive()
-        && crate::screens::on_supported_truck()
-        && get().is_some_and(|bridge| bridge.host.screen_enabled.load(Ordering::Acquire) == 1)
+    switched_on() && crate::screens::on_supported_truck()
+}
+
+/// Whether WestPlay is on, in-game screen or not (shown only on the iPad): the app is running and the player
+/// hasn't switched it off.
+pub fn switched_on() -> bool {
+    host_alive() && get().is_some_and(|bridge| bridge.host.screen_enabled.load(Ordering::Acquire) == 1)
 }
