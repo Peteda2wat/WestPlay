@@ -206,7 +206,7 @@ fn quoted(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::FoundBy;
+    use crate::game::{FoundBy, Kind};
 
     /// A game folder (temporary) and WestPlay's plugin beside it.
     fn setup(name: &str) -> (Game, PathBuf, PathBuf) {
@@ -215,7 +215,8 @@ mod tests {
         std::fs::create_dir_all(&root).unwrap();
         let ours = root.join("ours.dll");
         std::fs::write(&ours, b"the plugin, version 2").unwrap();
-        let game = Game { dir: root.join("game"), found_by: FoundBy::Chosen, version: None, dlcs: vec![] };
+        let game =
+            Game { dir: root.join("game"), kind: Kind::Ets2, found_by: FoundBy::Chosen, version: None, dlcs: vec![] };
         (game, ours, root)
     }
 

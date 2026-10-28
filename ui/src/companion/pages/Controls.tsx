@@ -77,7 +77,13 @@ function Keybinds({
   const [refused, setRefused] = useState<string | null>(null)
   const screenKey = settings.interaction.key
   const keyName = useKeyName(screenKey, words)
-  const names: Record<KeybindId, string> = { volumeUp: w.volumeUp, volumeDown: w.volumeDown, playPause: w.playPause }
+  const names: Record<KeybindId, string> = {
+    volumeUp: w.volumeUp,
+    volumeDown: w.volumeDown,
+    playPause: w.playPause,
+    previous: w.previousTrack ?? 'Previous track',
+    next: w.nextTrack ?? 'Next track',
+  }
   const listen = useCallback(
     (which: KeybindId | 'screen') => (on: boolean) => {
       setListening(on ? which : null)

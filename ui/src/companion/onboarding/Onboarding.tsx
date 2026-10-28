@@ -24,6 +24,7 @@ import {
 } from '../useHostStatus'
 import { DEFAULT_KEY, type SettingsState } from '../useSettings'
 import { memoryNote } from '../pages/page'
+import { GAME_NAMES, setGameKind } from '../game'
 import { companionWords } from '../pages/words'
 import '../room/room.css'
 import { type Banner, GlassCursor, type Pose, TruckScreen } from '../room/TruckScreen'
@@ -147,6 +148,7 @@ export function Onboarding({
   // The game's language, as WestPlay speaks in the cab (and the map's place names are in); Windows' for a
   // game never started.
   const [code] = useState(() => initial.language ?? languageOf(navigator.languages))
+  setGameKind(game?.kind)
   const words = wordsFor(code)
 
   // When the screen's move to its next place ends. Its content changes after that, not during it: the
@@ -349,7 +351,7 @@ function ChooseGame({
     'dashboard',
     GLOW.dashboard,
     game
-      ? { title: 'Euro Truck Simulator 2', detail: gameSummary(words, game) }
+      ? { title: GAME_NAMES[game.kind], detail: gameSummary(words, game) }
       : { title: w.titleMissing, detail: w.bannerMissing },
   )
 

@@ -256,7 +256,7 @@ fn fnv1a(bytes: &[u8]) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::{FoundBy, Version};
+    use crate::game::{FoundBy, Kind, Version};
     use crate::profiles::MapContent;
 
     fn a_mod(package: &str, sectors: &[&str], definitions: bool) -> Mod {
@@ -278,6 +278,7 @@ mod tests {
     fn game() -> Game {
         Game {
             dir: PathBuf::new(),
+            kind: Kind::Ets2,
             found_by: FoundBy::Steam,
             version: Some(Version([1, 61, 1, 9])),
             dlcs: vec!["dlc_east".into()],

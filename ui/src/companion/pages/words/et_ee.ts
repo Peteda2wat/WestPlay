@@ -93,6 +93,8 @@ export const words: CompanionWords = {
     volumeUp: 'Valjemaks',
     volumeDown: 'Vaiksemaks',
     playPause: 'Esita/Paus',
+    previousTrack: 'Eelmine lugu',
+    nextTrack: 'Järgmine lugu',
     pressKey: 'Vajuta klahvi…',
     keybindsNote:
       'Klõpsa kiirklahvil ja vajuta siis uut klahvi. Kui hoiad samal ajal all {key}, töötab see ainult ekraani kasutades. Esc tühistab.',

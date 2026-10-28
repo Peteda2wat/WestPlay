@@ -16,12 +16,30 @@ use crate::log;
 
 static HOOK_TARGETS: Mutex<Vec<usize>> = Mutex::new(Vec::new());
 
+/// The hooks named in `hooks_off.txt` beside the logs (one name per line, as the log names them), left out: to find
+/// which one a game crash comes with (owner 2026-10-27: ATS crashing in NVIDIA's driver with the plugin in).
+fn switched_off(name: &str) -> bool {
+    static OFF: std::sync::LazyLock<Vec<String>> = std::sync::LazyLock::new(|| {
+        let path = crate::log::log_dir().parent().map(|dir| dir.join("hooks_off.txt"));
+        let text = path.and_then(|path| std::fs::read_to_string(path).ok()).unwrap_or_default();
+        text.lines().map(str::trim).filter(|line| !line.is_empty()).map(str::to_owned).collect()
+    });
+    let off = OFF.iter().any(|line| line == name);
+    if off {
+        log!("{name}: switched off (hooks_off.txt)");
+    }
+    off
+}
+
 /// Hooks the function at `target`; `original` receives the trampoline that calls the original function.
 ///
 /// # Safety
 /// `target` is the start of a function in this process, and `detour` a function of the same signature that
 /// calls on through `original`; created disabled, on until [`enable_all`].
 pub unsafe fn hook(target: usize, detour: *mut c_void, original: &AtomicUsize, name: &str) -> Result<(), String> {
+    if switched_off(name) {
+        return Ok(());
+    }
     // SAFETY: a function and its detour of the same signature (the caller's contract).
     let trampoline = unsafe { MinHook::create_hook(target as *mut c_void, detour) }
         .map_err(|e| format!("create_hook {name}: {e:?}"))?;

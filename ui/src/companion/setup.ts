@@ -1,9 +1,11 @@
+import type { GameKind } from './game'
 import { call } from './bridge'
 import type { HostStatus } from './useHostStatus'
 
 /** An install of the game. Mirrors the app's `setup::GameInfo`. */
 export interface GameInfo {
   dir: string
+  kind: GameKind
   foundBy: 'steam' | 'installed' | 'chosen'
   version: string | null
   /** WestPlay has been tried with this version. */

@@ -4,7 +4,7 @@ import type { MusicPlayer } from './musicWithGame'
 
 /**
  * The player's keybinds pressed in the game (the companion's Controls; the host's `keybind` message): the
- * music's volume a step up or down, or it paused or played on. It's the player playing here, else the one
+ * music's volume a step up or down, it paused or played on, or its previous or next track. It's the player playing here, else the one
  * that last played here; with none, nothing happens.
  */
 
@@ -32,6 +32,10 @@ export function keybinds(players: readonly MusicPlayer[]): {
     press(action) {
       const player = current()
       if (!player) return null
+      if (action === 'previous' || action === 'next') {
+        player.skip(action === 'next' ? 1 : -1)
+        return null
+      }
       if (action === 'playPause') {
         // A fade with the game stops where it is; the volume the player chose comes back with it.
         const left = levelOf(player.name) !== undefined

@@ -48,7 +48,7 @@ const SHOW_ANYWAY: Duration = Duration::from_secs(8);
 /// The companion's page has drawn its first screen: the window shows.
 #[tauri::command]
 fn companion_ready(window: WebviewWindow) {
-    if !window.is_visible().unwrap_or(false) {
+    if !started_hidden() && !window.is_visible().unwrap_or(false) {
         westplay_host::startup::mark("app: window shown");
         let _ = window.show();
         let _ = window.set_focus();
@@ -153,6 +153,88 @@ fn update_settings(settings: Settings, store: State<SettingsStore>, app: AppHand
     Ok(settings)
 }
 
+/// Started by Windows at sign-in (`HIDDEN`): the app waits in the notification area, window hidden.
+const HIDDEN: &str = "--hidden";
+
+fn started_hidden() -> bool {
+    std::env::args().any(|arg| arg == HIDDEN)
+}
+
+/// WestPlay starts with Windows: this exe, hidden, in the user's Run key (kept current on every start, so a
+/// moved install still starts). The uninstaller takes it out (installer/hooks.nsh).
+fn register_autostart() {
+    use windows::Win32::System::Registry::{HKEY_CURRENT_USER, REG_SZ, RegSetKeyValueW};
+    use windows::core::{HSTRING, w};
+    let Ok(exe) = std::env::current_exe() else { return };
+    let command: Vec<u16> = format!("\"{}\" {HIDDEN}", exe.display()).encode_utf16().chain([0]).collect();
+    // SAFETY: the value is our own null-terminated UTF-16 buffer, its size given in bytes.
+    let status = unsafe {
+        RegSetKeyValueW(
+            HKEY_CURRENT_USER,
+            w!(r"Software\Microsoft\Windows\CurrentVersion\Run"),
+            &HSTRING::from("WestPlay"),
+            REG_SZ.0,
+            Some(command.as_ptr().cast()),
+            (command.len() * 2) as u32,
+        )
+    };
+    if status.is_err() {
+        westplay_host::log!("[app] couldn't add WestPlay to Windows' startup: {status:?}");
+    }
+}
+
+/// Truck Remote starts WestPlay with itself and, quitting, asks it to quit too by setting this event (owner
+/// 2026-10-27: one program to run on the PC): WestPlay quits as its tray's Quit does.
+fn quit_when_asked(app: AppHandle) {
+    use windows::Win32::System::Threading::{CreateEventW, INFINITE, WaitForSingleObject};
+    use windows::core::w;
+    // SAFETY: a plain call with a static name; the handle stays open for the process's life (never closed).
+    let Ok(event) = (unsafe { CreateEventW(None, false, false, w!(r"Local\WestPlay.Quit")) }) else { return };
+    let raw = event.0 as usize;
+    std::thread::spawn(move || {
+        // SAFETY: the event's handle, open for the process's life (above).
+        unsafe { WaitForSingleObject(windows::Win32::Foundation::HANDLE(raw as *mut _), INFINITE) };
+        westplay_host::log!("[app] Truck Remote asked WestPlay to quit");
+        app.exit(0);
+    });
+}
+
+/// Shows the companion window (from the notification area).
+fn show_main(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+/// WestPlay's icon in the notification area: a click opens the window, its menu opens it or quits.
+fn add_tray(app: &tauri::App) -> tauri::Result<()> {
+    use tauri::menu::{Menu, MenuItem};
+    use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+    let open = MenuItem::with_id(app, "open", "Open WestPlay", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit WestPlay", true, None::<&str>)?;
+    let mut tray = TrayIconBuilder::with_id("westplay")
+        .tooltip("WestPlay")
+        .menu(&Menu::with_items(app, &[&open, &quit])?)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "open" => show_main(app),
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
+                show_main(tray.app_handle());
+            }
+        });
+    if let Some(icon) = app.default_window_icon() {
+        tray = tray.icon(icon.clone());
+    }
+    tray.build(app)?;
+    Ok(())
+}
+
 fn main() {
     // Started as administrator only to copy the plugin into the game (setup asked for it): that, and done.
     let args: Vec<String> = std::env::args().collect();
@@ -162,7 +244,10 @@ fn main() {
     // One WestPlay at a time: a second only says so (held until the app ends). Before the log starts: a second
     // making the log anew would empty the running one's.
     let Some(_instance) = westplay_host::Instance::claim() else {
-        westplay_host::tell_already_running();
+        // Started hidden, by Windows' sign-in or by Truck Remote (both at sign-in): no one to tell.
+        if !started_hidden() {
+            westplay_host::tell_already_running();
+        }
         return;
     };
     westplay_host::log::init();
@@ -212,10 +297,24 @@ fn main() {
             setup::remove_data,
             setup::leave_pc
         ])
+        // Closing the window keeps WestPlay running in the notification area (its menu quits it).
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event
+                && window.label() == "main"
+            {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .setup(move |app| {
             westplay_host::startup::mark("app: window set up");
+            add_tray(app)?;
+            register_autostart();
+            quit_when_asked(app.handle().clone());
             // A page that never says it's ready (it failed to load) still shows, rather than nothing at all.
-            if let Some(window) = app.get_webview_window("main") {
+            if let Some(window) = app.get_webview_window("main")
+                && !started_hidden()
+            {
                 std::thread::spawn(move || {
                     std::thread::sleep(SHOW_ANYWAY);
                     if !window.is_visible().unwrap_or(true) {

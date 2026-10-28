@@ -1,3 +1,4 @@
+import { forGame } from '../../game'
 /**
  * The companion's own words, past the onboarding: its sections, their pages, the tutorial and the uninstall,
  * in each of the game's 43 languages (by the game's codes, as the onboarding's words), in the game's language
@@ -101,6 +102,9 @@ export interface CompanionWords {
     volumeUp: string
     volumeDown: string
     playPause: string
+    /** Optional: languages without them show English. */
+    previousTrack?: string
+    nextTrack?: string
     /** A keybind listening for its new key. */
     pressKey: string
     /** `{key}`: the screen's key. */
@@ -271,7 +275,7 @@ const WORDS: Record<string, CompanionWords> = Object.fromEntries(
 
 /** The companion's words in the game's language `code` (`tr_tr`), English for one without. */
 export function companionWords(code: string): CompanionWords {
-  return WORDS[code] ?? WORDS.en_us
+  return forGame(WORDS[code] ?? WORDS.en_us)
 }
 
 export function companionLanguages(): string[] {

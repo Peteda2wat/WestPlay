@@ -15,7 +15,7 @@ use westplay_mapdata::archive::Archive;
 use westplay_mapdata::save;
 use westplay_mapdata::sii::Unit;
 
-use crate::game::{Game, STEAM_APP};
+use crate::game::Game;
 
 /// A profile of the player's.
 #[derive(Clone, Debug, PartialEq)]
@@ -106,7 +106,7 @@ impl Profile {
             dir: PathBuf::new(),
             cloud: false,
             last_saved: None,
-            map: "europe".into(),
+            map: crate::game::current().base_map().into(),
             mods: vec![],
         }
     }
@@ -128,7 +128,7 @@ pub fn map_of(map_path: Option<&str>) -> String {
     map_path
         .and_then(|path| path.trim().strip_prefix("/map/")?.strip_suffix(".mbd").map(str::to_owned))
         .filter(|name| !name.is_empty() && !name.contains('/'))
-        .unwrap_or_else(|| "europe".to_owned())
+        .unwrap_or_else(|| crate::game::current().base_map().to_owned())
 }
 
 /// Every profile, from the game's Documents folder (`game_documents`) and Steam Cloud's (under Steam's
@@ -138,7 +138,7 @@ pub fn find(game_documents: &Path, steam_userdata: Option<&Path>, game: Option<&
     let mut folders = vec![(game_documents.join("profiles"), false), (game_documents.join("steam_profiles"), true)];
     if let Some(userdata) = steam_userdata {
         for user in std::fs::read_dir(userdata).into_iter().flatten().flatten() {
-            folders.push((user.path().join(STEAM_APP).join("remote").join("profiles"), true));
+            folders.push((user.path().join(crate::game::current().steam_app()).join("remote").join("profiles"), true));
         }
     }
     let mod_dir = game_documents.join("mod");
@@ -335,8 +335,6 @@ enum ModFiles {
 
 /// Definitions the map is drawn from: in `def/` (`city.sii`, `city.<mod>.sii`…) and `def/world/`.
 const MAP_DEFINITIONS: [&str; 3] = ["city", "country", "company"];
-/// The base game's map.
-const BASE_MAP: &str = "europe";
 const WORLD_DEFINITIONS: [&str; 4] = ["road_look", "prefab", "terrain_material", "terrain_profile"];
 
 impl ModFiles {
@@ -400,7 +398,7 @@ impl ModFiles {
         let (mut maps, _) = self.list("map");
         // An archive may list the base map's sectors without listing `map` itself (TruckersMP's HQ pack).
         if maps.is_empty() {
-            maps.push(BASE_MAP.to_owned());
+            maps.push(crate::game::current().base_map().to_owned());
         }
         let sectors = maps
             .into_iter()
@@ -436,7 +434,7 @@ mod tests {
         let game = crate::places::steam()
             .into_iter()
             .flat_map(|steam| crate::places::steam_libraries(&steam))
-            .map(|library| library.join("steamapps").join("common").join("Euro Truck Simulator 2"))
+            .map(|library| library.join("steamapps").join("common").join(crate::game::current().name()))
             .find_map(|dir| Game::recognise(&dir));
         for named in installed(&documents, game.as_ref()) {
             println!("{named}");

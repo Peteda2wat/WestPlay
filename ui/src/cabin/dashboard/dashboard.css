@@ -354,3 +354,133 @@
     height: 22px;
   }
 }
+
+/* Truck Remote's trip card in the job tile (widgets.tsx TripCard). It has the most to say, so its slot takes
+   about half the column and the widgets above compact; its type scales with the slot's height (owner
+   2026-10-27: everything in it has to fit). */
+.widget-slot.open:has(.trip-card) {
+  flex-grow: 2.2;
+  container: trip-slot / size;
+}
+
+.job.trip-card {
+  justify-content: flex-start;
+  gap: 0.35em;
+  padding: 0.8em 1.1em;
+  font-size: min(calc(34px * var(--text-scale, 1)), 5.6cqh, 8.8cqw);
+  min-width: 0;
+  line-height: 1.22;
+}
+
+.trip-big {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em 0.8em;
+  align-self: stretch;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgb(128 128 128 / 0.35);
+}
+
+.trip-big div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trip-big b {
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.trip-big div:first-child b {
+  color: #0a84ff;
+}
+
+.trip-big span {
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.trip-big span,
+.trip-row .k {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.trip-rows {
+  align-self: stretch;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.7em;
+  row-gap: 0.1em;
+}
+
+/* Each row's label and value sit in the card's two columns; a long value wraps under itself. */
+.trip-row {
+  display: contents;
+}
+
+.trip-row .k {
+  white-space: nowrap;
+}
+
+.trip-row .late {
+  color: #ff453a;
+}
+
+/* Narrower than the usual column while the trip card shows, so the map gets more room (owner 2026-10-27);
+   the card's type scales down to fit. */
+.widgets:has(.trip-card) {
+  width: 31%;
+}
+
+/* The widgets above the trip card give it room: Now Playing and turn-by-turn compact. */
+.widgets:has(.trip-card) .widget {
+  padding: 10px 18px;
+  gap: 10px;
+}
+
+.widgets:has(.trip-card) .now-playing {
+  gap: 2px;
+}
+
+.widgets:has(.trip-card) .now-playing .art {
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+}
+
+.widgets:has(.trip-card) .now-playing .title {
+  font-size: calc(20px * var(--text-scale, 1));
+}
+
+.widgets:has(.trip-card) .now-playing .artist {
+  font-size: calc(17px * var(--text-scale, 1));
+}
+
+.widgets:has(.trip-card) .now-playing .controls button {
+  width: 48px;
+  height: 48px;
+}
+
+.widgets:has(.trip-card) .guidance-widget .guidance-step .maneuver-glyph {
+  width: 40px;
+  height: 40px;
+}
+
+.widgets:has(.trip-card) .guidance-widget .guidance-distance {
+  font-size: calc(30px * var(--text-scale, 1));
+}
+
+.widgets:has(.trip-card) .guidance-widget .guidance-instruction {
+  font-size: calc(18px * var(--text-scale, 1));
+}
+
+.widgets:has(.trip-card) .guidance-widget .guidance-then {
+  margin-top: 6px;
+  padding-top: 6px;
+  font-size: calc(16px * var(--text-scale, 1));
+}

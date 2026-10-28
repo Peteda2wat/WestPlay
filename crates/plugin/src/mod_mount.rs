@@ -118,7 +118,9 @@ fn game_folder(game_id: &str) -> Option<&'static str> {
 /// # Safety
 /// On the game's main thread, from the plugin's init.
 pub unsafe fn mount(game_id: &str) {
-    let path = crate::log::log_dir().parent().map(|dir| dir.join("westplay.scs"));
+    // Each game's mod is built from its own files (crates/setup `game_mod::file_name`).
+    let file = if game_id == "ats" { "westplay_ats.scs" } else { "westplay.scs" };
+    let path = crate::log::log_dir().parent().map(|dir| dir.join(file));
     let Some(path) = path.clone().filter(|path| path.is_file()) else {
         // The folder looked in whole, and what's in it: a player's "it's there" is then checked by this log.
         let looked = path.as_deref().map_or("no Documents folder".into(), |path| path.display().to_string());

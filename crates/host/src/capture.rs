@@ -97,11 +97,13 @@ impl Capture {
         self.abandoned.load(Ordering::Relaxed)
     }
 
-    /// Publishes the newest frame if it's waiting and due (called every turn of the host's loop).
-    pub fn flush(&self) {
+    /// Publishes the newest frame if it's waiting and due (called every turn of the host's loop), passing it to
+    /// `published` too once it's gone out (the remote screen's, `remote::Readback::keep`).
+    pub fn flush(&self, published: impl FnOnce(&ID3D11Texture2D)) {
         if self.broken() {
             return;
         }
+        let mut published = Some(published);
         let sent = flush(&self.mailbox, Instant::now(), |frame| {
             let texture: Result<ID3D11Texture2D> = frame
                 .Surface()
@@ -110,7 +112,12 @@ impl Capture {
             // A frame whose texture can't be had is done with all the same.
             let Ok(texture) = texture else { return true };
             match publish(&self.context, &texture, &self.shared) {
-                Lock::Held => true,
+                Lock::Held => {
+                    if let Some(published) = published.take() {
+                        published(&texture);
+                    }
+                    true
+                }
                 Lock::Busy => false,
                 // Done with: the pipeline is built anew, with frames to come.
                 Lock::Abandoned => {

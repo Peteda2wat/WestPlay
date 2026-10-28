@@ -5,10 +5,12 @@ import { GuidanceCard } from '../maps/GuidanceCard'
 import { DashboardMapControls, MapControls } from '../maps/MapControls'
 import { MapSearch } from '../maps/MapSearch'
 import { nextStop } from '../maps/nextStop'
+import { formatRealLeft, realMinutesLeft } from './destination'
 import { useMapData } from '../maps/mapData'
 import { RoadMap } from '../maps/RoadMap'
-import { useLive } from '../state/store'
+import { useCabin, useLive } from '../state/store'
 import { useText } from '../state/text'
+import { TripCard } from './widgets'
 import './map.css'
 import { cabClock } from '../../shared/host'
 
@@ -22,8 +24,9 @@ import { cabClock } from '../../shared/host'
  * On a map WestPlay doesn't allow (by HVT), it says so instead, in the game's language.
  */
 export function MapView({ interactive = false }: { interactive?: boolean }) {
-  const speed = useLive((state) => (state.telemetry ? speedKmh(state.telemetry.speed) : 0))
-  const limit = useLive((state) => (state.telemetry ? speedKmh(state.telemetry.navigationSpeedLimit) : 0))
+  const miles = useCabin((state) => state.miles)
+  const speed = useLive((state) => (state.telemetry ? speedKmh(state.telemetry.speed, miles) : 0))
+  const limit = useLive((state) => (state.telemetry ? speedKmh(state.telemetry.navigationSpeedLimit, miles) : 0))
   const data = useMapData()
   const hvtMap = useLive((state) => state.hvtMap)
   const text = useText()
@@ -58,7 +61,14 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
         )
       )}
       <div className="map-shade" />
-      <TripPill />
+      {/* The Maps app: the whole trip card (the Dashboard's), bottom left, in place of the pill (owner 2026-10-27). */}
+      {interactive ? (
+        <div className="map-trip">
+          <TripCard />
+        </div>
+      ) : (
+        <TripPill />
+      )}
       <div className="speed-stack">
         {limit > 0 && (
           <div className="speed-limit" aria-label={text.speedLimit(limit)}>
@@ -83,6 +93,8 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
  */
 function TripPill() {
   const text = useText()
+  const clock24 = useCabin((state) => state.clock24)
+  const miles = useCabin((state) => state.miles)
   const trip = useLive(
     useShallow((state) => {
       const telemetry = state.telemetry
@@ -98,18 +110,30 @@ function TripPill() {
           )
         : null
       const total = formatTripTime(minutes, text)
+      // The real-world driving time left: the game's time left divided by its time scale here.
+      const real = formatRealLeft(realMinutesLeft(telemetry, miles))
       return [
-        formatGameTime(Math.round(cabClock(telemetry, state.clockShift) + minutes)),
+        formatGameTime(Math.round(cabClock(telemetry, state.clockShift) + minutes), clock24),
+        real,
         stop ? `${formatTripTime(stop.minutes, text)} | ${total}` : total,
-        formatTripDistance(telemetry.navigationDistance, text.decimal),
+        formatTripDistance(telemetry.navigationDistance, text.decimal, miles),
       ]
     }),
   )
   if (!trip) return null
-  const [arrival, time, distance] = trip
+  const [arrival, real, time, distance] = trip
   return (
     <div className="eta-pill glass">
-      <b>{arrival}</b> {text.arrival} <span className="dot">·</span> {time} <span className="dot">·</span> {distance}
+      <b>{arrival}</b> {text.arrival}
+      {real && (
+        <>
+          {' '}
+          <span className="eta-real">
+            <span className="dot">·</span> <b>{real}</b> {text.realTime}
+          </span>
+        </>
+      )}{' '}
+      <span className="dot">·</span> {time} <span className="dot">·</span> {distance}
     </div>
   )
 }

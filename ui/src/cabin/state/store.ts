@@ -14,7 +14,10 @@ import {
   subscribeHostMessages,
   type Telemetry,
   toEqualizer,
+  toVoice,
   type TruckInfo,
+  DEFAULT_VOICE,
+  type VoiceSettings,
 } from '../../shared/host'
 import type { Maneuver, TurnKind } from '../maps/guidance'
 import {
@@ -72,6 +75,10 @@ interface CabinState {
   dashboardWidgets: Record<DashboardWidget, boolean>
   /** Album art on Now Playing and in Music (Settings, Now Playing): off, a plain note instead. */
   albumArt: boolean
+  /** The clock in 24 hours ("14:22"), or in 12 with AM/PM (Settings › Appearance › 24-Hour Time). */
+  clock24: boolean
+  /** Distances in miles and feet, speeds in mph (Settings › Appearance › Miles); off, km and km/h. */
+  miles: boolean
   /** The apps' text size, a step of `TEXT_SIZES` (Settings › Appearance › Text Size). */
   textSize: number
   /** The truck's own strip: kept (`auto`) or not, as set in the companion window (the host sends it). */
@@ -80,6 +87,9 @@ interface CabinState {
    * (Recommended, flat): kept with WestPlay's settings, the host sends them. */
   equalizer: Equalizer
   equalizerCustom: boolean
+  /** The route's turns spoken (Settings › Sound › Spoken Directions): kept with WestPlay's settings, the host
+   * sends them (the iPad's Nav Voice key mutes it there). */
+  voice: VoiceSettings
   power: PowerState
   /**
    * The screen is handed back to the truck (its stock screen shows, with WestPlay's button to come back),
@@ -91,6 +101,8 @@ interface CabinState {
   setWallpaper(id: string): void
   setDashboardWidget(widget: DashboardWidget, shown: boolean): void
   setAlbumArt(shown: boolean): void
+  setClock24(on: boolean): void
+  setMiles(on: boolean): void
   setTextSize(step: number): void
   /** One band of the curve, set in Settings › Equalizer (choosing Custom): played by every player, and kept with
    * WestPlay's settings. */
@@ -99,6 +111,8 @@ interface CabinState {
   chooseEqualizer(custom: boolean): void
   /** The curve flat again. */
   resetEqualizer(): void
+  /** A change to the spoken directions, in Settings: applied, and kept with WestPlay's settings. */
+  setVoice(change: Partial<VoiceSettings>): void
   setOemMode(mode: OemMode): void
   /** The player's choice, in Settings: applied, and kept with WestPlay's settings. */
   chooseOemMode(mode: OemMode): void
@@ -109,7 +123,7 @@ interface CabinState {
 /** What survives a restart of the app: where you were and your choices, never the power state. */
 type Persisted = Pick<
   CabinState,
-  'navigation' | 'appearanceMode' | 'wallpaperId' | 'dashboardWidgets' | 'albumArt' | 'textSize'
+  'navigation' | 'appearanceMode' | 'wallpaperId' | 'dashboardWidgets' | 'albumArt' | 'clock24' | 'miles' | 'textSize'
 >
 
 const ALL_WIDGETS: Record<DashboardWidget, boolean> = { nowPlaying: true, destination: true, weather: true }
@@ -122,10 +136,13 @@ export const useCabin = create<CabinState>()(
       wallpaperId: DEFAULT_WALLPAPER_ID,
       dashboardWidgets: ALL_WIDGETS,
       albumArt: true,
+      clock24: true,
+      miles: false,
       textSize: DEFAULT_TEXT_SIZE,
       oemMode: 'auto',
       equalizer: FLAT,
       equalizerCustom: false,
+      voice: DEFAULT_VOICE,
       power: INITIAL_POWER,
       navigate: (action) => set((state) => ({ navigation: navigate(state.navigation, action) })),
       setAppearanceMode: (appearanceMode) => set({ appearanceMode }),
@@ -137,6 +154,8 @@ export const useCabin = create<CabinState>()(
       setDashboardWidget: (widget, shown) =>
         set((state) => ({ dashboardWidgets: { ...state.dashboardWidgets, [widget]: shown } })),
       setAlbumArt: (albumArt) => set({ albumArt }),
+      setClock24: (clock24) => set({ clock24 }),
+      setMiles: (miles) => set({ miles }),
       setTextSize: (step) => set({ textSize: toTextSize(step) }),
       setEqualizerBand: (band, db) => {
         const equalizer = toEqualizer({ ...useCabin.getState().equalizer, [band]: db })
@@ -150,6 +169,11 @@ export const useCabin = create<CabinState>()(
       resetEqualizer: () => {
         set({ equalizer: FLAT })
         if (isInHost()) postToHost({ type: 'equalizer', custom: useCabin.getState().equalizerCustom, ...FLAT })
+      },
+      setVoice: (change) => {
+        const voice = { ...useCabin.getState().voice, ...change }
+        set({ voice })
+        if (isInHost()) postToHost({ type: 'voice', ...voice })
       },
       setOemMode: (oemMode) => set({ oemMode }),
       chooseOemMode: (oemMode) => {
@@ -186,6 +210,8 @@ export const useCabin = create<CabinState>()(
         wallpaperId: state.wallpaperId,
         dashboardWidgets: state.dashboardWidgets,
         albumArt: state.albumArt,
+        clock24: state.clock24,
+        miles: state.miles,
         textSize: state.textSize,
       }),
       // Stored data comes from an earlier version of WestPlay (or was edited): keep only what is valid.
@@ -218,6 +244,8 @@ function sanitize(stored: Partial<Persisted> | undefined): Partial<Persisted> {
     ) as Record<DashboardWidget, boolean>
   }
   if (typeof stored.albumArt === 'boolean') result.albumArt = stored.albumArt
+  if (typeof stored.clock24 === 'boolean') result.clock24 = stored.clock24
+  if (typeof stored.miles === 'boolean') result.miles = stored.miles
   if (stored.textSize !== undefined) result.textSize = toTextSize(stored.textSize)
   return result
 }
@@ -321,7 +349,7 @@ function previewTruck(): TruckInfo | null {
   const model = new URLSearchParams(location.search).get('truck')
   if (!model) return null
   const brandId = model.split('.')[0]
-  return { brandId, brand: brandId, id: `vehicle.${model}`, name: model }
+  return { brandId, brand: brandId, id: `vehicle.${model}`, name: model, fuelCapacity: 0 }
 }
 
 function previewLayout(): ScreenLayoutId | null {
@@ -458,6 +486,7 @@ function receiveHostMessage(now: () => number): (message: HostMessage) => void {
         useCabin.setState({
           equalizer: toEqualizer(message.equalizer),
           equalizerCustom: message.equalizerCustom === true,
+          voice: toVoice(message.voice),
         })
         setIcons({
           iconSet: message.iconSet ?? null,

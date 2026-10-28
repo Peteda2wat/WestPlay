@@ -167,3 +167,8 @@ FunctionEnd
     Abort "WebView2 Runtime: missing or damaged"
   ${EndIf}
 !macroend
+
+; The app adds itself to Windows' startup (app/src/main.rs register_autostart): taken out with it.
+!macro NSIS_HOOK_POSTUNINSTALL
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "WestPlay"
+!macroend

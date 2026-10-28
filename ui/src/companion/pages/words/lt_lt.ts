@@ -93,6 +93,8 @@ export const words: CompanionWords = {
     volumeUp: 'Garsiau',
     volumeDown: 'Tyliau',
     playPause: 'Leisti/Pristabdyti',
+    previousTrack: 'Ankstesnis takelis',
+    nextTrack: 'Kitas takelis',
     pressKey: 'Paspauskite klavišą…',
     keybindsNote:
       'Spustelėkite spartųjį klavišą ir paspauskite naują. Jei tuo metu laikote {key}, jis veiks tik naudojant ekraną. Esc atšaukia.',

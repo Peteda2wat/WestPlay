@@ -34,6 +34,8 @@ export interface Telemetry {
    * clock shows `gameTime` plus this ([`cabClock`]). */
   multiplayerTimeOffset: number
   localScale: number
+  /** In-game minutes until the driver needs a break (0 with fatigue off). */
+  nextRestStop: number
   dashboardBacklight: number
   electricEnabled: boolean
   engineEnabled: boolean
@@ -63,6 +65,8 @@ export interface TruckInfo {
   id: string
   /** Display model name, localized by the game, e.g. "XG+". */
   name: string
+  /** The fuel tank's size, litres (0 before the game says). */
+  fuelCapacity: number
 }
 
 /** The player's job (`westplay_shared::JobInfo`): names localized by the game. */
@@ -86,8 +90,9 @@ export interface JobInfo {
   income: number
 }
 
-/** What a keybind does: the music's volume a step up or down, or it paused or played on. */
-export type KeybindAction = 'volumeUp' | 'volumeDown' | 'playPause'
+/** What a keybind does: the music's volume a step up or down, it paused or played on, or the previous or next
+ * track. */
+export type KeybindAction = 'volumeUp' | 'volumeDown' | 'playPause' | 'previous' | 'next'
 
 export type HostMessage =
   | { type: 'telemetry'; data: Telemetry }
@@ -108,6 +113,8 @@ export type HostMessage =
       /** The player's own tone curve (Settings › Equalizer), and whether it plays (Custom) or not (Recommended). */
       equalizer?: Equalizer
       equalizerCustom?: boolean
+      /** The route's turns spoken (Settings › Sound › Spoken Directions). */
+      voice?: VoiceSettings
     }
   /** The player's own wallpapers and icon sets (shared/customize.ts), their files at `CABIN_FILES`. */
   | { type: 'customize'; wallpapers: CustomWallpaper[]; iconSets: IconSet[] }
@@ -260,8 +267,34 @@ export function toEqualizer(value: unknown): Equalizer {
   return { bass: band(told.bass), mid: band(told.mid), treble: band(told.treble) }
 }
 
+/** How loud the route's turns are spoken, as Apple Maps has it (owner 2026-10-27): louder, the music ducks deeper. */
+export type VoiceLevel = 'low' | 'normal' | 'loud'
+export const VOICE_LEVELS = ['low', 'normal', 'loud'] as const satisfies readonly VoiceLevel[]
+
+/** The route's turns spoken (the host's `settings::VoiceSettings`): no voice (`muted`, the level kept), its
+ * level, and the Windows voice speaking them (`null`: WestPlay's pick, the most natural one installed). */
+export interface VoiceSettings {
+  muted: boolean
+  level: VoiceLevel
+  name: string | null
+}
+
+export const DEFAULT_VOICE: VoiceSettings = { muted: false, level: 'normal', name: null }
+
+/** The voice settings as the host may send them (anything not one, as the default). */
+export function toVoice(value: unknown): VoiceSettings {
+  const told = (value ?? {}) as Partial<Record<keyof VoiceSettings, unknown>>
+  return {
+    muted: told.muted === true,
+    level: VOICE_LEVELS.includes(told.level as VoiceLevel) ? (told.level as VoiceLevel) : DEFAULT_VOICE.level,
+    name: typeof told.name === 'string' ? told.name : null,
+  }
+}
+
 export type PageMessage =
   | { type: 'ready' }
+  /** The route's turns spoken, as set in Settings › Sound › Spoken Directions, kept with WestPlay's settings. */
+  | ({ type: 'voice' } & VoiceSettings)
   /** A startup stage reached (the boot screens shown), for the host's startup log. */
   | { type: 'startup'; stage: string }
   /** Whether WestPlay is open on the truck's screen (or the truck's original screen shows): posted as the

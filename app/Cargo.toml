@@ -17,8 +17,9 @@ tauri-build = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 # Tauri's generated context holds the plugins' config as JSON.
 serde_json = "1"
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-updater = "2"
+windows = { version = "0.62", features = ["Win32_System_Registry", "Win32_System_Threading"] }
 westplay-host = { path = "../crates/host" }
 westplay-mapdata = { path = "../crates/mapdata" }
 westplay-setup = { path = "../crates/setup" }

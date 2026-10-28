@@ -2,12 +2,26 @@ import { describe, expect, it } from 'vitest'
 import { cabClock, type JobInfo, type Telemetry } from '../../shared/host'
 import type { MapLabel } from '../maps/mapData'
 import { STRINGS } from '../state/strings'
-import { destinationView, formatDeadline, nearestCity } from './destination'
+import {
+  destinationView,
+  formatBreak,
+  formatDeadline,
+  formatRealLeft,
+  nearestCity,
+  realMinutesLeft,
+} from './destination'
 
 const text = STRINGS.en
 // Thursday (day 3), 14:00.
 const now = 3 * 1440 + 14 * 60
-const telemetry = { gameTime: now, navigationDistance: 214_000, navigationTime: 3 * 3600 } as Telemetry
+// A time scale of 18 (3 h of game time is 10 real minutes); a break due in 10 game hours.
+const telemetry = {
+  gameTime: now,
+  navigationDistance: 214_000,
+  navigationTime: 3 * 3600,
+  localScale: 18,
+  nextRestStop: 600,
+} as Telemetry
 
 const job: JobInfo = {
   active: true,
@@ -30,6 +44,23 @@ const label = (name: string, x: number, localized?: string): MapLabel => ({
   kind: 'city',
   at: [x / 111_319.490_793_273_57, 0],
   population: 1,
+})
+
+describe('Truck Remote time formats', () => {
+  it('counts real time at the open-road scale, not a city one', () => {
+    expect(formatRealLeft(realMinutesLeft({ navigationTime: 2 * 3600 * 20, localScale: 3 } as Telemetry, true))).toBe(
+      '2:00 hr',
+    )
+    expect(formatRealLeft(realMinutesLeft({ navigationTime: 45 * 60 * 19, localScale: 19 } as Telemetry, false))).toBe(
+      '45 min',
+    )
+  })
+
+  it('shows the break in game hours and minutes', () => {
+    expect(formatBreak(370, text)).toBe('In 6h 10m')
+    expect(formatBreak(45, text)).toBe('In 45m · find a stop')
+    expect(formatBreak(-5, text)).toBe('Now!')
+  })
 })
 
 describe('destinationView', () => {

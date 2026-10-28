@@ -4456,6 +4456,7 @@ dependencies = [
  "westplay-host",
  "westplay-mapdata",
  "westplay-setup",
+ "windows",
 ]
 
 [[package]]

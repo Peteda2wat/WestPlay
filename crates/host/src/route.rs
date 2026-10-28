@@ -391,12 +391,13 @@ impl PartialEq for JunctionFiles {
 impl JunctionFiles {
     fn of(install: &Path, played: Option<&(westplay_setup::game::Game, westplay_setup::profiles::Profile)>) -> Self {
         // The running game's own install, whichever WestPlay is set up in.
+        let kind = westplay_setup::game::Kind::of(install).unwrap_or_default();
         let played = played.map(|(game, profile)| {
-            (westplay_setup::game::Game { dir: install.to_owned(), ..game.clone() }, profile.clone())
+            (westplay_setup::game::Game { dir: install.to_owned(), kind, ..game.clone() }, profile.clone())
         });
         let (map, mods) = match &played {
             Some((_, profile)) => (profile.map.clone(), profile.map_mods().filter_map(|m| m.files.clone()).collect()),
-            None => ("europe".to_owned(), Vec::new()),
+            None => (kind.base_map().to_owned(), Vec::new()),
         };
         Self { install: install.to_owned(), map, mods, played }
     }
@@ -418,7 +419,8 @@ impl JunctionFiles {
                 ),
             }
         }
-        match Junctions::open(&self.install) {
+        let base = westplay_setup::game::Kind::of(&self.install).unwrap_or_default().base_map();
+        match Junctions::open(&self.install, base) {
             Ok(junctions) => Some(junctions),
             Err(error) => {
                 log!("route: the game's files in {} couldn't be read: {error}", self.install.display());
@@ -818,7 +820,7 @@ mod tests {
 
     #[test]
     fn reads_the_junctions_with_the_played_profiles_map_mods() {
-        use westplay_setup::game::{FoundBy, Game};
+        use westplay_setup::game::{FoundBy, Game, Kind};
         use westplay_setup::profiles::{MapContent, Mod, Profile};
 
         let a_mod = |package: &str, sectors: &[&str], files: bool| Mod {
@@ -838,7 +840,8 @@ mod tests {
         profile.mods =
             vec![a_mod("promods", &["europe"], true), a_mod("truck", &[], true), a_mod("gone", &["europe"], false)];
         // WestPlay set up in one install, the game running from another: the running one's files.
-        let set_up = Game { dir: "set-up".into(), found_by: FoundBy::Steam, version: None, dlcs: vec![] };
+        let set_up =
+            Game { dir: "set-up".into(), kind: Kind::Ets2, found_by: FoundBy::Steam, version: None, dlcs: vec![] };
         let running = Path::new("running");
 
         let files = JunctionFiles::of(running, Some(&(set_up.clone(), profile.clone())));

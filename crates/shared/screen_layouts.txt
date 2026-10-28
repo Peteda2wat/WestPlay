@@ -37,3 +37,16 @@ travego-16-23     ui/dashboard/westplay_travego_16_23_gps.sii
 setra-516         ui/dashboard/gps.dlc_toys.sii
 setra-531         ui/dashboard/westplay_setra_531_gps.sii
 man-lions-coach   ui/dashboard/westplay_man_lions_coach_gps.sii
+# American Truck Simulator's own truck screens (read from ATS 1.61's DLC archives, 2026-10-27). The rest of ATS's
+# trucks name the stock ui/gps.sii (`generic`).
+# Freightliner Cascadia 2019 and 2024, Western Star 57X: one 1440 x 540 screen, infotainment panels at both ends,
+# the map between (x 124-1314).
+ats-cascadia      ui/dashboard/freightliner_cascadia_icc5_gps.sii ui/dashboard/freightliner_cascadia_2024_gps.sii ui/dashboard/westernstar_57x_gps.sii
+# Kenworth T680 2022: 1280 x 720.
+kenworth-t680-2022 ui/dashboard/kenworth_t680_2022_gps.sii
+# Volvo VNL 2018 and VNR Electric: 800 x 480, a 60-wide button bar at the left.
+volvo-vnl-2018    ui/dashboard/volvo_vnl2018_gps.sii ui/dashboard/volvo_vnr_e_gps.sii
+# Volvo VNL 2025: 1280 x 720.
+volvo-vnl-2025    ui/dashboard/volvo_vnl2025_gps.sii
+# Western Star 5700XE: 512 x 300.
+westernstar-5700xe ui/dashboard/westernstar_5700xe_gps.sii

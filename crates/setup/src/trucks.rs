@@ -113,6 +113,27 @@ pub const TRUCKS: &[Truck] = &[
         source: Source::Mod(&["setra", "531"]),
         layout: Some("setra-531"),
     },
+    // American Truck Simulator's (owner 2026-10-27: every ATS truck): those with screens of their own, then those
+    // on the stock one (`generic`, ui/gps.sii; its part of their displays not measured yet).
+    ats("freightliner-cascadia-2019", "Freightliner Cascadia (2019)", "freightliner.cascadia2019", "ats-cascadia"),
+    ats("freightliner-cascadia-2024", "Freightliner Cascadia (2024)", "freightliner.cascadia2024", "ats-cascadia"),
+    ats("westernstar-57x", "Western Star 57X", "westernstar.57x", "ats-cascadia"),
+    ats("kenworth-t680-2022", "Kenworth T680 (2022)", "kenworth.t680_2022", "kenworth-t680-2022"),
+    ats("volvo-vnl-2018", "Volvo VNL (2018)", "volvo.vnl2018", "volvo-vnl-2018"),
+    ats("volvo-vnr-electric", "Volvo VNR Electric", "volvo.vnr_e", "volvo-vnl-2018"),
+    ats("volvo-vnl-2025", "Volvo VNL (2025)", "volvo.vnl2025", "volvo-vnl-2025"),
+    ats("westernstar-5700xe", "Western Star 5700XE", "westernstar.5700xe", "westernstar-5700xe"),
+    ats("international-9900i", "International 9900i", "intnational.9900i", "generic"),
+    ats("international-lonestar", "International LoneStar", "intnational.lonestar", "generic"),
+    ats("international-lt", "International LT", "intnational.lt", "generic"),
+    ats("kenworth-t680", "Kenworth T680", "kenworth.t680", "generic"),
+    ats("kenworth-w900", "Kenworth W900", "kenworth.w900", "generic"),
+    ats("mack-anthem", "Mack Anthem", "mack.anthem", "generic"),
+    ats("mack-pinnacle", "Mack Pinnacle", "mack.pinnacle", "generic"),
+    ats("peterbilt-389", "Peterbilt 389", "peterbilt.389", "generic"),
+    ats("peterbilt-579", "Peterbilt 579", "peterbilt.579", "generic"),
+    ats("volvo-vnl", "Volvo VNL", "volvo.vnl", "generic"),
+    ats("westernstar-49x", "Western Star 49X", "westernstar.49x", "generic"),
     // Any other truck, with WestPlay's tablet on its dashboard (owner 2026-10-24).
     Truck {
         id: "any-truck-tablet",
@@ -121,6 +142,11 @@ pub const TRUCKS: &[Truck] = &[
         layout: Some("tablet"),
     },
 ];
+
+/// One of the game's own trucks (ATS's above, one line each).
+const fn ats(id: &'static str, name: &'static str, game_id: &'static str, layout: &'static str) -> Truck {
+    Truck { id, name, source: Source::Game(game_id), layout: Some(layout) }
+}
 
 /// Whether a player can have WestPlay in a truck.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -214,6 +240,15 @@ mod tests {
         assert_eq!(with_sway.iter().find(|(truck, _)| truck.name.starts_with("Iveco")).unwrap().1, Fit::Ready);
         // Not in the game.
         assert_eq!(of("Renault"), Fit::NotInGame);
+        assert_eq!(of("Peterbilt 389"), Fit::NotInGame);
+        // ATS's: on the stock screen, or on its own.
+        let (ats_files, ats_root) = game_with(&["peterbilt.389", "freightliner.cascadia2024"]);
+        let ats_fits = fit(&ats_files, &["generic", "ats-cascadia"], &[], &[]);
+        let ats_of = |name: &str| ats_fits.iter().find(|(truck, _)| truck.name.starts_with(name)).unwrap().1;
+        assert_eq!(ats_of("Peterbilt 389"), Fit::Ready);
+        assert_eq!(ats_of("Freightliner Cascadia (2024)"), Fit::Ready);
+        assert_eq!(ats_of("Volvo VNL (2025)"), Fit::NotInGame);
+        let _ = std::fs::remove_dir_all(&ats_root);
         // Any truck with the tablet: in every game, once the mod has it.
         assert_eq!(of("Any truck"), Fit::NotYet);
         let with_tablet = fit(&files, &["tablet"], &profiles, &[]);

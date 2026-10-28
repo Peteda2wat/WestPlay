@@ -13,6 +13,7 @@ import { cabClock } from '../../shared/host'
  */
 export function Sidebar() {
   const recents = useCabin((state) => state.navigation.recents)
+  const clock24 = useCabin((state) => state.clock24)
   const route = useCabin((state) => state.navigation.route)
   const homeTarget = useCabin((state) => homeButtonTarget(state.navigation))
   const gameTime = useLive((state) => (state.telemetry ? cabClock(state.telemetry, state.clockShift) : null))
@@ -22,7 +23,7 @@ export function Sidebar() {
     // Its own transition name: it stays put while screens change (shell/transitions.css).
     <aside className="sidebar glass" style={{ viewTransitionName: 'sidebar' }}>
       <div className="status">
-        <div className="time">{gameTime === null ? '--:--' : formatGameTime(gameTime)}</div>
+        <div className="time">{gameTime === null ? '--:--' : formatGameTime(gameTime, clock24)}</div>
         {/* Placeholder until the phone remote (planned) reports the real phone. */}
         <div className="signal">
           <SignalBars /> 5G

@@ -22,6 +22,7 @@ import { useMapData } from '../maps/mapData'
 import { useLive } from '../state/store'
 import { useText } from '../state/text'
 import { nearestCity } from './destination'
+import { tripCardView } from './tripCard'
 import { useNowPlaying } from './useNowPlaying'
 import { weatherView } from './weather'
 import { WeatherGlyph } from './WeatherGlyph'
@@ -189,17 +190,41 @@ function MusicWidget({
 export function DestinationWidget() {
   const view = useDestinationView()
   const shown = useCabin((state) => state.dashboardWidgets.destination) && view !== EMPTY
+  return <div className={`widget-slot${shown ? ' open' : ''}`}>{shown && <TripCard />}</div>
+}
+
+/** Truck Remote's trip card in the job tile (tripCard.ts). */
+export function TripCard() {
+  const text = useText()
+  const clock24 = useCabin((state) => state.clock24)
+  const miles = useCabin((state) => state.miles)
+  const telemetry = useLive((state) => state.telemetry)
+  const job = useLive((state) => state.job)
+  const fuelCapacity = useLive((state) => state.truck?.fuelCapacity ?? 0)
+  const clockShift = useLive((state) => state.clockShift)
+  if (!telemetry) return null
+  const view = tripCardView(telemetry, job, fuelCapacity, text, clockShift, clock24, miles)
   return (
-    <div className={`widget-slot${shown ? ' open' : ''}`}>
-      {shown && (
-        <article className="widget glass job">
-          <div className="kicker">{view.kicker}</div>
-          <div className="destination">{view.title}</div>
-          {view.subtitle && <div className="place">{view.subtitle}</div>}
-          <div className={`deadline${view.late ? ' late' : ''}`}>{view.detail}</div>
-        </article>
+    <article className="widget glass job trip-card">
+      {view.big.length > 0 && (
+        <div className="trip-big">
+          {view.big.map(({ value, unit }) => (
+            <div key={unit}>
+              <b>{value}</b>
+              <span>{unit}</span>
+            </div>
+          ))}
+        </div>
       )}
-    </div>
+      <div className="trip-rows">
+        {view.rows.map(({ key, value, late }) => (
+          <div key={`${key}${value}`} className="trip-row">
+            <span className="k">{key}</span>
+            <span className={late ? 'late' : undefined}>{value}</span>
+          </div>
+        ))}
+      </div>
+    </article>
   )
 }
 

@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatTripDistance, formatTripTime } from '../../shared/format'
 import type { PlannedRoute, RouteAction, RouteAnswer } from '../../shared/host'
 import { useKeyboard } from '../keyboard/store'
-import { useLive } from '../state/store'
+import { useCabin, useLive } from '../state/store'
 import { type Strings, useText } from '../state/text'
 import { placesAhead } from './alongRoute'
 import { liveRouteProgress, showOfferedRoutes, showTraffic } from './liveMap'
@@ -189,6 +189,7 @@ function Home({
         </button>
       )}
       {ending && <p className="destinations-note error">{ending}</p>}
+      <RouteToNearest places={places} garages={garages} from={from} onDone={onDone} />
       {garages.length > 0 && (
         <section>
           <h3>{text.destinations.favourites}</h3>
@@ -221,6 +222,61 @@ function Home({
         </section>
       )}
     </>
+  )
+}
+
+/** The kinds Truck Remote's "route to nearest" buttons offered: gas, rest area, service shop, garage. */
+const ROUTE_TO_NEAREST = ['fuel', 'parking', 'service', 'garage'] as const
+
+/**
+ * Truck Remote's one-tap "route to nearest": the nearest of a kind (the player's own garages for garage),
+ * as a stop on a route or job, else as where to go.
+ * shortcut: nearest in a straight line, not the quickest to drive as Truck Remote's was; use planRoutes per
+ * candidate if that picks badly.
+ */
+function RouteToNearest({
+  places,
+  garages,
+  from,
+  onDone,
+}: {
+  places: Destination[]
+  garages: Destination[]
+  from: [number, number] | null
+  onDone(message: string): void
+}) {
+  const text = useText()
+  const { job, route } = useRouteState()
+  const remember = useRecents((state) => state.remember)
+  const [problem, setProblem] = useState<string | null>(null)
+  const go = async (kind: (typeof ROUTE_TO_NEAREST)[number]) => {
+    const place = nearestOfKind(kind === 'garage' ? garages : places, kind, from, 1)[0]
+    if (!place) return setProblem(text.destinations.noneNearby)
+    const action: RouteAction = job || route ? 'addStop' : 'go'
+    const answer = await changeRoute(action, place.node)
+    if (answer !== 'done') return setProblem(answerText(answer, text))
+    setProblem(null)
+    remember(place)
+    onDone(text.destinations.done[action])
+  }
+  return (
+    <section>
+      <h3>{text.destinations.routeToNearest}</h3>
+      <div className="destinations-nearby">
+        {ROUTE_TO_NEAREST.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            disabled={kind === 'garage' && garages.length === 0}
+            onClick={() => go(kind)}
+          >
+            <PlaceBadge kind={kind} />
+            <span>{kind === 'garage' ? text.destinations.yourGarage : text.destinations.nearby[kind]}</span>
+          </button>
+        ))}
+      </div>
+      {problem && <p className="destinations-note error">{problem}</p>}
+    </section>
   )
 }
 
@@ -324,7 +380,7 @@ function PlaceRow({
         {detail.length > 0 && <span className="destination-detail">{detail.join(' · ')}</span>}
       </span>
       {along !== undefined ? (
-        <span className="destination-distance">{formatTripDistance(along * MAP_SCALE, text.decimal)}</span>
+        <span className="destination-distance">{tripDistance(along * MAP_SCALE, text.decimal)}</span>
       ) : (
         from && <span className="destination-distance">{distanceText(place, from, text)}</span>
       )}
@@ -462,7 +518,7 @@ function PlaceCard({
       </div>
       {along !== undefined ? (
         <p className="destination-away">
-          {text.destinations.alongTheRoute(formatTripDistance(along * MAP_SCALE, text.decimal))}
+          {text.destinations.alongTheRoute(tripDistance(along * MAP_SCALE, text.decimal))}
         </p>
       ) : (
         from && <p className="destination-away">{text.destinations.straightLine(distanceText(place, from, text))}</p>
@@ -481,7 +537,7 @@ function PlaceCard({
               <button type="button" className="direction-pick" onClick={() => pick(index)}>
                 <span className="direction-time">{formatTripTime((route.seconds * MAP_SCALE) / 60, text)}</span>
                 <span className="direction-detail">
-                  {text.destinations.plans[route.plan]} · {formatTripDistance(route.length * MAP_SCALE, text.decimal)}
+                  {text.destinations.plans[route.plan]} · {tripDistance(route.length * MAP_SCALE, text.decimal)}
                 </span>
               </button>
               {index === directions.picked && (
@@ -514,7 +570,7 @@ function PlaceCard({
 
 /** How far a place is in a straight line, in the units the game's GPS gives distances in. */
 function distanceText(place: Destination, from: [number, number], text: Strings): string {
-  return formatTripDistance(distanceTo(place, from) * MAP_SCALE, text.decimal)
+  return tripDistance(distanceTo(place, from) * MAP_SCALE, text.decimal)
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -542,10 +598,7 @@ async function stopAdded(
   const metres = after.navigationDistance - before.navigationDistance
   const minutes = (after.navigationTime - before.navigationTime) / 60
   if (metres <= 0) return plain
-  return text.destinations.stopAdds(
-    formatTripDistance(metres, text.decimal),
-    formatTripTime(Math.max(1, minutes), text),
-  )
+  return text.destinations.stopAdds(tripDistance(metres, text.decimal), formatTripTime(Math.max(1, minutes), text))
 }
 
 /** What the game's answer means for the player, when it wasn't done. */
@@ -574,4 +627,9 @@ function BackGlyph() {
       <path d="M15 5 8 12l7 7" />
     </svg>
   )
+}
+
+/** A distance in the units chosen in Settings � Appearance � Miles (Destinations isn't open while it's changed). */
+function tripDistance(metres: number, decimal: string): string {
+  return formatTripDistance(metres, decimal, useCabin.getState().miles)
 }

@@ -69,6 +69,7 @@ static SNAPSHOT: Mutex<Telemetry> = Mutex::new(Telemetry {
     cabin_z: 0.0,
     steering: 0.0,
     multiplayer_time_offset: 0,
+    next_rest_stop: 0,
 });
 
 /// Where the driver's head is by default in the truck's cab (the "truck" configuration's `head.position`).
@@ -106,6 +107,7 @@ enum Field {
     HeadOffset,
     Steering,
     MultiplayerTimeOffset,
+    RestStop,
 }
 
 const CHANNELS: &[(&str, u32, Field)] = &[
@@ -133,6 +135,7 @@ const CHANNELS: &[(&str, u32, Field)] = &[
     ("truck.head.offset", SCS_VALUE_TYPE_FPLACEMENT, Field::HeadOffset),
     ("truck.effective.steering", SCS_VALUE_TYPE_FLOAT, Field::Steering),
     ("multiplayer.time.offset", SCS_VALUE_TYPE_S32, Field::MultiplayerTimeOffset),
+    ("rest.stop", SCS_VALUE_TYPE_S32, Field::RestStop),
 ];
 
 /// Registers the telemetry channels and events. Called from `scs_telemetry_init`.
@@ -217,6 +220,9 @@ unsafe fn on_game_event(event: u32, info: *const c_void) {
                 PAUSED.store(false, Ordering::Release);
             }
             SCS_TELEMETRY_EVENT_FRAME_END => {
+                // Guarded as the old Present hook was: the keybinds' GetAsyncKeyState calls get the real key state,
+                // not the one our own hook hides from the game.
+                crate::hooks::guarded(crate::d3d::on_frame_end);
                 if let Some(bridge) = bridge::get() {
                     let [x, y, z] = *HEAD_DEFAULT.lock().unwrap_or_else(|e| e.into_inner());
                     let [cabin_x, cabin_y, cabin_z] = *CABIN.lock().unwrap_or_else(|e| e.into_inner());
@@ -284,6 +290,10 @@ unsafe fn on_truck(configuration: &ConfigurationEvent) {
                 }
                 b"cabin.position" => {
                     cabin = attribute.value.fvector().unwrap_or_default();
+                    continue;
+                }
+                b"fuel.capacity" => {
+                    truck.fuel_capacity = attribute.value.float();
                     continue;
                 }
                 _ => {}
@@ -414,6 +424,7 @@ unsafe fn on_channel_value(value: *const ScsValue, context: *mut c_void) {
             }
             Field::Steering => s.steering = value.float(),
             Field::MultiplayerTimeOffset => s.multiplayer_time_offset = value.s32(),
+            Field::RestStop => s.next_rest_stop = value.s32(),
         }
     }
 }
@@ -451,5 +462,6 @@ fn reset(s: &mut Telemetry, field: Field) {
         }
         Field::Steering => s.steering = d.steering,
         Field::MultiplayerTimeOffset => s.multiplayer_time_offset = d.multiplayer_time_offset,
+        Field::RestStop => s.next_rest_stop = d.next_rest_stop,
     }
 }

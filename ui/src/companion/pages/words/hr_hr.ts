@@ -94,6 +94,8 @@ export const words: CompanionWords = {
     volumeUp: 'Pojačaj',
     volumeDown: 'Utišaj',
     playPause: 'Reproduciraj/Pauziraj',
+    previousTrack: 'Prethodna pjesma',
+    nextTrack: 'Sljedeća pjesma',
     pressKey: 'Pritisnite tipku…',
     keybindsNote:
       'Kliknite prečac, zatim pritisnite novu tipku. Ako pritom držite {key}, radi samo dok koristite zaslon. Esc odustaje.',

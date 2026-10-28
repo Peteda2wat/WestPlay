@@ -26,6 +26,7 @@ const gameState = query.get('game') ?? 'live'
 
 const GAME: GameInfo = {
   dir: 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Euro Truck Simulator 2',
+  kind: 'ets2',
   foundBy: 'steam',
   version: '1.61.1.9',
   tested: true,
@@ -60,6 +61,8 @@ let settings: Settings = {
     volumeDown: { key: 0x31, withInteractionKey: true },
     playPause: { key: 0x32, withInteractionKey: true },
     volumeUp: { key: 0x33, withInteractionKey: true },
+    previous: { key: 0x35, withInteractionKey: true },
+    next: { key: 0x36, withInteractionKey: true },
   },
   screen: { truckStrip: 'auto' },
   look: { wallpaper: null, iconSet: null, iconStyle: 'auto' },

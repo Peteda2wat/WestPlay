@@ -27,11 +27,11 @@ fn installation_in(roaming: &Path) -> Option<PathBuf> {
     dir.join("data").is_dir().then_some(dir)
 }
 
-/// The packs TruckersMP has for ETS2 (its own and those it shares with ATS), sorted: the shared ones first,
+/// The packs TruckersMP has for the game set up (its own and those ETS2 and ATS share), sorted: the shared ones first,
 /// each folder's by name.
 pub fn packs(installation: &Path) -> Vec<PathBuf> {
     let mut all = Vec::new();
-    for folder in ["shared", "ets2"] {
+    for folder in ["shared", crate::game::current().truckersmp()] {
         let mut found: Vec<PathBuf> = std::fs::read_dir(installation.join("data").join(folder).join("mods"))
             .into_iter()
             .flatten()
@@ -85,7 +85,7 @@ pub fn profile(dir: &Path, packs: &[PathBuf]) -> Profile {
         dir: dir.to_path_buf(),
         cloud: false,
         last_saved: None,
-        map: "europe".into(),
+        map: crate::game::current().base_map().into(),
         mods: packs
             .iter()
             .map(|pack| {

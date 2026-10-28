@@ -27,7 +27,7 @@ pub fn bridge_name() -> String {
     format!("Local\\WestPlay.Bridge.v{BRIDGE_VERSION}")
 }
 pub const BRIDGE_MAGIC: u32 = u32::from_le_bytes(*b"WPB7");
-pub const BRIDGE_VERSION: u32 = 24;
+pub const BRIDGE_VERSION: u32 = 27;
 
 /// Size of the app's frames, and the base size of the screen textures in the mod (`westplay_setup::game_mod`
 /// builds them from these).
@@ -78,6 +78,11 @@ pub fn page_height(index: usize) -> u32 {
         Some("setra-516") => 777,
         Some("setra-531") => 761,
         Some("man-lions-coach") => 778,
+        // ATS's own screens, the part WestPlay's image covers (game_mod.rs `SHOWN_PARTS`): the Cascadia's map
+        // 1190 x 540 (2.204:1), the VNL 2018's 740 x 480 (1.542:1), the 5700XE's 512 x 300 (1.707:1).
+        Some("ats-cascadia") => 581,
+        Some("volvo-vnl-2018") => 830,
+        Some("westernstar-5700xe") => 750,
         _ => SCREEN_HEIGHT,
     }
 }
@@ -147,7 +152,29 @@ pub const TRUCK_UNSUPPORTED: u32 = 2;
 /// those only the Scania S and R's and the S BEV's (the S's 7" display) are WestPlay's. The other layouts are
 /// their own trucks' scripts.
 const SHARED_LAYOUT_TRUCKS: &[(&str, &[&str])] = &[
-    ("generic", &["scania.s_2016", "scania.r_2016", "scania.s_2024e"]),
+    (
+        "generic",
+        &[
+            "scania.s_2016",
+            "scania.r_2016",
+            "scania.s_2024e",
+            // ATS's trucks on the stock screen (owner 2026-10-27: WestPlay in every ATS truck). Their displays'
+            // part of the square isn't measured yet: drawn as the Scania's is (game_mod.rs `SHOWN_PARTS`).
+            "freightliner.cascadia2019",
+            "freightliner.cascadia2024",
+            "intnational.9900i",
+            "intnational.lonestar",
+            "intnational.lt",
+            "kenworth.t680",
+            "kenworth.w900",
+            "mack.anthem",
+            "mack.pinnacle",
+            "peterbilt.389",
+            "peterbilt.579",
+            "volvo.vnl",
+            "westernstar.49x",
+        ],
+    ),
     // The game's toy GPS (Cabin Accessories), WestPlay's only on Oyuncuyusbis' Setra S 516 HD/2's tablet part.
     ("setra-516", &["setra516hd"]),
 ];
@@ -365,13 +392,16 @@ pub enum Keybind {
     VolumeUp = 0,
     VolumeDown = 1,
     PlayPause = 2,
+    Previous = 3,
+    Next = 4,
 }
 
 impl Keybind {
-    pub const ALL: [Keybind; KEYBIND_COUNT] = [Keybind::VolumeUp, Keybind::VolumeDown, Keybind::PlayPause];
+    pub const ALL: [Keybind; KEYBIND_COUNT] =
+        [Keybind::VolumeUp, Keybind::VolumeDown, Keybind::PlayPause, Keybind::Previous, Keybind::Next];
 }
 
-pub const KEYBIND_COUNT: usize = 3;
+pub const KEYBIND_COUNT: usize = 5;
 
 /// A keybind as the bridge carries it: its key's virtual-key code, and whether it's pressed while holding the
 /// interaction key (using the screen) rather than alone.
@@ -587,6 +617,8 @@ pub struct Telemetry {
     /// SDK's `multiplayer.time.offset`; 0 out of one): the cab's clock shows `game_time` plus this. A job's
     /// times are the player's own.
     pub multiplayer_time_offset: i32,
+    /// In-game minutes until the driver needs a break (the SDK's `rest.stop`; 0 with fatigue off).
+    pub next_rest_stop: i32,
 }
 
 /// Identity of the current truck, from the SDK's "truck" configuration.
@@ -613,6 +645,8 @@ pub struct TruckInfo {
     /// The plate's country (`license.plate.country.id`, e.g. `italy`).
     #[cfg_attr(feature = "serde", serde(skip))]
     pub plate_country: FixedStr<32>,
+    /// The fuel tank's size, litres (`fuel.capacity`), for the trip card's fuel stops.
+    pub fuel_capacity: f32,
 }
 
 /// The player's current job, from the SDK's "job" configuration. Names come localized by the game.
@@ -962,6 +996,7 @@ mod tests {
             head: [-0.722, 1.696, 0.686],
             plate: FixedStr::new("CA 324KD"),
             plate_country: FixedStr::new("italy"),
+            fuel_capacity: 1200.0,
         };
         lock.write(&truck);
         assert_eq!(lock.read(), Some(truck));

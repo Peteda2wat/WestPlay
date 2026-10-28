@@ -98,9 +98,38 @@
   font-weight: 700;
 }
 
+/* On the Dashboard the pill fits the map's width (it was cut off at the sides); the real time left is in
+   the destination tile there. */
+.dashboard .eta-pill {
+  max-width: calc(100% - 24px);
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.dashboard .eta-real {
+  display: none;
+}
+
 .eta-pill .dot {
   margin: 0 4px;
   opacity: 0.6;
+}
+
+/* The Maps app's trip card, bottom left, a share of the map's size (owner 2026-10-27: in proportion to the
+   screen); its type follows its box as on the Dashboard (dashboard.css, `trip-slot`). The speed sits above it. */
+.map-trip {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  width: 30%;
+  height: 46%;
+  display: flex;
+  container: trip-slot / size;
+}
+
+.map-tile:has(.map-trip .trip-card) .speed-stack {
+  bottom: calc(46% + 34px);
 }
 
 /* The road's speed limit over the live speed, bottom left, as on Apple's map. */

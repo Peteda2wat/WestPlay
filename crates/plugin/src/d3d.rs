@@ -2,31 +2,29 @@
 //!
 //! Hooks `ID3D11Device::CreateTexture2D` (texture inventory for diagnostics), `CreateShaderResourceView` (the
 //! tablet's screen texture as the game makes its view: see `screens`),
-//! `ID3D11DeviceContext::OMSetRenderTargets*` and `PSSetShaderResources` (screen takeover, see `screens`)
-//! and `IDXGISwapChain::Present`/`Present1` (frame clock, heartbeat, renderer info).
+//! `ID3D11DeviceContext::OMSetRenderTargets*` and `PSSetShaderResources` (screen takeover, see `screens`).
+//! The frame clock and heartbeat run on the SDK's frame end ([`on_frame_end`]), not on `Present`: a hook of
+//! `IDXGISwapChain::Present` crashed ATS where other tools hook it too (owner 2026-10-27: RTSS, the Steam overlay,
+//! snowymoon; even a detour doing nothing), and with snowymoon its vtable slot is never called.
 //!
-//! Function addresses come from the vtables of a throwaway device + swap chain. MinHook patches the
-//! function bodies inside d3d11.dll/dxgi.dll, so the hooks apply to the game's own device too.
+//! Function addresses come from the vtables of a throwaway device. MinHook patches the function bodies inside
+//! d3d11.dll, so the hooks apply to the game's own device too (with snowymoon in, its calls skip the vtables:
+//! taking a slot over instead was never called, 2026-10-27).
 
 use std::collections::HashMap;
 use std::ffi::c_void;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{LazyLock, Mutex};
 
-use windows::Win32::Foundation::{HMODULE, HWND};
+use windows::Win32::Foundation::HMODULE;
 use windows::Win32::Graphics::Direct3D::D3D_DRIVER_TYPE_HARDWARE;
 use windows::Win32::Graphics::Direct3D11::{
-    D3D11_CREATE_DEVICE_FLAG, D3D11_SDK_VERSION, D3D11_SUBRESOURCE_DATA, D3D11_TEXTURE2D_DESC,
-    D3D11CreateDeviceAndSwapChain, ID3D11Device, ID3D11DeviceContext,
+    D3D11_CREATE_DEVICE_FLAG, D3D11_SDK_VERSION, D3D11_SUBRESOURCE_DATA, D3D11_TEXTURE2D_DESC, D3D11CreateDevice,
+    ID3D11Device, ID3D11DeviceContext,
 };
-use windows::Win32::Graphics::Dxgi::Common::{DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_MODE_DESC, DXGI_SAMPLE_DESC};
-use windows::Win32::Graphics::Dxgi::{
-    DXGI_PRESENT_PARAMETERS, DXGI_SWAP_CHAIN_DESC, DXGI_SWAP_EFFECT_DISCARD, DXGI_USAGE_RENDER_TARGET_OUTPUT,
-    IDXGIDevice, IDXGISwapChain,
-};
+use windows::Win32::Graphics::Dxgi::IDXGIDevice;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::UI::WindowsAndMessaging::{CreateWindowExW, DestroyWindow, WINDOW_EX_STYLE, WS_OVERLAPPEDWINDOW};
-use windows::core::{BOOL, HRESULT, Interface, w};
+use windows::core::{HRESULT, Interface, w};
 
 use crate::hooks::{guarded, hook};
 use crate::{bridge, log, screens};
@@ -35,8 +33,6 @@ use crate::{bridge, log, screens};
 const VTBL_DEVICE_CREATE_TEXTURE2D: usize = 5;
 const VTBL_DEVICE_CREATE_SHADER_RESOURCE_VIEW: usize = 7;
 const VTBL_CONTEXT_PS_SET_SHADER_RESOURCES: usize = 8;
-const VTBL_SWAPCHAIN_PRESENT: usize = 8;
-const VTBL_SWAPCHAIN1_PRESENT1: usize = 22;
 const VTBL_CONTEXT_OM_SET_RENDER_TARGETS: usize = 33;
 const VTBL_CONTEXT_OM_SET_RENDER_TARGETS_AND_UAVS: usize = 34;
 
@@ -49,8 +45,6 @@ type CreateTexture2DFn = unsafe extern "system" fn(
 type CreateShaderResourceViewFn =
     unsafe extern "system" fn(*mut c_void, *mut c_void, *const c_void, *mut *mut c_void) -> HRESULT;
 type PSSetShaderResourcesFn = unsafe extern "system" fn(*mut c_void, u32, u32, *const *mut c_void);
-type PresentFn = unsafe extern "system" fn(*mut c_void, u32, u32) -> HRESULT;
-type Present1Fn = unsafe extern "system" fn(*mut c_void, u32, u32, *const DXGI_PRESENT_PARAMETERS) -> HRESULT;
 type OMSetRenderTargetsFn = unsafe extern "system" fn(*mut c_void, u32, *const *mut c_void, *mut c_void);
 type OMSetRenderTargetsAndUavsFn = unsafe extern "system" fn(
     *mut c_void,
@@ -66,13 +60,11 @@ type OMSetRenderTargetsAndUavsFn = unsafe extern "system" fn(
 static ORIG_CREATE_TEXTURE2D: AtomicUsize = AtomicUsize::new(0);
 static ORIG_CREATE_SHADER_RESOURCE_VIEW: AtomicUsize = AtomicUsize::new(0);
 static ORIG_PS_SET_SHADER_RESOURCES: AtomicUsize = AtomicUsize::new(0);
-static ORIG_PRESENT: AtomicUsize = AtomicUsize::new(0);
-static ORIG_PRESENT1: AtomicUsize = AtomicUsize::new(0);
 static ORIG_OM_SET_RENDER_TARGETS: AtomicUsize = AtomicUsize::new(0);
 static ORIG_OM_SET_RENDER_TARGETS_AND_UAVS: AtomicUsize = AtomicUsize::new(0);
 
 static FRAME: AtomicU64 = AtomicU64::new(0);
-static FIRST_PRESENT_LOGGED: AtomicBool = AtomicBool::new(false);
+static RENDERER_LOGGED: AtomicBool = AtomicBool::new(false);
 static TEXTURES_DIRTY: AtomicBool = AtomicBool::new(false);
 
 /// How often (in presented frames) the texture table is rewritten to disk.
@@ -105,17 +97,17 @@ static TEXTURES: LazyLock<Mutex<HashMap<TexKey, TexStat>>> = LazyLock::new(|| Mu
 /// # Safety
 /// In the game's process, before the hooks are switched on ([`crate::hooks::enable_all`]).
 pub unsafe fn install() -> Result<(), String> {
-    // SAFETY: the vtables are d3d11.dll's and dxgi.dll's own (`dummy_vtables`), each slot within them (the
-    // slot numbers are the interfaces' fixed layout); hooked with detours of their exact signatures (below).
+    // SAFETY: the vtables are d3d11.dll's own (`dummy_vtables`), each slot within them (the slot numbers are the
+    // interfaces' fixed layout); hooked with detours of their exact signatures (below).
     unsafe {
-        let DummyVtables { device: device_vtbl, context: context_vtbl, swapchain: swapchain_vtbl } = dummy_vtables()?;
+        let DummyVtables { device: device_vtbl, context: context_vtbl } = dummy_vtables()?;
 
-        let create_texture2d = *device_vtbl.add(VTBL_DEVICE_CREATE_TEXTURE2D);
-        let present = *swapchain_vtbl.add(VTBL_SWAPCHAIN_PRESENT);
-        // IDXGISwapChain1 shares the object's vtable; slot 22 exists on DXGI 1.2+ swap chains.
-        let present1 = *swapchain_vtbl.add(VTBL_SWAPCHAIN1_PRESENT1);
-
-        hook(create_texture2d, create_texture2d_hook as *mut c_void, &ORIG_CREATE_TEXTURE2D, "CreateTexture2D")?;
+        hook(
+            *device_vtbl.add(VTBL_DEVICE_CREATE_TEXTURE2D),
+            create_texture2d_hook as *mut c_void,
+            &ORIG_CREATE_TEXTURE2D,
+            "CreateTexture2D",
+        )?;
         hook(
             *device_vtbl.add(VTBL_DEVICE_CREATE_SHADER_RESOURCE_VIEW),
             create_shader_resource_view_hook as *mut c_void,
@@ -128,8 +120,6 @@ pub unsafe fn install() -> Result<(), String> {
             &ORIG_PS_SET_SHADER_RESOURCES,
             "PSSetShaderResources",
         )?;
-        hook(present, present_hook as *mut c_void, &ORIG_PRESENT, "Present")?;
-        hook(present1, present1_hook as *mut c_void, &ORIG_PRESENT1, "Present1")?;
         hook(
             *context_vtbl.add(VTBL_CONTEXT_OM_SET_RENDER_TARGETS),
             om_set_render_targets_hook as *mut c_void,
@@ -155,87 +145,33 @@ pub fn on_unload() {
 struct DummyVtables {
     device: *const usize,
     context: *const usize,
-    swapchain: *const usize,
 }
 
-/// Creates a hidden window + D3D11 device + swap chain and returns their vtable pointers.
+/// Creates a throwaway D3D11 device (no window, no swap chain) and returns its and its context's vtables.
 ///
 /// # Safety
-/// On a thread that may own a window (the game's main thread, at init).
+/// In the game's process, at init.
 unsafe fn dummy_vtables() -> Result<DummyVtables, String> {
-    // SAFETY: a hidden window of the system's own `STATIC` class, made and destroyed here, its strings static.
+    // SAFETY: a throwaway device made here; its vtables stay valid after it goes (they're d3d11.dll's, not the
+    // objects').
     unsafe {
-        let hinstance = GetModuleHandleW(None).map_err(|e| format!("GetModuleHandleW: {e}"))?;
-        let hwnd = CreateWindowExW(
-            WINDOW_EX_STYLE(0),
-            w!("STATIC"),
-            w!("westplay-dummy"),
-            WS_OVERLAPPEDWINDOW,
-            0,
-            0,
-            64,
-            64,
-            None,
-            None,
-            Some(hinstance.into()),
-            None,
-        )
-        .map_err(|e| format!("CreateWindowExW: {e}"))?;
-
-        let result = create_dummy_device(hwnd);
-        let _ = DestroyWindow(hwnd);
-        result
-    }
-}
-
-/// # Safety
-/// `hwnd` is a live window of this thread's.
-unsafe fn create_dummy_device(hwnd: HWND) -> Result<DummyVtables, String> {
-    // SAFETY: a throwaway device and swap chain on `hwnd` (the caller's, alive through the call), their
-    // descriptions locals; their vtables stay valid after they go (they're the DLLs', not the objects').
-    unsafe {
-        let desc = DXGI_SWAP_CHAIN_DESC {
-            BufferDesc: DXGI_MODE_DESC {
-                Width: 64,
-                Height: 64,
-                Format: DXGI_FORMAT_R8G8B8A8_UNORM,
-                ..Default::default()
-            },
-            SampleDesc: DXGI_SAMPLE_DESC { Count: 1, Quality: 0 },
-            BufferUsage: DXGI_USAGE_RENDER_TARGET_OUTPUT,
-            BufferCount: 1,
-            OutputWindow: hwnd,
-            Windowed: BOOL::from(true),
-            SwapEffect: DXGI_SWAP_EFFECT_DISCARD,
-            Flags: 0,
-        };
-        let mut swapchain: Option<IDXGISwapChain> = None;
         let mut device: Option<ID3D11Device> = None;
         let mut context: Option<ID3D11DeviceContext> = None;
-        D3D11CreateDeviceAndSwapChain(
+        D3D11CreateDevice(
             None,
             D3D_DRIVER_TYPE_HARDWARE,
             HMODULE::default(),
             D3D11_CREATE_DEVICE_FLAG(0),
             None,
             D3D11_SDK_VERSION,
-            Some(&desc),
-            Some(&mut swapchain),
             Some(&mut device),
             None,
             Some(&mut context),
         )
-        .map_err(|e| format!("D3D11CreateDeviceAndSwapChain: {e}"))?;
-
+        .map_err(|e| format!("D3D11CreateDevice: {e}"))?;
         let device = device.ok_or("no dummy device")?;
         let context = context.ok_or("no dummy context")?;
-        let swapchain = swapchain.ok_or("no dummy swap chain")?;
-        // vtables live in d3d11.dll/dxgi.dll and stay valid after the dummy objects are released.
-        Ok(DummyVtables {
-            device: vtable(device.as_raw()),
-            context: vtable(context.as_raw()),
-            swapchain: vtable(swapchain.as_raw()),
-        })
+        Ok(DummyVtables { device: vtable(device.as_raw()), context: vtable(context.as_raw()) })
     }
 }
 
@@ -260,6 +196,7 @@ unsafe extern "system" fn create_texture2d_hook(
     unsafe {
         let original: CreateTexture2DFn = std::mem::transmute(ORIG_CREATE_TEXTURE2D.load(Ordering::Acquire));
         let result = original(this, desc, initial_data, texture);
+        guarded(|| log_renderer(this));
         if let Some(desc) = desc.as_ref() {
             guarded(|| record_texture(desc, !initial_data.is_null()));
         }
@@ -354,37 +291,6 @@ unsafe extern "system" fn om_set_render_targets_and_uavs_hook(
     }
 }
 
-/// # Safety
-/// Called in place of `IDXGISwapChain::Present`, with its arguments.
-unsafe extern "system" fn present_hook(this: *mut c_void, sync_interval: u32, flags: u32) -> HRESULT {
-    // SAFETY: the game's swap chain, alive through its call; then
-    // the trampoline was stored before the hooks were switched on (`install`, then `enable_all`), so it's
-    // the original function, called with the game's arguments as they came.
-    unsafe {
-        guarded(|| on_present(this));
-        let original: PresentFn = std::mem::transmute(ORIG_PRESENT.load(Ordering::Acquire));
-        original(this, sync_interval, flags)
-    }
-}
-
-/// # Safety
-/// Called in place of `IDXGISwapChain1::Present1`, with its arguments.
-unsafe extern "system" fn present1_hook(
-    this: *mut c_void,
-    sync_interval: u32,
-    flags: u32,
-    params: *const DXGI_PRESENT_PARAMETERS,
-) -> HRESULT {
-    // SAFETY: the game's swap chain, alive through its call; then
-    // the trampoline was stored before the hooks were switched on (`install`, then `enable_all`), so it's
-    // the original function, called with the game's arguments as they came.
-    unsafe {
-        guarded(|| on_present(this));
-        let original: Present1Fn = std::mem::transmute(ORIG_PRESENT1.load(Ordering::Acquire));
-        original(this, sync_interval, flags, params)
-    }
-}
-
 fn record_texture(desc: &D3D11_TEXTURE2D_DESC, initial_data: bool) {
     let key = TexKey {
         width: desc.Width,
@@ -415,59 +321,43 @@ fn record_texture(desc: &D3D11_TEXTURE2D_DESC, initial_data: bool) {
     TEXTURES_DIRTY.store(true, Ordering::Relaxed);
 }
 
-/// # Safety
-/// `swapchain` is the game's, alive through its `Present`.
-unsafe fn on_present(swapchain: *mut c_void) {
-    // SAFETY: the game's live swap chain (the caller's contract).
-    unsafe {
-        let frame = FRAME.fetch_add(1, Ordering::Relaxed) + 1;
-        screens::on_frame(frame);
-        // The interaction key's toggle, then the keybinds (which may need it).
-        crate::input::on_frame();
-        crate::keybinds::on_frame();
-        if let Some(bridge) = bridge::get() {
-            bridge.plugin.heartbeat.store(frame, Ordering::Release);
+/// The game's frame ended (the SDK's frame end, on its main thread): the frame clock, input and heartbeat.
+pub fn on_frame_end() {
+    let frame = FRAME.fetch_add(1, Ordering::Relaxed) + 1;
+    screens::on_frame(frame);
+    // The interaction key's toggle, then the keybinds (which may need it).
+    crate::input::on_frame();
+    crate::keybinds::on_frame();
+    if let Some(bridge) = bridge::get() {
+        bridge.plugin.heartbeat.store(frame, Ordering::Release);
+    }
+    if frame.is_multiple_of(DUMP_EVERY_FRAMES) {
+        if TEXTURES_DIRTY.swap(false, Ordering::Relaxed) {
+            dump_textures();
         }
-        if !FIRST_PRESENT_LOGGED.swap(true, Ordering::Relaxed) {
-            log_renderer(swapchain);
-        }
-        if frame.is_multiple_of(DUMP_EVERY_FRAMES) {
-            if TEXTURES_DIRTY.swap(false, Ordering::Relaxed) {
-                dump_textures();
-            }
-            if frame.is_multiple_of(DUMP_EVERY_FRAMES * 10) {
-                screens::log_stats();
-            }
+        if frame.is_multiple_of(DUMP_EVERY_FRAMES * 10) {
+            screens::log_stats();
         }
     }
 }
 
+/// Logs the game's renderer and tells the app its GPU, once, from the first texture the game's device makes.
+///
 /// # Safety
-/// As [`on_present`].
-unsafe fn log_renderer(swapchain: *mut c_void) {
-    // SAFETY: the game's live swap chain (the caller's contract), only asked about itself.
+/// `device` is the game's live device (the `this` of its `CreateTexture2D`).
+unsafe fn log_renderer(device: *mut c_void) {
+    if RENDERER_LOGGED.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    // SAFETY: the game's live device (the caller's contract), only asked about itself.
     unsafe {
         let d3d12_loaded = GetModuleHandleW(w!("d3d12.dll")).is_ok();
-        log!("first Present; d3d12.dll loaded: {d3d12_loaded}");
-        let Some(swapchain) = IDXGISwapChain::from_raw_borrowed(&swapchain) else { return };
-        if let Ok(desc) = swapchain.GetDesc() {
-            log!(
-                "swap chain: {}x{} format {} buffers {} swap effect {} windowed {}",
-                desc.BufferDesc.Width,
-                desc.BufferDesc.Height,
-                desc.BufferDesc.Format.0,
-                desc.BufferCount,
-                desc.SwapEffect.0,
-                desc.Windowed.as_bool()
-            );
-        }
-        match swapchain.GetDevice::<ID3D11Device>() {
-            Ok(device) => {
-                log!("renderer: Direct3D 11 (feature level {:#x})", device.GetFeatureLevel().0);
-                publish_adapter(&device);
-            }
-            Err(_) => log!("renderer: NOT Direct3D 11 (swap chain device is not an ID3D11Device)"),
-        }
+        let Some(device) = ID3D11Device::from_raw_borrowed(&device) else { return };
+        log!(
+            "renderer: Direct3D 11 (feature level {:#x}); d3d12.dll loaded: {d3d12_loaded}",
+            device.GetFeatureLevel().0
+        );
+        publish_adapter(device);
     }
 }
 

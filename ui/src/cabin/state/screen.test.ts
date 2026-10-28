@@ -13,7 +13,7 @@ import {
 } from './screen'
 
 function truck(brandId: string, id: string): TruckInfo {
-  return { brandId, brand: brandId.toUpperCase(), id, name: '' }
+  return { brandId, brand: brandId.toUpperCase(), id, name: '', fuelCapacity: 0 }
 }
 
 const scaniaS = truck('scania', 'vehicle.scania.s_2016')

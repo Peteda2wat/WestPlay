@@ -22,6 +22,7 @@ mod planner;
 mod play_log;
 mod player;
 mod pointer;
+mod remote;
 pub mod route;
 mod route_change;
 pub mod settings;
@@ -219,6 +220,8 @@ struct Pipeline {
     gpu: Gpu,
     /// Holds the shared frame texture (and its name) alive.
     capture: Capture,
+    /// The frames for the remote screen (`remote`), on the same GPU.
+    readback: Option<remote::Readback>,
 }
 
 /// Runs until `stop` is set. Blocks the calling thread, which becomes the WebView2 UI thread.
@@ -305,7 +308,14 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
     let mut spectrum = false;
     // The page's height (`westplay_shared::page_height`): the frame's until a screen asks for another.
     let mut page_height = config.height;
+    // The height the game's screen wants the page (`westplay_shared::page_height`), when the iPad doesn't ask.
+    let mut screen_height = config.height;
     let mut pointer = Pointer::new(config.width, config.height);
+    // The cab's screen shown on the iPad, and its taps (`remote`).
+    let remote = remote::start();
+    if let Some(remote) = remote {
+        remote.set_voice_muted(config.settings.get().voice.muted);
+    }
     // What the player's latest save says (their garages, a map WestPlay doesn't allow), kept to send again
     // when the page reloads.
     let player_watch = PlayerWatch::start();
@@ -406,9 +416,17 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
         // Set for this turn when the game has just closed: every web player closes, as its WebView failing
         // closes it (below), the page told so.
         let mut players_closing = false;
-        // A captured frame that came before its turn goes out now that it's due.
-        if let Some(pipeline) = &pipeline {
-            pipeline.capture.flush();
+        // A captured frame that came before its turn goes out now that it's due, kept for the remote screen too.
+        if let Some(pipeline) = &mut pipeline {
+            match &mut pipeline.readback {
+                Some(readback) => {
+                    pipeline.capture.flush(|frame| readback.keep(frame));
+                    if let Some(remote) = remote {
+                        readback.poll(remote);
+                    }
+                }
+                None => pipeline.capture.flush(|_| {}),
+            }
         }
         // The page's process failed (a crash, or hung): load it again, and it gets the current state again
         // as it announces itself. The browser's: this WebView is gone, so start over (`BrowserGone`).
@@ -620,6 +638,26 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
             let _ = webview.post_json(&settings_message(&config.settings.get()));
         }
         pointer.update(&bridge.bridge().plugin.pointer, &webview);
+        // Taps on the remote screen (the iPad): the page gets them as it gets the in-game cursor's clicks.
+        if let Some(remote) = remote {
+            // The iPad's Nav Voice key: the spoken directions off, or back at their level.
+            if remote.take_voice_toggle() {
+                let mut settings = config.settings.get();
+                settings.voice.muted = !settings.voice.muted;
+                log!("spoken directions {} from the iPad", if settings.voice.muted { "off" } else { "on" });
+                remote.set_voice_muted(settings.voice.muted);
+                config.settings.set(settings.clone());
+                (config.on_settings)(&settings);
+                let _ = webview.post_json(&settings_message(&settings));
+            }
+            let page = stage.page_size().get();
+            remote.set_page(page);
+            for touch in remote.take_touches() {
+                for (kind, keys, data, point) in remote::mouse_events(touch, page) {
+                    let _ = webview.send_mouse(kind, keys, data, point);
+                }
+            }
+        }
         // The player's keybinds pressed in the game: the page acts on each.
         for keybind in Keybind::ALL {
             let presses = bridge.bridge().plugin.keybind_presses[keybind as usize].load(Ordering::Acquire);
@@ -778,6 +816,18 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                     let mut settings = config.settings.get();
                     if settings.sound != sound {
                         settings.sound = sound;
+                        config.settings.set(settings.clone());
+                        (config.on_settings)(&settings);
+                    }
+                }
+                Some(PageMessage::Voice { voice }) => {
+                    let mut settings = config.settings.get();
+                    // A name no voice has (a page gone wrong): not kept.
+                    if settings.voice != voice && voice.name.as_ref().is_none_or(|name| name.len() <= 200) {
+                        if let Some(remote) = remote {
+                            remote.set_voice_muted(voice.muted);
+                        }
+                        settings.voice = voice;
                         config.settings.set(settings.clone());
                         (config.on_settings)(&settings);
                     }
@@ -1441,20 +1491,25 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 let _ = webview.post_json(&message.to_string());
             }
             let layout = plugin.screen_layout.load(Ordering::Acquire);
-            if last_layout != Some(layout) {
+            let new_layout = last_layout != Some(layout);
+            if new_layout {
                 last_layout = Some(layout);
-                // The page in the shape the game shows it in on this screen (none drawn yet: as it was), before
-                // the page hears of the screen and lays itself out for it.
+                // The shape the game shows the page in on this screen (none drawn yet: as it was).
                 if let Some(index) = (layout as usize).checked_sub(1) {
-                    let height = westplay_shared::page_height(index);
-                    if height != page_height {
-                        page_height = height;
-                        log!("the page laid out {}x{height}, shown in the {}-row frame", config.width, config.height);
-                        let _ = stage.set_page_height(height);
-                        let _ = webview.place(0.0, 0.0, config.width, height);
-                        pointer.set_size(config.width, height);
-                    }
+                    screen_height = westplay_shared::page_height(index);
                 }
+            }
+            // The page in the iPad's shape while it watches (the in-game screen redundant then: owner 2026-10-27,
+            // no black bars on the iPad), else the screen's; before the page hears of a new screen.
+            let height = remote.and_then(|remote| remote.wanted_height(config.width)).unwrap_or(screen_height);
+            if height != page_height {
+                page_height = height;
+                log!("the page laid out {}x{height}, shown in the {}-row frame", config.width, config.height);
+                let _ = stage.set_page_height(height);
+                let _ = webview.place(0.0, 0.0, config.width, height);
+                pointer.set_size(config.width, height);
+            }
+            if new_layout {
                 let _ = webview.post_json(&screen_message(layout));
             }
         }
@@ -1699,12 +1754,14 @@ fn stops_message(id: Option<u32>, route: Option<&[u64]>, waypoints: &[u64], hidd
 /// The most presses of a keybind the page is told of at once.
 const MOST_KEYBIND_PRESSES: u32 = 10;
 
-/// `{"type":"keybind","action":"volumeUp"|"volumeDown"|"playPause"}`: the player pressed a keybind in the game.
+/// `{"type":"keybind","action":"volumeUp"|"volumeDown"|"playPause"|"previous"|"next"}`: the player pressed a keybind in the game.
 fn keybind_message(keybind: Keybind) -> String {
     let action = match keybind {
         Keybind::VolumeUp => "volumeUp",
         Keybind::VolumeDown => "volumeDown",
         Keybind::PlayPause => "playPause",
+        Keybind::Previous => "previous",
+        Keybind::Next => "next",
     };
     serde_json::json!({ "type": "keybind", "action": action }).to_string()
 }
@@ -1815,7 +1872,10 @@ fn build_pipeline(
     let gpu = Gpu::new(luid)?;
     let shared = Arc::new(SharedFrame::new(&gpu, config.width, config.height, generation)?);
     let capture = Capture::start(&gpu, &stage.visual()?, shared, bridge.clone())?;
-    Ok(Pipeline { gpu, capture })
+    let readback = remote::Readback::new(&gpu, config.width, config.height)
+        .inspect_err(|e| log!("remote screen: no readback on this GPU ({e})"))
+        .ok();
+    Ok(Pipeline { gpu, capture, readback })
 }
 
 /// The GPU the game renders on, once the plugin has published it.
@@ -1849,6 +1909,7 @@ fn settings_message(settings: &settings::Settings) -> String {
         "iconStyle": settings.look.icon_style,
         "equalizer": settings.sound.equalizer.clamped(),
         "equalizerCustom": settings.sound.custom,
+        "voice": settings.voice,
     })
     .to_string()
 }
@@ -1886,6 +1947,11 @@ enum PageMessage {
     /// The music's spectrum wanted (the cab's Equalizer open) or not: the players measure it, and it's passed
     /// on to the page as they say it.
     Spectrum { on: bool },
+    /// The route's turns spoken, set in the cab's Settings (Sound › Spoken Directions).
+    Voice {
+        #[serde(flatten)]
+        voice: settings::VoiceSettings,
+    },
     /// A command for YouTube's player (`youtube`): what to play, where it shows, and so on.
     Youtube { command: youtube::Command },
     /// A command for Spotify's web player (`spotify`): its sign-in, a question, its controls.
@@ -2076,6 +2142,21 @@ mod tests {
             Some(PageMessage::TruckStrip { strip: crate::settings::TruckStrip::Off })
         );
         assert_eq!(parse_page_message(r#"{"type":"truckStrip","strip":"sideways"}"#), None);
+        // The spoken directions: a level not one of the three is the default, a voice not chosen is none.
+        assert_eq!(
+            parse_page_message(r#"{"type":"voice","muted":true,"level":"loud","name":"Microsoft Aria"}"#),
+            Some(PageMessage::Voice {
+                voice: crate::settings::VoiceSettings {
+                    muted: true,
+                    level: crate::settings::VoiceLevel::Loud,
+                    name: Some("Microsoft Aria".into())
+                }
+            })
+        );
+        assert_eq!(
+            parse_page_message(r#"{"type":"voice","muted":false,"level":"deafening","name":null}"#),
+            Some(PageMessage::Voice { voice: crate::settings::VoiceSettings::default() })
+        );
         assert_eq!(
             parse_page_message(r#"{"type":"equalizer","bass":-3,"mid":0,"treble":2,"custom":true}"#),
             Some(PageMessage::Equalizer {
@@ -2236,6 +2317,7 @@ mod tests {
                 "iconStyle": "auto",
                 "equalizer": { "bass": 0, "mid": 0, "treble": 0 },
                 "equalizerCustom": false,
+                "voice": { "muted": false, "level": "normal", "name": null },
             })
         );
         settings.screen.truck_strip = crate::settings::TruckStrip::Off;

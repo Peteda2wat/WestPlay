@@ -27,8 +27,18 @@ use westplay_shared::{CAB_MARK_HEIGHT, CAB_MARK_WIDTH, SCREEN_WIDTH, ScreenLayou
 
 use crate::cab_mark;
 
-/// The mod's file, in WestPlay's own folder (`places::westplay_documents`).
+/// The mod's file, in WestPlay's own folder (`places::westplay_documents`): ETS2's (and WestPlay 1.2's, in the
+/// game's `mod` folder).
 pub const FILE_NAME: &str = "westplay.scs";
+
+/// The mod's file for `kind`: each game's built from its own files, both in WestPlay's folder (the plugin mounts
+/// the one of the game it's in).
+pub fn file_name(kind: crate::game::Kind) -> &'static str {
+    match kind {
+        crate::game::Kind::Ets2 => FILE_NAME,
+        crate::game::Kind::Ats => "westplay_ats.scs",
+    }
+}
 /// Where the mod's screen materials and textures live in the game's file system.
 const SCREEN_DIR: &str = "material/ui/westplay";
 /// The screen's draw order in its group: the stock elements use layers 0 to 3.
@@ -78,8 +88,14 @@ pub struct ShownPart {
 /// from its top: 254 x 157 of it, 1.615:1, as the interior's model maps its screen piece
 /// (`scania_2016/interior/model.pmg`, piece 80, `gps.tobj`: PLAN.md section C). Stretched over the whole
 /// square, the frame lost its bottom and top and was drawn 1.3 times too tall (owner 2026-10-21).
-const SHOWN_PARTS: &[(&str, ShownPart)] =
-    &[("generic", ShownPart { left: 0.005, right: 0.995, top: 0.122, bottom: 0.735 })];
+/// ATS's Cascadia-shaped screens (and the Western Star 57X's) draw their map outside their "screen on" group's
+/// own box (the group 0-128 x 412-540, its map x 124-1314 of the 1440 x 540 window): measured from the group, its
+/// fractions go past 1. The VNL 2018's (and the VNR Electric's) leaves its 60-wide button bar at the left.
+const SHOWN_PARTS: &[(&str, ShownPart)] = &[
+    ("generic", ShownPart { left: 0.005, right: 0.995, top: 0.122, bottom: 0.735 }),
+    ("ats-cascadia", ShownPart { left: 124.0 / 128.0, right: 1314.0 / 128.0, top: 0.0, bottom: 540.0 / 128.0 }),
+    ("volvo-vnl-2018", ShownPart { left: 60.0 / 800.0, right: 1.0, top: 0.0, bottom: 1.0 }),
+];
 
 /// A mod vehicle's own screen WestPlay draws on (owner 2026-10-24, Oyuncuyusbis' coaches: "directly in their
 /// screen"), from the installed mod that brings the vehicle: the layout's script (its one, in
@@ -567,14 +583,15 @@ pub fn build(
 /// first, then moved over it, so the plugin never finds half a file.
 /// A step that failed names itself and its path (`writing C:\…\WestPlay\westplay.scs.partial: …`), so a
 /// player's report says which.
-pub fn install(bytes: &[u8], mod_dir: &Path) -> std::io::Result<PathBuf> {
+pub fn install(bytes: &[u8], mod_dir: &Path, kind: crate::game::Kind) -> std::io::Result<PathBuf> {
     let step = |what: &str, path: &Path| {
         let what = format!("{what} {}", path.display());
         move |error: std::io::Error| std::io::Error::new(error.kind(), format!("{what}: {error}"))
     };
     std::fs::create_dir_all(mod_dir).map_err(step("making the folder", mod_dir))?;
-    let path = mod_dir.join(FILE_NAME);
-    let partial = mod_dir.join(format!("{FILE_NAME}.partial"));
+    let name = file_name(kind);
+    let path = mod_dir.join(name);
+    let partial = mod_dir.join(format!("{name}.partial"));
     std::fs::write(&partial, bytes).map_err(step("writing", &partial))?;
     std::fs::rename(&partial, &path).map_err(step("moving it over", &path))?;
     Ok(path)
@@ -952,13 +969,13 @@ mod tests {
     fn installs_the_mod_whole_and_says_which_step_failed_where() {
         let root = std::env::temp_dir().join(format!("westplay-install-{}", std::process::id()));
         let mod_dir = root.join("Euro Truck Simulator 2").join("mod");
-        let path = install(b"mod", &mod_dir).unwrap();
+        let path = install(b"mod", &mod_dir, crate::game::Kind::Ets2).unwrap();
         assert_eq!(std::fs::read(&path).unwrap(), b"mod");
         assert!(!mod_dir.join("westplay.scs.partial").exists());
         // A file where the folder should be: the step and its path in the error.
         let blocked = root.join("blocked");
         std::fs::write(&blocked, b"").unwrap();
-        let error = install(b"mod", &blocked.join("mod")).unwrap_err().to_string();
+        let error = install(b"mod", &blocked.join("mod"), crate::game::Kind::Ets2).unwrap_err().to_string();
         assert!(error.starts_with("making the folder ") && error.contains("blocked"), "{error}");
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -994,6 +1011,19 @@ mod tests {
         assert!(patched.contains(placed), "{patched}");
         // The group itself keeps its coordinates.
         assert!(patched.contains(" coords_r: 256\n coords_t: 256\n coords_b: 0\n id: 100\n"));
+    }
+
+    #[test]
+    fn puts_the_screen_on_the_cascadias_map_outside_its_group() {
+        // ATS's Cascadia: the group 0-128 x 412-540, its map x 124-1314, the whole height.
+        let cascadia = SCRIPT
+            .replace("coords_r: 1279", "coords_r: 128")
+            .replace("coords_t: 719", "coords_t: 540")
+            .replace("coords_b: 0\n id: 100", "coords_b: 412\n id: 100");
+        let shown = SHOWN_PARTS.iter().find(|(id, _)| *id == "ats-cascadia").map(|(_, part)| part);
+        let patched = patch_gps_script(&cascadia, "screen_ats-cascadia", shown).unwrap();
+        let placed = "yscale=stretch>\"\n coords_l: 124\n coords_r: 1314\n coords_t: 540\n coords_b: 0\n";
+        assert!(patched.contains(placed), "{patched}");
     }
 
     #[test]
@@ -1121,6 +1151,29 @@ mod tests {
         let actros = "def/vehicle/truck/mercedes.actros2014/accessory/toyhang/westplay_tablet.sii";
         assert!(archive.read(actros).unwrap().is_some());
         assert!(archive.read("vehicle/truck/upgrade/westplay_tablet/westplay_tablet_hang.pmg").unwrap().is_some());
+    }
+
+    /// The real thing for ATS: every one of its screens patched, and the tablet in its trucks.
+    /// `cargo test -p westplay-setup -- --ignored --nocapture builds_the_ats_mod`
+    #[test]
+    #[ignore = "reads the PC's ATS"]
+    fn builds_the_ats_mod_from_the_installed_game() {
+        let game = crate::game::find().into_iter().find(|game| game.kind == crate::game::Kind::Ats).expect("ATS");
+        let files = GameFiles::install(&game.dir).unwrap();
+        let (bytes, built) = build(&files, &[], &GameFiles::new(Vec::new()), &cab_mark::Marks::default()).unwrap();
+        let out = std::env::temp_dir().join(file_name(crate::game::Kind::Ats));
+        std::fs::write(&out, &bytes).unwrap();
+        println!("{} bytes, patched {:?}, missing {:?}: {}", bytes.len(), built.patched, built.missing, out.display());
+        for layout in ["generic", "ats-cascadia", "kenworth-t680-2022", "volvo-vnl-2018", "volvo-vnl-2025"] {
+            assert!(built.patched.contains(&layout), "{layout}");
+        }
+        assert!(built.patched.contains(&"westernstar-5700xe") && built.patched.contains(&TABLET));
+        let archive = westplay_mapdata::archive::Archive::open(&out).unwrap();
+        let cascadia = archive.read("ui/dashboard/freightliner_cascadia_2024_gps.sii").unwrap().unwrap();
+        let cascadia = String::from_utf8(cascadia).unwrap().replace("\r\n", "\n");
+        assert!(cascadia.contains("coords_l: 124\n coords_r: 1314\n coords_t: 540\n coords_b: 0"), "{cascadia}");
+        let peterbilt = "def/vehicle/truck/peterbilt.389/accessory/toyhang/westplay_tablet.sii";
+        assert!(archive.read(peterbilt).unwrap().is_some());
     }
 
     /// A game folder with the Smart Dash's script and screens file, and an Advanced and a 10.1" interior in

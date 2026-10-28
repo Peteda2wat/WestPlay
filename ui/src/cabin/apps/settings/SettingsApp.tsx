@@ -20,7 +20,17 @@ import {
 } from './glyphs'
 import { type SettingsPage, useSettings } from './settings'
 import './settings.css'
-import { cabClock, EQUALIZER_BANDS, EQUALIZER_MOST, type Equalizer, isInHost, postToHost } from '../../../shared/host'
+import {
+  cabClock,
+  EQUALIZER_BANDS,
+  EQUALIZER_MOST,
+  type Equalizer,
+  isInHost,
+  postToHost,
+  VOICE_LEVELS,
+  type VoiceLevel,
+} from '../../../shared/host'
+import { previewVoice, voicesForLanguage } from '../../maps/voiceGuidance'
 
 /**
  * The Settings app, in iOS 26's Settings look: a large title, inset grouped cards, coloured tiles, chevrons
@@ -60,6 +70,8 @@ function PageContent({ page }: { page: SettingsPage }) {
       return <SoundPage />
     case 'equalizer':
       return <EqualizerPage />
+    case 'voice':
+      return <VoicePage />
     case 'textSize':
       return <TextSizePage />
   }
@@ -131,6 +143,10 @@ function AppearancePage() {
   const hasBar = useScreenProfile().oemStrip !== null
   const oemMode = useCabin((state) => state.oemMode)
   const chooseOemMode = useCabin((state) => state.chooseOemMode)
+  const clock24 = useCabin((state) => state.clock24)
+  const setClock24 = useCabin((state) => state.setClock24)
+  const miles = useCabin((state) => state.miles)
+  const setMiles = useCabin((state) => state.setMiles)
   const open = useSettings((state) => state.open)
   return (
     <Page title={text.settings.appearance}>
@@ -161,6 +177,10 @@ function AppearancePage() {
       </Group>
       <Group>
         <NavRow label={text.settings.textSize} onOpen={() => open('textSize')} />
+      </Group>
+      <Group>
+        <SwitchRow label={text.settings.clock24} on={clock24} onToggle={setClock24} />
+        <SwitchRow label={text.settings.miles} on={miles} onToggle={setMiles} />
       </Group>
       {hasBar && (
         <Group footer={text.settings.vehicleBarFooter}>
@@ -343,11 +363,12 @@ function NowPlayingPage() {
   )
 }
 
-/** Sound: the Equalizer (more of the sound's settings may come here). */
+/** Sound: the Equalizer, and Spoken Directions. */
 function SoundPage() {
   const text = useText()
   const open = useSettings((state) => state.open)
   const custom = useCabin((state) => state.equalizerCustom)
+  const voice = useCabin((state) => state.voice)
   return (
     <Page title={text.settings.sound}>
       <Group>
@@ -356,6 +377,65 @@ function SoundPage() {
           value={custom ? text.settings.custom : text.settings.recommended}
           onOpen={() => open('equalizer')}
         />
+        <NavRow
+          label={text.settings.spokenDirections}
+          value={voice.muted ? text.settings.noVoice : levelName(voice.level, text)}
+          onOpen={() => open('voice')}
+        />
+      </Group>
+    </Page>
+  )
+}
+
+function levelName(level: VoiceLevel, text: ReturnType<typeof useText>): string {
+  return { low: text.settings.lowVolume, normal: text.settings.normalVolume, loud: text.settings.loudVolume }[level]
+}
+
+/**
+ * Spoken Directions, as Apple Maps has them (owner 2026-10-27): No Voice or how loud (louder, the music ducks
+ * deeper), and the voice: Automatic (WestPlay's pick, the most natural installed) or one of Windows' voices for
+ * the language. Each heard as it's picked.
+ */
+function VoicePage() {
+  const text = useText()
+  const voice = useCabin((state) => state.voice)
+  const setVoice = useCabin((state) => state.setVoice)
+  // Windows' voices come a moment after the page loads.
+  const [voices, setVoices] = useState(voicesForLanguage)
+  useEffect(() => {
+    const speech = window.speechSynthesis
+    if (!speech) return
+    const list = () => setVoices(voicesForLanguage())
+    speech.addEventListener('voiceschanged', list)
+    return () => speech.removeEventListener('voiceschanged', list)
+  }, [])
+  const pick = (change: Parameters<typeof setVoice>[0]) => {
+    setVoice(change)
+    if (change.muted !== true) previewVoice()
+  }
+  return (
+    <Page title={text.settings.spokenDirections}>
+      <Group footer={text.settings.voiceFooter}>
+        <CheckRow label={text.settings.noVoice} on={voice.muted} onPick={() => pick({ muted: true })} />
+        {VOICE_LEVELS.map((level) => (
+          <CheckRow
+            key={level}
+            label={levelName(level, text)}
+            on={!voice.muted && voice.level === level}
+            onPick={() => pick({ muted: false, level })}
+          />
+        ))}
+      </Group>
+      <Group header={text.settings.voice}>
+        <CheckRow label={text.settings.automaticVoice} on={voice.name === null} onPick={() => pick({ name: null })} />
+        {voices.map((option) => (
+          <CheckRow
+            key={option.name}
+            label={option.name.replace(/^Microsoft /, '').replace(/ - .*$/, '')}
+            on={voice.name === option.name}
+            onPick={() => pick({ name: option.name })}
+          />
+        ))}
       </Group>
     </Page>
   )

@@ -22,18 +22,20 @@ export interface MusicPlayer {
   sendVolume(share: number): void
   /** Sets the volume it plays at (0 to 1) as the player's choice, as its own slider does: a keybind. */
   setVolume(share: number): void
+  /** Its previous (-1) or next (1) track, as its own buttons do: a keybind. */
+  skip(direction: 1 | -1): void
   /** Called whenever the app's music changes: `started` when it just began playing here. */
   subscribe(changed: (started: boolean) => void): () => void
 }
 
 /** Away: tabbed out, or the game paused with its menu up (its menu gone, it's about to run: back, owner
  * 2026-10-21; the game itself says it runs some 1.5 s later). */
-function isAway(live: LiveState): boolean {
+export function isAway(live: LiveState): boolean {
   return ((live.telemetry?.paused ?? false) && !live.menuGone) || !live.gameFocused
 }
 
 /** The truck's electrics are off (as seen: not before the first telemetry says so). */
-function isOff(): boolean {
+export function isOff(): boolean {
   const { power } = useCabin.getState()
   return power.observed && power.phase === 'off'
 }

@@ -1,6 +1,6 @@
 import type { YouTubeState } from '../../../shared/host'
 import { type MusicPlayer, pauseMusicWithGame } from '../musicWithGame'
-import { command, setVolume, useYouTube } from './youtube'
+import { command, nextVideo, play, positionNow, previousVideo, setVolume, useYouTube } from './youtube'
 
 /** A video playing, or about to (buffering). */
 function isPlaying(state: YouTubeState | null): boolean {
@@ -20,6 +20,17 @@ export const youtubePlayer: MusicPlayer = {
   },
   sendVolume: (share) => command({ action: 'volume', percent: Math.round(share * 100) }),
   setVolume: (share) => setVolume(share * 100),
+  // As the video widget's buttons: back to the start past 5 s (or with none before), else the video before.
+  skip: (direction) => {
+    if (direction === 1) {
+      const next = nextVideo()
+      if (next) play(next, false)
+      return
+    }
+    const before = previousVideo()
+    if (positionNow() > 5 || !before) command({ action: 'seek', seconds: 0 })
+    else play(before, false)
+  },
   subscribe: (changed) =>
     useYouTube.subscribe((youtube, before) => changed(isPlaying(youtube.state) && !isPlaying(before.state))),
 }

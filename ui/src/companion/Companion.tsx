@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type SignedIn, useAskOnce, useSignedIn } from './accounts'
 import { appVersion, call, PREVIEW_TUTORIAL } from './bridge'
+import { setGameKind } from './game'
 import { Onboarding } from './onboarding/Onboarding'
 import { languageOf, percent, type Words, wordsFor } from './onboarding/words'
 import { About } from './pages/About'
@@ -125,6 +126,7 @@ function Room({
   tutorialDone?: () => void
 }) {
   const [code] = useState(() => setup.language ?? languageOf(navigator.languages))
+  setGameKind(setup.game?.kind)
   const words = wordsFor(code)
   const cw = companionWords(code)
   const [section, setSection] = useState<SectionId>('screen')

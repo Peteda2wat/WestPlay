@@ -17,6 +17,32 @@ export interface Strings {
   decimal: string
   /** The trip pill: "15:40 arrival · 12 min · 9.4 km". */
   arrival: string
+  /** The trip pill's real-world driving time left: "6 min real". */
+  realTime: string
+  /** The job tile's break, as Truck Remote: "Break: In 6h 0m", "Break: Now!". */
+  breakLabel: string
+  /** Truck Remote's trip card in the job tile (dashboard/tripCard.ts). */
+  trip: {
+    real: string
+    freeRoam: string
+    pickUp: string
+    then: string
+    to: string
+    cargo: string
+    due: string
+    late: string
+    fuelStops: string
+    sleepStops: string
+    fuel: string
+    none: string
+    first: string
+    now: string
+    within: (distance: string) => string
+    about: (distance: string) => string
+  }
+  breakIn: (time: string) => string
+  breakNow: string
+  findStop: string
   minutes: (minutes: number) => string
   hours: (hours: number, minutes: string) => string
   speedLimit: (limit: number) => string
@@ -26,6 +52,11 @@ export interface Strings {
   arrive: string
   turns: Record<Exclude<TurnKind, 'roundabout'>, string>
   roundabout: (exit: number) => string
+  /** Spoken: a step, then the one right after it ("Turn right, then keep left"); a step some way off ("In 2
+   * miles, turn right"); the route planned anew while driving. */
+  sayThen: (what: string, next: string) => string
+  sayIn: (where: string, what: string) => string
+  rerouting: string
   /** Maps. */
   recentre: string
   /** The compass: turns the map north up, seen from above. */
@@ -43,6 +74,9 @@ export interface Strings {
     headquarters: string
     yourGarage: string
     findNearby: string
+    /** Truck Remote's one-tap buttons, and when there's none of a kind. */
+    routeToNearest: string
+    noneNearby: string
     /** "Find nearby" on a route: the places offered are along it. */
     alongRoute: string
     recents: string
@@ -446,6 +480,9 @@ export interface Strings {
     dashboard: string
     widgets: string
     showAlbumArt: string
+    /** iOS's 24-Hour Time (Date & Time): off, the clock in 12 hours with AM/PM. */
+    clock24: string
+    miles: string
     /** Sound, and in it the Equalizer: the speakers as tuned (Recommended) or the player's own tone (Custom), what
      * it does, its three bands under the graph, and the curve set back. */
     sound: string
@@ -457,6 +494,16 @@ export interface Strings {
     mid: string
     high: string
     resetEqualizer: string
+    /** Sound › Spoken Directions, as Apple Maps has them: no voice or how loud, and which voice (WestPlay's pick
+     * or one of Windows'), each heard as it's picked. */
+    spokenDirections: string
+    noVoice: string
+    lowVolume: string
+    normalVolume: string
+    loudVolume: string
+    voice: string
+    automaticVoice: string
+    voiceFooter: string
     back: string
   }
   /** Apps. */
@@ -470,6 +517,29 @@ export const STRINGS: Record<Language, Strings> = {
   en: {
     decimal: '.',
     arrival: 'arrival',
+    realTime: 'left (real)',
+    breakLabel: 'Break',
+    trip: {
+      real: 'left',
+      freeRoam: 'Free roam',
+      pickUp: 'Pick up',
+      then: 'Then',
+      to: 'To',
+      cargo: 'Cargo',
+      due: 'Due',
+      late: 'late',
+      fuelStops: 'Fuel stops',
+      sleepStops: 'Sleep stops',
+      fuel: 'Fuel',
+      none: 'None',
+      first: 'first',
+      now: 'now',
+      within: (distance) => `within ${distance}`,
+      about: (distance) => `in ~${distance}`,
+    },
+    breakIn: (time) => `In ${time}`,
+    breakNow: 'Now!',
+    findStop: 'find a stop',
     minutes: (minutes) => `${minutes} min`,
     hours: (hours, minutes) => `${hours}:${minutes} hrs`,
     speedLimit: (limit) => `Speed limit ${limit}`,
@@ -490,6 +560,9 @@ export const STRINGS: Record<Language, Strings> = {
       'exit-right': 'Take the exit on the right',
     },
     roundabout: (exit) => `At the roundabout, take the ${ENGLISH_ORDINALS[exit - 1] ?? `${exit}th`} exit`,
+    sayThen: (what, next) => `${what}, then ${next.charAt(0).toLowerCase()}${next.slice(1)}`,
+    sayIn: (where, what) => `In ${where}, ${what.charAt(0).toLowerCase()}${what.slice(1)}`,
+    rerouting: 'Rerouting',
     recentre: 'Recentre',
     northUp: 'North up',
     zoomIn: 'Zoom in',
@@ -502,6 +575,8 @@ export const STRINGS: Record<Language, Strings> = {
       headquarters: 'Headquarters',
       yourGarage: 'Your garage',
       findNearby: 'Find nearby',
+      routeToNearest: 'Route to nearest',
+      noneNearby: 'None on your map',
       alongRoute: 'Along the route',
       recents: 'Recents',
       kinds: {
@@ -922,6 +997,8 @@ export const STRINGS: Record<Language, Strings> = {
       dashboard: 'Dashboard',
       widgets: 'Widgets',
       showAlbumArt: 'Show Album Art',
+      clock24: '24-Hour Time',
+      miles: 'Miles',
       sound: 'Sound',
       equalizer: 'Equalizer',
       recommended: 'Recommended',
@@ -932,6 +1009,15 @@ export const STRINGS: Record<Language, Strings> = {
       mid: 'Mid',
       high: 'High',
       resetEqualizer: 'Reset',
+      spokenDirections: 'Spoken Directions',
+      noVoice: 'No Voice',
+      lowVolume: 'Low Volume',
+      normalVolume: 'Normal Volume',
+      loudVolume: 'Loud Volume',
+      voice: 'Voice',
+      automaticVoice: 'Automatic',
+      voiceFooter:
+        'Louder, the music is turned down further while directions are spoken. Pick a voice to hear it; Automatic uses the most natural voice installed in Windows.',
       back: 'Back',
     },
     apps: {
@@ -951,6 +1037,29 @@ export const STRINGS: Record<Language, Strings> = {
   tr: {
     decimal: ',',
     arrival: 'varış',
+    realTime: 'gerçek süre',
+    breakLabel: 'Mola',
+    trip: {
+      real: 'kaldı',
+      freeRoam: 'Serbest sürüş',
+      pickUp: 'Yükleme',
+      then: 'Sonra',
+      to: 'Varış',
+      cargo: 'Yük',
+      due: 'Teslim',
+      late: 'gecikmeli',
+      fuelStops: 'Yakıt molası',
+      sleepStops: 'Uyku molası',
+      fuel: 'Yakıt',
+      none: 'Yok',
+      first: 'ilki',
+      now: 'şimdi',
+      within: (distance) => `${distance} içinde`,
+      about: (distance) => `~${distance} sonra`,
+    },
+    breakIn: (time) => `${time} sonra`,
+    breakNow: 'Şimdi!',
+    findStop: 'bir yer bul',
     minutes: (minutes) => `${minutes} dk`,
     hours: (hours, minutes) => `${hours}:${minutes} sa`,
     speedLimit: (limit) => `Hız sınırı ${limit}`,
@@ -971,6 +1080,9 @@ export const STRINGS: Record<Language, Strings> = {
       'exit-right': 'Sağdaki çıkışa girin',
     },
     roundabout: (exit) => `Dönel kavşakta ${exit}. çıkıştan çıkın`,
+    sayThen: (what, next) => `${what}, ardından ${next.charAt(0).toLocaleLowerCase('tr')}${next.slice(1)}`,
+    sayIn: (where, what) => `${where} sonra, ${what.charAt(0).toLocaleLowerCase('tr')}${what.slice(1)}`,
+    rerouting: 'Rota yeniden hesaplanıyor',
     recentre: 'Ortala',
     northUp: 'Kuzey yukarı',
     zoomIn: 'Yakınlaştır',
@@ -983,6 +1095,8 @@ export const STRINGS: Record<Language, Strings> = {
       headquarters: 'Merkez',
       yourGarage: 'Garajınız',
       findNearby: 'Yakındakiler',
+      routeToNearest: 'En yakına git',
+      noneNearby: 'Haritanda yok',
       alongRoute: 'Rota üzerinde',
       recents: 'Son kullanılanlar',
       kinds: {
@@ -1407,6 +1521,8 @@ export const STRINGS: Record<Language, Strings> = {
       dashboard: 'Gösterge Paneli',
       widgets: 'Widget’lar',
       showAlbumArt: 'Albüm Kapağını Göster',
+      clock24: '24 Saat Biçimi',
+      miles: 'Mil',
       sound: 'Ses',
       equalizer: 'Ekolayzır',
       recommended: 'Önerilen',
@@ -1417,6 +1533,15 @@ export const STRINGS: Record<Language, Strings> = {
       mid: 'Orta',
       high: 'Yüksek',
       resetEqualizer: 'Sıfırla',
+      spokenDirections: 'Sesli Yol Tarifi',
+      noVoice: 'Ses Yok',
+      lowVolume: 'Düşük Ses',
+      normalVolume: 'Normal Ses',
+      loudVolume: 'Yüksek Ses',
+      voice: 'Seslendiren',
+      automaticVoice: 'Otomatik',
+      voiceFooter:
+        'Ses yükseldikçe, yol tarifi okunurken müzik daha çok kısılır. Dinlemek için bir ses seç; Otomatik, Windows’ta yüklü en doğal sesi kullanır.',
       back: 'Geri',
     },
     apps: {

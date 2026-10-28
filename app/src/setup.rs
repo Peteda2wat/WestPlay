@@ -83,6 +83,8 @@ fn plugin_file(app: &AppHandle) -> Option<PathBuf> {
 #[serde(rename_all = "camelCase")]
 pub struct GameInfo {
     dir: PathBuf,
+    /// `ets2` or `ats`.
+    kind: game::Kind,
     /// `steam`, `installed` (another store's, or SCS's own installer) or `chosen`.
     found_by: &'static str,
     version: Option<String>,
@@ -95,6 +97,7 @@ impl From<&Game> for GameInfo {
     fn from(game: &Game) -> Self {
         Self {
             dir: game.dir.clone(),
+            kind: game.kind,
             found_by: match game.found_by {
                 FoundBy::Steam => "steam",
                 FoundBy::Installed => "installed",
@@ -235,6 +238,8 @@ pub async fn check_game(dir: PathBuf, store: State<'_, SetupStore>) -> Result<Ga
     let ours = store.0.plugin.clone();
     blocking(move || {
         let game = Game::recognise(&dir).ok_or("gameGone")?;
+        // The profiles of the game checked (ETS2's or ATS's), not the one set up before.
+        game::set_current(game.kind);
         let (profiles, installed) = match places::game_documents() {
             Some(documents) => {
                 let userdata = places::steam().map(|steam| steam.join("userdata"));
@@ -347,7 +352,7 @@ pub fn watch_installed_mods(store: &SetupStore) {
 fn look_at_mods(inner: &Inner, looked: &mut Option<ModsStamp>) {
     let record = inner.record();
     let Some(game) = record.game.as_deref().and_then(Game::recognise).filter(|_| record.finished) else { return };
-    let Some(ours) = places::westplay_documents().map(|dir| dir.join(game_mod::FILE_NAME)) else { return };
+    let Some(ours) = places::westplay_documents().map(|dir| dir.join(game_mod::file_name(game.kind))) else { return };
     // Not set up yet (setup makes it), or the game has it open.
     if !ours.is_file() || game::running() {
         return;
@@ -394,7 +399,7 @@ fn look_at_mods(inner: &Inner, looked: &mut Option<ModsStamp>) {
         let made = game_mod::build(&files, &mod_trucks, &screen_mods, &marks).map_err(|error| error.to_string());
         let made = made.and_then(|(bytes, built)| {
             let dir = ours.parent().ok_or("no folder")?;
-            game_mod::install(&bytes, dir).map_err(|error| error.to_string())?;
+            game_mod::install(&bytes, dir, game.kind).map_err(|error| error.to_string())?;
             Ok(built)
         });
         let built = match made {
@@ -459,6 +464,8 @@ pub async fn install_into_game(
     let inner = store.0.clone();
     blocking(move || {
         let game = Game::recognise(&dir).ok_or("gameGone")?;
+        // Its Documents folder and profiles from here on (ETS2's or ATS's), before the record says so.
+        game::set_current(game.kind);
         let mod_error = install_mod(&game).err();
         let plugin = match inner.plugin.as_deref() {
             None => PluginOutcome::Failed { error: "noPlugin".into() },
@@ -486,7 +493,7 @@ fn install_mod(game: &Game) -> Result<(), String> {
         log!("setup: the 7\" Scania screen stays at the game's size: {why}");
     }
     let ours = places::westplay_documents().ok_or("noDocuments")?;
-    game_mod::install(&bytes, &ours).map_err(|e| format!("Couldn't write the mod: {e}"))?;
+    game_mod::install(&bytes, &ours, game.kind).map_err(|e| format!("Couldn't write the mod: {e}"))?;
     tablet::write_apart(&apart, &ours).map_err(|e| format!("Couldn't write the mod: {e}"))?;
     if let Some(documents) = places::game_documents() {
         westplay_setup::uninstall::remove_mod(&documents)

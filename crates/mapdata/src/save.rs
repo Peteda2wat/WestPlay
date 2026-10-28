@@ -396,16 +396,22 @@ pub fn profile_of(save: &Path) -> Option<PathBuf> {
 
 /// The save the game wrote last, in any profile, in the game's documents folder or Steam Cloud's: the
 /// one being played, unless the game has loaded a profile that hasn't saved since (see [`latest_of`]).
-pub fn latest(documents: &Path, steam_userdata: Option<&Path>) -> Option<PathBuf> {
-    latest_of(documents, steam_userdata, |_| true)
+/// `steam_app`: the game's Steam app id, its Steam Cloud folder (`227300` ETS2, `270880` ATS).
+pub fn latest(documents: &Path, steam_userdata: Option<&Path>, steam_app: &str) -> Option<PathBuf> {
+    latest_of(documents, steam_userdata, steam_app, |_| true)
 }
 
 /// [`latest`], of the profiles whose folder's name (the profile's name in hexadecimal) `profile` takes.
-pub fn latest_of(documents: &Path, steam_userdata: Option<&Path>, profile: impl Fn(&str) -> bool) -> Option<PathBuf> {
+pub fn latest_of(
+    documents: &Path,
+    steam_userdata: Option<&Path>,
+    steam_app: &str,
+    profile: impl Fn(&str) -> bool,
+) -> Option<PathBuf> {
     let mut profile_dirs = vec![documents.join("profiles"), documents.join("steam_profiles")];
     if let Some(userdata) = steam_userdata {
         for user in std::fs::read_dir(userdata).into_iter().flatten().flatten() {
-            profile_dirs.push(user.path().join("227300/remote/profiles"));
+            profile_dirs.push(user.path().join(steam_app).join("remote").join("profiles"));
         }
     }
     let saves = profile_dirs
@@ -454,9 +460,9 @@ mod tests {
         };
         let eren = save("4572656E", "autosave");
         let w = save("57", "autosave");
-        assert_eq!(latest(&documents, None), Some(w));
-        assert_eq!(latest_of(&documents, None, |folder| folder == "4572656E"), Some(eren));
-        assert_eq!(latest_of(&documents, None, |folder| folder == "00"), None);
+        assert_eq!(latest(&documents, None, "227300"), Some(w));
+        assert_eq!(latest_of(&documents, None, "227300", |folder| folder == "4572656E"), Some(eren));
+        assert_eq!(latest_of(&documents, None, "227300", |folder| folder == "00"), None);
         let _ = std::fs::remove_dir_all(&root);
     }
     use crate::token::string_to_token;

@@ -95,6 +95,8 @@ export const words: CompanionWords = {
     volumeUp: 'Apujar el volum',
     volumeDown: 'Abaixar el volum',
     playPause: 'Reproduir/Pausa',
+    previousTrack: 'Pista anterior',
+    nextTrack: 'Pista següent',
     pressKey: 'Prem una tecla…',
     keybindsNote:
       'Fes clic en una drecera i prem la tecla nova. Si mantens {key} mentre la prems, només funciona mentre fas servir la pantalla. Esc cancel·la.',

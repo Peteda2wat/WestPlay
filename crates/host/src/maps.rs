@@ -138,6 +138,13 @@ pub struct MapUpdate {
     pub profiles: Vec<ProfileMap>,
 }
 
+/// Makes the game in `dir` (ETS2's or ATS's) the one Documents, profiles and Steam Cloud are read for.
+fn follow_game(dir: Option<&Path>) {
+    if let Some(kind) = dir.and_then(game::Kind::of) {
+        game::set_current(kind);
+    }
+}
+
 /// The game WestPlay is set up in (its folder), set by the companion's setup, and the player's asks to prepare
 /// the maps again (the companion's Map page), from any thread: the watch looks at once at either.
 #[derive(Debug, Default)]
@@ -155,6 +162,7 @@ struct SetUp {
 
 impl SetUpGame {
     pub fn new(dir: Option<PathBuf>) -> Self {
+        follow_game(dir.as_deref());
         Self { state: Mutex::new(SetUp { dir, asked_again: 0 }), changed: Condvar::new() }
     }
 
@@ -163,6 +171,7 @@ impl SetUpGame {
     }
 
     pub fn set(&self, dir: Option<PathBuf>) {
+        follow_game(dir.as_deref());
         self.state().dir = dir;
         self.changed.notify_all();
     }
@@ -353,8 +362,8 @@ fn watch(maps: &Path, set_up: &SetUpGame, sender: &Sender<MapUpdate>, played: &P
 }
 
 fn basis(game: &Game, documents: &Path, userdata: Option<&Path>) -> Basis {
-    let profile =
-        save::latest(documents, userdata).and_then(|save| save::profile_of(&save)?.parent().map(Path::to_path_buf));
+    let profile = save::latest(documents, userdata, game.kind.steam_app())
+        .and_then(|save| save::profile_of(&save)?.parent().map(Path::to_path_buf));
     let written = |path: &Path| std::fs::metadata(path).and_then(|m| m.modified()).ok();
     Basis {
         game: game.dir.clone(),
@@ -367,7 +376,7 @@ fn basis(game: &Game, documents: &Path, userdata: Option<&Path>) -> Basis {
                 (dir, at)
             })
             .collect(),
-        game_written: written(&game.dir.join("bin").join("win_x64").join("eurotrucks2.exe")),
+        game_written: written(&game.dir.join(game.kind.executable())),
         truckersmp: truckersmp::installation().map(|installation| {
             let packs = truckersmp::packs(&installation).into_iter().map(|pack| {
                 let at = written(&pack);
@@ -388,7 +397,7 @@ fn basis(game: &Game, documents: &Path, userdata: Option<&Path>) -> Basis {
 fn profile_dirs(documents: &Path, userdata: Option<&Path>) -> Vec<PathBuf> {
     let mut folders = vec![documents.join("profiles"), documents.join("steam_profiles")];
     for user in userdata.into_iter().flat_map(|dir| std::fs::read_dir(dir).into_iter().flatten().flatten()) {
-        folders.push(user.path().join(game::STEAM_APP).join("remote").join("profiles"));
+        folders.push(user.path().join(game::current().steam_app()).join("remote").join("profiles"));
     }
     let mut dirs: Vec<PathBuf> = folders
         .iter()

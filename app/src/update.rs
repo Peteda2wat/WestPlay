@@ -19,6 +19,9 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 use westplay_host::log;
 
+/// This build is a port (ETS2 and ATS, owner 2026-10-27): upstream's releases would replace it, so it looks for none.
+const LOOKS_FOR_UPDATES: bool = false;
+
 /// The first look, once WestPlay has started (not to slow its start).
 const FIRST_LOOK: Duration = Duration::from_secs(30);
 /// Then this often.
@@ -61,7 +64,7 @@ struct Progress {
 
 /// Looks for updates in the background, from now on: a little after the start, then every few hours.
 pub fn watch(app: &AppHandle) {
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) || !LOOKS_FOR_UPDATES {
         return;
     }
     let app = app.clone();
@@ -116,7 +119,7 @@ pub fn update_offer(updates: State<Updates>) -> Option<Offer> {
 /// Looks for an update now (the companion, as it opens, and its About page). A development build has none.
 #[tauri::command]
 pub async fn look_for_update(app: AppHandle) -> Option<Offer> {
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) || !LOOKS_FOR_UPDATES {
         return None;
     }
     look(&app).await.ok().flatten()

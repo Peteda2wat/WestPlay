@@ -1,3 +1,4 @@
+import { forGame } from '../../game'
 import type { MapStage } from '../../useHostStatus'
 import type { KeyPreset } from '../../useSettings'
 
@@ -242,7 +243,7 @@ export function languageOf(tags: readonly string[]): string {
 
 /** The words in the game's language `code` (English for one without). */
 export function wordsFor(code: string): Words {
-  return WORDS[code] ?? WORDS.en_us
+  return forGame(WORDS[code] ?? WORDS.en_us)
 }
 
 /** The languages there are words for. */

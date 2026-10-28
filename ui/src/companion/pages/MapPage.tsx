@@ -142,7 +142,14 @@ export function MapPage(props: PageProps) {
                 .map((each) => (
                   <ProfileRow
                     key={each.dir}
-                    profile={{ name: 'TruckersMP', dir: each.dir, map: 'europe', mapMods: [], unreadable: 0, hvtMap: false }}
+                    profile={{
+                      name: 'TruckersMP',
+                      dir: each.dir,
+                      map: 'europe',
+                      mapMods: [],
+                      unreadable: 0,
+                      hvtMap: false,
+                    }}
                     map={each.status}
                     leftOut={each.leftOut}
                   />

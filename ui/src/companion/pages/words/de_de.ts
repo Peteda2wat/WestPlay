@@ -95,6 +95,8 @@ export const words: CompanionWords = {
     volumeUp: 'Lauter',
     volumeDown: 'Leiser',
     playPause: 'Wiedergabe/Pause',
+    previousTrack: 'Vorheriger Titel',
+    nextTrack: 'Nächster Titel',
     pressKey: 'Taste drücken…',
     keybindsNote:
       'Klicke auf eine Belegung und drücke dann die neue Taste. Hältst du dabei {key}, wirkt sie nur, während du den Bildschirm nutzt. Esc bricht ab.',

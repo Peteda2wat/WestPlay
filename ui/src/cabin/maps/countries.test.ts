@@ -36,4 +36,19 @@ describe('the clock where the truck is', () => {
     // Off the grid, or a country without a zone: the game's time.
     expect(clockShiftAt(grid, 90_000, 500)).toBe(0)
   })
+
+  it("runs ATS's clock from the Pacific's time", () => {
+    // California (1), Texas (2).
+    const usa = parseGrid({
+      cell: 1000,
+      x: 0,
+      z: 0,
+      width: 2,
+      height: 1,
+      cells: '0102',
+      zones: { '1': -420, '2': -300 },
+    })!
+    expect(clockShiftAt(usa, 500, 500)).toBe(0)
+    expect(clockShiftAt(usa, 1500, 500)).toBe(120)
+  })
 })

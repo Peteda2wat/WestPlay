@@ -36,8 +36,10 @@ pub fn roaming() -> Option<PathBuf> {
     }
 }
 
-/// The game's folder's name in Documents.
-const GAME_FOLDER: &str = "Euro Truck Simulator 2";
+/// The game's folder's name in Documents (the game set up's).
+fn game_folder() -> &'static str {
+    crate::game::current().name()
+}
 
 /// Every folder that may be the player's Documents, Windows' first: Windows' own (wherever it's moved, to
 /// OneDrive say), the user's `Documents`, and each OneDrive's folders (OneDrive names Documents in the
@@ -84,7 +86,7 @@ fn launch_homes() -> Vec<PathBuf> {
 /// The game's launch options in a Steam user's `localconfig.vdf` (its keys in any case).
 fn launch_options(config: &vdf::Value) -> Option<&str> {
     let steam = config.get("UserLocalConfigStore")?.get("Software")?.get("Valve")?.get("Steam")?;
-    steam.get("apps")?.get(crate::game::STEAM_APP)?.get("LaunchOptions")?.text()
+    steam.get("apps")?.get(crate::game::current().steam_app())?.get("LaunchOptions")?.text()
 }
 
 /// The folder `-homedir` names in launch `options` (`-homedir D:\ETS2`, or quoted when it has spaces).
@@ -120,14 +122,14 @@ pub fn westplay_documents() -> Option<PathBuf> {
 /// ([`documents_folders`]), the one the game wrote its settings in last; Windows' Documents' if it has none
 /// yet (a game never started).
 pub fn game_documents() -> Option<PathBuf> {
-    choose_game_documents(&documents_folders()).or_else(|| Some(documents()?.join(GAME_FOLDER)))
+    choose_game_documents(&documents_folders()).or_else(|| Some(documents()?.join(game_folder())))
 }
 
 /// Of `folders`, the game's folder whose `config.cfg` the game wrote last (the earlier folder on a tie).
 fn choose_game_documents(folders: &[PathBuf]) -> Option<PathBuf> {
     let written = |game: &Path| std::fs::metadata(game.join("config.cfg")).and_then(|m| m.modified()).ok();
     let mut latest: Option<(std::time::SystemTime, PathBuf)> = None;
-    for game in folders.iter().map(|folder| folder.join(GAME_FOLDER)) {
+    for game in folders.iter().map(|folder| folder.join(game_folder())) {
         if let Some(at) = written(&game)
             && latest.as_ref().is_none_or(|(best, _)| at > *best)
         {
@@ -276,17 +278,17 @@ mod tests {
         let (windows, onedrive, empty) =
             (root.join("Documents"), root.join("OneDrive").join("Belgeler"), root.join("x"));
         for folder in [&windows, &onedrive] {
-            std::fs::create_dir_all(folder.join(GAME_FOLDER)).unwrap();
+            std::fs::create_dir_all(folder.join(game_folder())).unwrap();
         }
         std::fs::create_dir_all(&empty).unwrap();
         // Only OneDrive's has the game's settings: it's the one.
-        std::fs::write(onedrive.join(GAME_FOLDER).join("config.cfg"), "uset g_lang \"tr_tr\"").unwrap();
+        std::fs::write(onedrive.join(game_folder()).join("config.cfg"), "uset g_lang \"tr_tr\"").unwrap();
         let folders = [windows.clone(), onedrive.clone(), empty.clone()];
-        assert_eq!(choose_game_documents(&folders), Some(onedrive.join(GAME_FOLDER)));
+        assert_eq!(choose_game_documents(&folders), Some(onedrive.join(game_folder())));
         // Both: the one written last.
         std::thread::sleep(std::time::Duration::from_millis(50));
-        std::fs::write(windows.join(GAME_FOLDER).join("config.cfg"), "uset g_lang \"en_us\"").unwrap();
-        assert_eq!(choose_game_documents(&folders), Some(windows.join(GAME_FOLDER)));
+        std::fs::write(windows.join(game_folder()).join("config.cfg"), "uset g_lang \"en_us\"").unwrap();
+        assert_eq!(choose_game_documents(&folders), Some(windows.join(game_folder())));
         // None has played yet.
         assert_eq!(choose_game_documents(&[empty]), None);
         let _ = std::fs::remove_dir_all(&root);
@@ -305,7 +307,10 @@ mod tests {
         // Written as Steam writes its own folder: lowercase, forward slashes.
         let windows = std::env::var("SystemRoot").unwrap();
         let as_steam_writes = windows.to_lowercase().replace('\\', "/");
-        assert_eq!(windows_name(Path::new(&as_steam_writes)), Path::new(&windows));
+        // The folder's own capitals: `SystemRoot` may differ (C:\WINDOWS for C:\Windows, as on some PCs).
+        let on_disk = plain(&std::fs::canonicalize(&windows).unwrap());
+        assert_eq!(windows_name(Path::new(&as_steam_writes)), on_disk);
+        assert!(on_disk.to_string_lossy().eq_ignore_ascii_case(&windows));
         // A folder that isn't there stays as given.
         assert_eq!(windows_name(Path::new("q:/not/there")), Path::new("q:/not/there"));
     }
@@ -342,17 +347,17 @@ mod tests {
     fn a_home_given_as_the_game_folder_or_the_one_holding_it_is_found() {
         let root = std::env::temp_dir().join(format!("westplay-homedir-{}", std::process::id()));
         let (documents, home) = (root.join("Documents"), root.join("ETS2"));
-        std::fs::create_dir_all(documents.join(GAME_FOLDER)).unwrap();
-        std::fs::create_dir_all(home.join(GAME_FOLDER)).unwrap();
+        std::fs::create_dir_all(documents.join(game_folder())).unwrap();
+        std::fs::create_dir_all(home.join(game_folder())).unwrap();
         // An old game folder in Documents, and the one the game uses now in the home it's given.
-        std::fs::write(documents.join(GAME_FOLDER).join("config.cfg"), "old").unwrap();
+        std::fs::write(documents.join(game_folder()).join("config.cfg"), "old").unwrap();
         std::thread::sleep(std::time::Duration::from_millis(50));
-        std::fs::write(home.join(GAME_FOLDER).join("config.cfg"), "now").unwrap();
+        std::fs::write(home.join(game_folder()).join("config.cfg"), "now").unwrap();
         // `-homedir <root>\ETS2`: the folder given and the one it's in are candidates.
         let given = |folder: PathBuf| vec![documents.clone(), folder.parent().unwrap().to_path_buf(), folder];
-        assert_eq!(choose_game_documents(&given(home.clone())), Some(home.join(GAME_FOLDER)));
+        assert_eq!(choose_game_documents(&given(home.clone())), Some(home.join(game_folder())));
         // `-homedir "<root>\ETS2\Euro Truck Simulator 2"`: the same folder.
-        assert_eq!(choose_game_documents(&given(home.join(GAME_FOLDER))), Some(home.join(GAME_FOLDER)));
+        assert_eq!(choose_game_documents(&given(home.join(game_folder()))), Some(home.join(game_folder())));
         let _ = std::fs::remove_dir_all(&root);
     }
 }

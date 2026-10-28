@@ -94,6 +94,8 @@ export const words: CompanionWords = {
     volumeUp: 'Појачи',
     volumeDown: 'Намали',
     playPause: 'Пушти/Паузирај',
+    previousTrack: 'Претходна песна',
+    nextTrack: 'Следна песна',
     pressKey: 'Притиснете копче…',
     keybindsNote:
       'Кликнете на кратенка, па притиснете го новото копче. Ако притоа го држите {key}, работи само додека го користите екранот. Esc откажува.',

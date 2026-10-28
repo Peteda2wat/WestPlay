@@ -11,6 +11,7 @@ import { BootScreen } from './boot/BootScreen'
 import { Dashboard } from './dashboard/Dashboard'
 import { Home } from './home/Home'
 import { followTruckersMp } from './maps/truckersmp'
+import { speakGuidance } from './maps/voiceGuidance'
 import { routeClicksDuringTransitions } from './shell/clickThrough'
 import { installDragScroll } from './shell/dragScroll'
 import { Cursor } from './shell/Cursor'
@@ -40,7 +41,9 @@ export function CabinApp() {
   useEffect(() => pauseYouTubeMusicWithGame(), [])
   // One of them at a time: the newest to start plays on, the others pause (apps/oneAtATime.ts).
   useEffect(() => oneAtATime([youtubePlayer, spotifyPlayer, appleMusicPlayer, youtubeMusicPlayer]), [])
-  // The player's keybinds pressed in the game: the music's volume, or play/pause (apps/keybinds.ts).
+  // The route's turns spoken by WestPlay (not the game), the music ducked under the voice (maps/voiceGuidance.ts).
+  useEffect(() => speakGuidance([youtubePlayer, spotifyPlayer, appleMusicPlayer, youtubeMusicPlayer]), [])
+  // The player's keybinds pressed in the game: the music's volume, play/pause, previous/next (apps/keybinds.ts).
   useEffect(() => followKeybinds(), [])
   // The clock where the truck is: its country's time zone, as the game's own clock (state/timeZone.ts).
   useEffect(() => followTimeZone(), [])

@@ -3,7 +3,7 @@ import { guidanceOf } from '../maps/guidance'
 import { useMapData } from '../maps/mapData'
 import { useCabin, useLive } from '../state/store'
 import { useText } from '../state/text'
-import { destinationView } from './destination'
+import { type DestinationView, destinationView } from './destination'
 
 /* What the Dashboard's widget column shows, for the widgets (widgets.tsx) and the Dashboard itself. */
 
@@ -11,16 +11,20 @@ import { destinationView } from './destination'
 export function useDestinationView() {
   const text = useText()
   const labels = useMapData()?.labels
+  const clock24 = useCabin((state) => state.clock24)
+  const miles = useCabin((state) => state.miles)
   return useLive(
     useShallow((state) => {
       const end = state.route?.nodes.at(-1)?.position ?? null
-      return destinationView(state.job, end, state.telemetry, labels ?? [], text, state.clockShift) ?? EMPTY
+      return (
+        destinationView(state.job, end, state.telemetry, labels ?? [], text, state.clockShift, clock24, miles) ?? EMPTY
+      )
     }),
   )
 }
 
 /** No destination (one object, so the store's shallow comparison sees "still nothing"). */
-export const EMPTY = { kicker: '', title: '', subtitle: null, detail: '', late: false }
+export const EMPTY: DestinationView = { kicker: '', title: '', subtitle: null, detail: '', late: false }
 
 /** Whether the column has a widget to show: turn-by-turn, or one turned on in Settings with something to
  * show (Now Playing always has). */

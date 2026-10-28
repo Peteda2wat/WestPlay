@@ -24,9 +24,10 @@ pub fn remove_mod(game_documents: &Path) -> io::Result<()> {
     remove_mod_from(&game_documents.join("mod"))
 }
 
-/// Removes WestPlay's screens mod (and a copy left half-written) from `dir`.
+/// Removes WestPlay's screens mods, each game's (and a copy left half-written), from `dir`.
 pub fn remove_mod_from(dir: &Path) -> io::Result<()> {
-    for file in [dir.join(game_mod::FILE_NAME), dir.join(format!("{}.partial", game_mod::FILE_NAME))] {
+    let names = crate::game::Kind::ALL.map(game_mod::file_name);
+    for file in names.iter().flat_map(|name| [dir.join(name), dir.join(format!("{name}.partial"))]) {
         match std::fs::remove_file(&file) {
             Ok(()) => {}
             Err(error) if error.kind() == io::ErrorKind::NotFound => {}

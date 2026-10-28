@@ -33,6 +33,32 @@ pub struct Settings {
     pub graphics: GraphicsSettings,
     #[serde(deserialize_with = "lenient")]
     pub sound: SoundSettings,
+    #[serde(deserialize_with = "lenient")]
+    pub voice: VoiceSettings,
+}
+
+/// The route's turns spoken (the cab's Settings › Sound › Spoken Directions), as Apple Maps has them (owner
+/// 2026-10-27): no voice (the level kept for when it's back: the iPad's Nav Voice key switches it), how loud,
+/// and the Windows voice speaking (`None`: the page's pick, the most natural one installed).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct VoiceSettings {
+    #[serde(deserialize_with = "lenient")]
+    pub muted: bool,
+    #[serde(deserialize_with = "lenient")]
+    pub level: VoiceLevel,
+    #[serde(deserialize_with = "lenient")]
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum VoiceLevel {
+    Low,
+    #[default]
+    Normal,
+    /// Louder: the music ducks deeper under the voice.
+    Loud,
 }
 
 /// The sound the players play: its tone (the cab's Settings › Equalizer), the same in every truck. As iOS's
@@ -195,13 +221,15 @@ impl<'de> Deserialize<'de> for KeyCode {
 }
 
 /// The keys for what WestPlay does from the game (owner 2026-10-21: every keybind customizable in the
-/// companion): the playing app's volume up and down a step, and play or pause it.
+/// companion): the playing app's volume up and down a step, play or pause it, and its previous or next track.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Keybinds {
     pub volume_up: Binding,
     pub volume_down: Binding,
     pub play_pause: Binding,
+    pub previous: Binding,
+    pub next: Binding,
 }
 
 impl<'de> Deserialize<'de> for Keybinds {
@@ -217,16 +245,25 @@ impl<'de> Deserialize<'de> for Keybinds {
             volume_up: binding("volumeUp", defaults.volume_up),
             volume_down: binding("volumeDown", defaults.volume_down),
             play_pause: binding("playPause", defaults.play_pause),
+            previous: binding("previous", defaults.previous),
+            next: binding("next", defaults.next),
         })
     }
 }
 
 impl Default for Keybinds {
     /// The interaction key with 1, 2 and 3 (as promised to the players who asked: Alt+1, Alt+2, Alt+3), in a
-    /// row as on a stereo (owner 2026-10-21): volume down, play/pause between, volume up.
+    /// row as on a stereo (owner 2026-10-21): volume down, play/pause between, volume up; then 5 and 6 for the
+    /// previous and next track (4 is the Truck Remote's camera key).
     fn default() -> Self {
         let with_key = |code| Binding { key: KeyCode(code), with_interaction_key: true };
-        Self { volume_down: with_key(0x31), play_pause: with_key(0x32), volume_up: with_key(0x33) }
+        Self {
+            volume_down: with_key(0x31),
+            play_pause: with_key(0x32),
+            volume_up: with_key(0x33),
+            previous: with_key(0x35),
+            next: with_key(0x36),
+        }
     }
 }
 
@@ -238,6 +275,8 @@ impl Keybinds {
                 Keybind::VolumeUp => self.volume_up,
                 Keybind::VolumeDown => self.volume_down,
                 Keybind::PlayPause => self.play_pause,
+                Keybind::Previous => self.previous,
+                Keybind::Next => self.next,
             };
             keybind_value(binding.key.virtual_key(), binding.with_interaction_key)
         })
@@ -451,6 +490,7 @@ mod tests {
                 equalizer: crate::speakers::Equalizer { bass: -3, mid: 1, treble: 2 },
                 custom: true,
             },
+            voice: VoiceSettings { muted: true, level: VoiceLevel::Loud, name: Some("Microsoft Aria".into()) },
         };
         let json = to_json(&settings);
         assert!(json.contains("\"version\": 2"), "{json}");

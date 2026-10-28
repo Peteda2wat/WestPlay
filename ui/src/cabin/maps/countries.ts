@@ -3,8 +3,17 @@
  * (crates/mapdata countries.rs, `countries.json` beside the tiles): for the cab's clock (state/timeZone.ts).
  */
 
-/** Central Europe's time zone, minutes: the one the SDK's game time is in. */
+/** Central Europe's time zone, minutes: the one ETS2's SDK game time is in. */
 const GAME_ZONE = 120
+/** ATS's: taken as the Pacific's (California's, its first map), as ETS2's is its home's. shortcut: not measured
+ * in the game yet; if the clock is off by whole hours in ATS, this is the number to change. */
+const ATS_GAME_ZONE = -420
+
+/** The zone the SDK's game time is in, for the game whose countries these are: ATS's states are all west of
+ * UTC, ETS2's countries none. */
+function gameZone(zones: Map<number, number>): number {
+  return [...zones.values()].some((zone) => zone < 0) ? ATS_GAME_ZONE : GAME_ZONE
+}
 
 /** The map's countries on a grid (`countries.json`), and their time zones. */
 export interface CountryGrid {
@@ -60,5 +69,5 @@ export function countryAt(grid: CountryGrid, x: number, z: number): number {
  * known. */
 export function clockShiftAt(grid: CountryGrid, x: number, z: number): number {
   const zone = grid.zones.get(countryAt(grid, x, z))
-  return zone === undefined ? 0 : zone - GAME_ZONE
+  return zone === undefined ? 0 : zone - gameZone(grid.zones)
 }
