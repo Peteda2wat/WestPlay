@@ -2,12 +2,13 @@ import { fade, levelOf, stopFade } from '../apps/fade'
 import { isAway, isOff, type MusicPlayer } from '../apps/musicWithGame'
 import { useCabin, useLive } from '../state/store'
 import { languageOf, STRINGS, type Strings } from '../state/strings'
-import type { VoiceLevel } from '../../shared/host'
+import { postToHost, type VoiceLevel } from '../../shared/host'
 import { BANDS, bandOf, guidanceOf, pickVoice, spokenDistance, type Step } from './guidance'
 
 /**
  * The route's turns spoken, as a car's navigation speaks them: by the cabin's page (the browser's own speech,
- * Windows' voices), so it's the ATS GPS app that talks, not the game: nothing of it runs in the game (its own
+ * Windows' voices; Narrator's natural ones, which the page can't reach, said by the host for it: sapi.rs), so it's
+ * the ATS GPS app that talks, not the game: nothing of it runs in the game (its own
  * voice navigation crashed ATS here, owner 2026-10-27). While it talks, the music playing ducks under it.
  *
  * Each step is said far off, close and at it, by the time left to it (`bandOf`); with the step right after it
@@ -38,43 +39,101 @@ function sayStep(step: Step, text: Strings): string {
   return step.maneuver.turn === 'roundabout' ? text.roundabout(step.maneuver.exit ?? 1) : text.turns[step.maneuver.turn]
 }
 
+/** English directions said with attitude (owner 2026-10-28: "a little aggressive"): a jab after each one, picked
+ * at random so the same turn said far off, close and at it doesn't nag the same way three times. */
+const JABS: Record<string, readonly string[]> = {
+  left: ['Yes, left.', 'Your other left. No, that one.', 'Try not to miss it.'],
+  right: ['Right. Pay attention.', 'Not left. Right.', 'Try not to miss it.'],
+  'sharp-left': ['Slow down first, genius.', 'Brake, then turn. In that order.'],
+  'sharp-right': ['Slow down first, genius.', 'Brake, then turn. In that order.'],
+  'u-turn': ["You missed it, didn't you.", 'Again.'],
+  'keep-left': ['Get out of the right lane.', 'Stay in your lane. Literally.'],
+  'keep-right': ['Out of the left lane, slowpoke.', 'Stay in your lane. Literally.'],
+  'exit-left': ['Get over. Now.', 'Signal this time.'],
+  'exit-right': ['Get over. Now.', 'Signal this time.'],
+  roundabout: ["Count them. It's not hard.", "Don't go around twice."],
+  arrive: ['You made it. Somehow.', 'Park it straight this time.'],
+  any: ['Do it.', "Don't make me say it again.", 'Eyes on the road.'],
+}
+const ATTITUDE_REROUTING = 'Rerouting. Because somebody missed the turn'
+
+function jabOf(step: Step): string {
+  const pool = JABS[step.kind === 'arrive' ? 'arrive' : step.maneuver.turn] ?? JABS.any
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
 /** The language the route's words are spoken in (the cabin's strings: English or Turkish). */
 export function voiceLang(): string {
   return languageOf(useLive.getState().gameLanguage) === 'tr' ? 'tr-TR' : 'en-US'
 }
 
+/** The `voiceURI` of the host's natural voices (crates/host sapi.rs), told apart from the page's own. */
+const HOST_VOICE = 'sapi:'
+
+/** The page's own voices and the host's natural ones (Narrator's Ava and the like, which only it can reach). */
+function allVoices(): SpeechSynthesisVoice[] {
+  const host = useLive.getState().sapiVoices.map(
+    ({ name, lang }) => ({ name, lang, default: false, localService: true, voiceURI: HOST_VOICE + name }) as SpeechSynthesisVoice,
+  )
+  return [...host, ...(window.speechSynthesis?.getVoices() ?? [])]
+}
+
 /** The voices Windows has for that language, for Settings to list. */
 export function voicesForLanguage(): SpeechSynthesisVoice[] {
   const prefix = voiceLang().split('-')[0]
-  return (window.speechSynthesis?.getVoices() ?? []).filter((voice) => voice.lang.toLowerCase().startsWith(prefix))
+  return allVoices().filter((voice) => voice.lang.toLowerCase().startsWith(prefix))
 }
 
-function utteranceOf(words: string): SpeechSynthesisUtterance {
+// The host's words not said yet, by id: what to do once they are (`spoken`).
+const unsaid = new Map<number, () => void>()
+let lastId = 0
+
+/** The host's words of `id` said. */
+export function receiveSpoken(id: number): void {
+  unsaid.get(id)?.()
+  unsaid.delete(id)
+}
+
+/** Whatever's being said, stopped (what's cut off never calls its `over`). */
+function hush(): void {
+  window.speechSynthesis?.cancel()
+  if (unsaid.size === 0) return
+  unsaid.clear()
+  postToHost({ type: 'hush' })
+}
+
+/** Says `words` in the voice and level chosen, cutting off what's being said; `over` once they're said. */
+function speakWords(words: string, over: () => void = () => {}): void {
   const { voice } = useCabin.getState()
+  const lang = voiceLang()
+  const picked = pickVoice(allVoices(), lang, voice.name)
+  const volume = LOUDNESS[voice.level].voice
+  hush()
+  if (picked?.voiceURI.startsWith(HOST_VOICE)) {
+    const id = ++lastId
+    unsaid.set(id, over)
+    postToHost({ type: 'speak', id, text: words, voice: picked.name, volume })
+    return
+  }
   const utterance = new SpeechSynthesisUtterance(words)
-  utterance.lang = voiceLang()
-  const picked = pickVoice(window.speechSynthesis.getVoices(), utterance.lang, voice.name)
+  utterance.lang = lang
   if (picked) utterance.voice = picked
-  utterance.volume = LOUDNESS[voice.level].voice
-  return utterance
+  utterance.volume = volume
+  utterance.onend = over
+  utterance.onerror = over
+  window.speechSynthesis?.speak(utterance)
 }
 
 /** A direction in the voice and level chosen, for Settings (picked there, heard at once). */
 export function previewVoice(): void {
-  const speech = window.speechSynthesis
-  if (!speech) return
   const language = languageOf(useLive.getState().gameLanguage)
   const text = STRINGS[language]
-  speech.cancel()
-  speech.speak(
-    utteranceOf(text.sayIn(spokenDistance(800, useCabin.getState().miles, language === 'tr'), text.turns.right)),
-  )
+  const words = text.sayIn(spokenDistance(800, useCabin.getState().miles, language === 'tr'), text.turns.right)
+  speakWords(language === 'en' ? `${words}. ${JABS.right[1]}` : words)
 }
 
 /** Speaks the route's turns from now on, ducking `players` under the voice. Returns the function that stops it. */
 export function speakGuidance(players: readonly MusicPlayer[]): () => void {
-  const speech = window.speechSynthesis
-  if (!speech) return () => {}
   let spoken = ''
   // The route last seen (its id), and a reroute not yet said.
   let routeId: number | null = null
@@ -110,28 +169,24 @@ export function speakGuidance(players: readonly MusicPlayer[]): () => void {
 
   const say = (words: string) => {
     const id = ++current
-    speech.cancel()
     duck(LOUDNESS[useCabin.getState().voice.level].duck)
-    const utterance = utteranceOf(words)
     const over = () => {
       clearTimeout(timer)
       if (id === current) unduck()
     }
     const timer = setTimeout(over, LONGEST_MS)
-    utterance.onend = over
-    utterance.onerror = over
-    speech.speak(utterance)
+    speakWords(words, over)
   }
 
   const quiet = () => {
     current++
-    speech.cancel()
+    hush()
     unduck()
   }
 
   const stopLive = useLive.subscribe((live) => {
     if (isAway(live)) {
-      speech.cancel()
+      hush()
       return
     }
     const { route, routeNext, telemetry } = live
@@ -165,7 +220,8 @@ export function speakGuidance(players: readonly MusicPlayer[]): () => void {
     if (band !== BANDS.length - 1) {
       words = text.sayIn(spokenDistance(guidance.distance, useCabin.getState().miles, language === 'tr'), words)
     }
-    if (rerouted) words = `${text.rerouting}. ${words}`
+    if (language === 'en') words = `${words}. ${jabOf(guidance.step)}`
+    if (rerouted) words = `${language === 'en' ? ATTITUDE_REROUTING : text.rerouting}. ${words}`
     rerouted = false
     say(words)
   })

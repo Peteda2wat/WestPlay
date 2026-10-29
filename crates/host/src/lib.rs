@@ -25,6 +25,7 @@ mod pointer;
 mod remote;
 pub mod route;
 mod route_change;
+mod sapi;
 pub mod settings;
 mod signin;
 pub mod speakers;
@@ -321,6 +322,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
     let player_watch = PlayerWatch::start();
     // The speakers of the parts of the truck the player is in, for the trucks whose speakers come with them.
     let mut part_speakers: Option<PartSpeakers> = None;
+    // The natural voices the page's own speech can't reach, spoken here for it.
+    let sapi = sapi::Sapi::start();
     let mut player_messages: Vec<String> = Vec::new();
     // The game's GPS route, and the truck's progress along it, kept to send again when the page reloads.
     let route_watch = RouteWatch::start(bridge.clone(), map_watch.played.clone());
@@ -339,6 +342,9 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
     // Whether the game runs (its process, the plugin's pid), as last told the page. As it closes (or crashes)
     // the web players close with it, so none plays on, unseen, with the game gone (2026-10-21).
     let mut game_running = false;
+    // When the game last closed: the page re-asks (start, a fade's volume) for a few seconds after, which mustn't
+    // reopen a player; a play asked for later, with no game (from the iPad), opens one as usual.
+    let mut game_closed_at: Option<Instant> = None;
     // Whether the game runs under TruckersMP (its client's module loaded in it), as last told the page, and
     // when that was last looked for (every few seconds while the game runs and it isn't found).
     let mut truckersmp = false;
@@ -377,6 +383,9 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
     let mut spotify_log = play_log::PlayLog::new("spotify");
     let mut apple_music_log = play_log::PlayLog::new("apple music");
     let mut youtube_music_log = play_log::PlayLog::new("youtube music");
+    // A play that made no sound in 20 s: that web player has gone stale (owner 2026-10-28, "can't play
+    // this" after an hour idle), so it's closed and the page opens a fresh one.
+    let (mut spotify_stale, mut apple_music_stale) = (false, false);
     // Spotify's web player, while the page uses it, and what it last said (sent again when the page reloads):
     // signed in or not, and what plays.
     let mut spotify: Option<spotify::Spotify> = None;
@@ -505,6 +514,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 game_running = running;
                 if !running {
                     players_closing = true;
+                    game_closed_at = Some(Instant::now());
                     log!("the game closed: its web players are closed");
                 }
                 let _ = webview.post_json(&game_message(running));
@@ -739,6 +749,9 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
         while let Ok(found) = player_watch.speakers.try_recv() {
             part_speakers = Some(found);
         }
+        while let Ok(id) = sapi.done.try_recv() {
+            let _ = webview.post_json(&serde_json::json!({ "type": "spoken", "id": id }).to_string());
+        }
 
         for message in webview.take_page_messages() {
             match parse_page_message(&message) {
@@ -785,6 +798,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                         }
                     }
                     let _ = webview.post_json(&settings_message(&config.settings.get()));
+                    let _ = webview.post_json(&sapi.voices_message());
                     if let Some(message) = &customize_message {
                         let _ = webview.post_json(message);
                     }
@@ -832,6 +846,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                         (config.on_settings)(&settings);
                     }
                 }
+                Some(PageMessage::Speak { id, text, voice, volume }) => sapi.speak(id, text, voice, volume),
+                Some(PageMessage::Hush) => sapi.hush(),
                 Some(PageMessage::Wallpaper { id }) => {
                     let mut settings = config.settings.get();
                     if settings.look.wallpaper.as_deref() != Some(id.as_str()) && id.len() <= 300 {
@@ -862,6 +878,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 Some(PageMessage::Spotify { command }) => {
                     if spotify.is_none() && matches!(command, spotify::Command::Pause) {
                         // Nothing to pause: Spotify isn't running.
+                    } else if spotify.is_none() && game_closed_at.is_some_and(|at| at.elapsed() < PLAYERS_SETTLE) {
+                        // The page re-asks as the game closes; a hidden player then held ~600 MB with no game.
                     } else if let Some(player) = start_spotify(&mut spotify, &stage, &config) {
                         let _ = player.command(&command);
                     }
@@ -869,6 +887,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 Some(PageMessage::AppleMusic { command }) => {
                     if apple_music.is_none() && matches!(command, apple_music::Command::Pause) {
                         // Nothing to pause: Apple Music isn't running.
+                    } else if apple_music.is_none() && game_closed_at.is_some_and(|at| at.elapsed() < PLAYERS_SETTLE) {
+                        // The game just closed: not reopened (as Spotify above).
                     } else if let Some(player) = start_apple_music(&mut apple_music, &stage, &config) {
                         let _ = player.command(&command);
                     }
@@ -876,6 +896,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 Some(PageMessage::YoutubeMusic { command }) => {
                     if youtube_music.is_none() && matches!(command, youtube_music::Command::Pause) {
                         // Nothing to pause: YouTube Music isn't running.
+                    } else if youtube_music.is_none() && game_closed_at.is_some_and(|at| at.elapsed() < PLAYERS_SETTLE) {
+                        // The game just closed: not reopened (as Spotify above).
                     } else if let Some(player) = start_youtube_music(&mut youtube_music, &stage, &config) {
                         let _ = player.command(&command);
                         // YouTube shares the sign-in: its page again, signed out.
@@ -1149,9 +1171,11 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
         // What Spotify's page says (signed in, playing) and its sign-in window, for the page; its WebView
         // failing closes it (the page opens it again).
         if let Some(player) = &spotify {
-            if player.failed() || players_closing {
+            if player.failed() || players_closing || spotify_stale {
                 if players_closing {
                     log!("[spotify] closed with the game");
+                } else if spotify_stale {
+                    log!("[spotify] a play made no sound: closed, the page opens it again");
                 } else {
                     log!("[spotify] its browser failed: closed, the page opens it again");
                 }
@@ -1161,6 +1185,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 if let Some(failed) = spotify.take() {
                     failed.close(&stage);
                 }
+                spotify_stale = false;
                 spotify_state = None;
                 spotify_playback = None;
                 status.spotify_signed_in = None;
@@ -1199,7 +1224,10 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                         spotify::Report::Answer(answer) => {
                             let _ = webview.post_json(&spotify::answer_message(&answer));
                         }
-                        spotify::Report::Timing(timing) => log!("{}", timing.line()),
+                        spotify::Report::Timing(timing) => {
+                            log!("{}", timing.line());
+                            spotify_stale |= timing.sounding.is_none();
+                        }
                         spotify::Report::Playback(playback) => {
                             // What plays on the account's other devices (a phone) isn't this player's.
                             let here = playback.as_deref().filter(|playback| playback.here != Some(false));
@@ -1229,9 +1257,11 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
 
         // What Apple Music's page says, and its sign-in window, for the page; its WebView failing closes it.
         if let Some(player) = &apple_music {
-            if player.failed() || players_closing {
+            if player.failed() || players_closing || apple_music_stale {
                 if players_closing {
                     log!("[apple music] closed with the game");
+                } else if apple_music_stale {
+                    log!("[apple music] a play made no sound: closed, the page opens it again");
                 } else {
                     log!("[apple music] its browser failed: closed, the page opens it again");
                 }
@@ -1241,6 +1271,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 if let Some(failed) = apple_music.take() {
                     failed.close(&stage);
                 }
+                apple_music_stale = false;
                 apple_music_state = None;
                 apple_music_playback = None;
                 (apple_music_window_open, apple_music_confirming) = (false, false);
@@ -1279,7 +1310,10 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                             let _ = webview.post_json(&apple_music::answer_message(&answer));
                         }
                         // Times only (never what played): for the log.
-                        apple_music::Report::Timing(timing) => log!("{}", timing.line()),
+                        apple_music::Report::Timing(timing) => {
+                            log!("{}", timing.line());
+                            apple_music_stale |= timing.sounding.is_none();
+                        }
                         apple_music::Report::Playback(playback) => {
                             let heard = playback.as_deref().map(|playback| play_log::Heard {
                                 doing: play_log::doing(playback.loading, playback.playing),
@@ -1539,6 +1573,8 @@ struct Liveness {
 
 /// A game whose heartbeat stands still this long is taken to be gone (crashed, or stopped responding).
 const GAME_TIMEOUT: Duration = Duration::from_secs(3);
+/// How long after the game closes the page's re-asks don't reopen a web player (`game_closed_at`).
+const PLAYERS_SETTLE: Duration = Duration::from_secs(10);
 
 impl Liveness {
     fn update(&mut self, heartbeat: u64, now: Instant) -> bool {
@@ -1863,7 +1899,8 @@ fn build_pipeline(
     let gpu = Gpu::new(luid)?;
     let shared = Arc::new(SharedFrame::new(&gpu, config.width, config.height, generation)?);
     let capture = Capture::start(&gpu, &stage.visual()?, shared, bridge.clone())?;
-    let readback = remote::Readback::new(&gpu, config.width, config.height)
+    let scale = webview::RENDER_SCALE;
+    let readback = remote::Readback::new(&gpu, config.width * scale, config.height * scale)
         .inspect_err(|e| log!("remote screen: no readback on this GPU ({e})"))
         .ok();
     Ok(Pipeline { gpu, capture, readback })
@@ -1943,6 +1980,11 @@ enum PageMessage {
         #[serde(flatten)]
         voice: settings::VoiceSettings,
     },
+    /// Words said in one of Windows' natural voices (`sapi`, `sapiVoices`), at `volume` (0 to 1); `spoken` with
+    /// `id` comes back once they're said.
+    Speak { id: u32, text: String, voice: String, volume: f32 },
+    /// What's being said in a natural voice, stopped.
+    Hush,
     /// A command for YouTube's player (`youtube`): what to play, where it shows, and so on.
     Youtube { command: youtube::Command },
     /// A command for Spotify's web player (`spotify`): its sign-in, a question, its controls.
@@ -2124,6 +2166,11 @@ mod tests {
             Some(PageMessage::Westplay { open: false })
         );
         assert_eq!(parse_page_message(r#"{"type":"westplay"}"#), None);
+        assert_eq!(
+            parse_page_message(r#"{"type":"speak","id":3,"text":"Turn left","voice":"Microsoft Ava","volume":0.5}"#),
+            Some(PageMessage::Speak { id: 3, text: "Turn left".into(), voice: "Microsoft Ava".into(), volume: 0.5 })
+        );
+        assert_eq!(parse_page_message(r#"{"type":"hush"}"#), Some(PageMessage::Hush));
         assert_eq!(
             parse_page_message(r#"{"type":"wallpaper","id":"custom:Dusk"}"#),
             Some(PageMessage::Wallpaper { id: "custom:Dusk".into() })

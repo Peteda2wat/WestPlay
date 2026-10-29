@@ -39,6 +39,7 @@ import {
 import { useKeyboard } from '../keyboard/store'
 import { receiveMapFolder } from '../maps/mapData'
 import { receiveDetours, receiveFollowed, receiveRouteAnswer, receiveRoutes } from '../maps/routeChange'
+import { receiveSpoken } from '../maps/voiceGuidance'
 import type { Point, RouteNode } from '../maps/route'
 import { DEFAULT_WALLPAPER_ID } from '../wallpapers'
 import { isReleasedApp } from './apps'
@@ -308,6 +309,8 @@ export interface LiveState {
   nearby: Nearby | null
   /** The music's spectrum as the host last said it (Settings › Equalizer's, `HostMessage` `spectrum`). */
   spectrum: readonly number[]
+  /** Windows' natural voices, spoken by the host (`HostMessage` `sapiVoices`): the page's own speech lacks them. */
+  sapiVoices: readonly { name: string; lang: string }[]
 }
 
 /** TruckersMP's players around the player, from its SDK: its game server's id, the player's own number on it,
@@ -340,6 +343,7 @@ export const useLive = create<LiveState>()(() => ({
   truckersmp: false,
   nearby: null,
   spectrum: [],
+  sapiVoices: [],
 }))
 
 /** Plain browser previews have no game to report the screen: `?layout=scania-2025` stands in for it. */
@@ -496,6 +500,12 @@ function receiveHostMessage(now: () => number): (message: HostMessage) => void {
       }
       case 'spectrum':
         useLive.setState({ spectrum: message.bars })
+        break
+      case 'sapiVoices':
+        useLive.setState({ sapiVoices: message.voices })
+        break
+      case 'spoken':
+        receiveSpoken(message.id)
         break
       case 'customize':
         useLooks.setState({ custom: { wallpapers: message.wallpapers, iconSets: message.iconSets } })

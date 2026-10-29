@@ -200,7 +200,7 @@
   #wpScreen { position: absolute; display: block; touch-action: none; -webkit-user-drag: none; }
   #wpMsg { position: absolute; inset: 0; display: grid; place-items: center; color: #98989d; font-size: 34px; pointer-events: none; }
 
-  #status { position: absolute; left: 70px; top: 1444px; width: 1860px; height: 48px; display: flex; align-items: center; gap: 16px;
+  #status { position: absolute; left: 70px; top: 1450px; width: 1860px; height: 48px; display: flex; align-items: center; gap: 16px;
     font-family: var(--ui-font); font-size: 22px; }
   #link { width: 16px; height: 16px; border-radius: 50%; background: #f87171; }
   #link.ok { background: #34d399; }
@@ -252,6 +252,7 @@
 
 <div id="board">
   <div class="housing"></div>
+  <div class="housing" style="top:926px;height:518px"></div>
 
   <!-- ATS GPS's screen; the trip card that was here is on ATS GPS's dashboard -->
   <div class="panel" id="westplay" style="left:40px;top:40px;width:1358px;height:862px;display:block">
@@ -295,7 +296,7 @@
   </div>
 
   <!-- ignition, engine start, wipers -->
-  <div class="panel" style="left:40px;top:924px;width:772px;height:250px;grid-template-columns:300px 300px 1fr">
+  <div class="panel" style="left:40px;top:944px;width:772px;height:236px;grid-template-columns:300px 300px 1fr">
     <div class="key rotary" id="ignition" title="Ignition: tap to turn the key (OFF / ON / START)">
       <div class="bezel" style="top:62%"></div>
       <div class="lock"><svg viewBox="0 0 160 160" aria-hidden="true">
@@ -388,7 +389,7 @@
   </div>
 
   <!-- diff lock, lift axles -->
-  <div class="panel" style="left:836px;top:924px;width:326px;height:250px;grid-template-columns:1fr 1fr">
+  <div class="panel" style="left:836px;top:944px;width:326px;height:236px;grid-template-columns:1fr 1fr">
     <div class="key" data-action="diff_lock" data-led="diffLock" data-icon="axle" title="Differential lock"></div>
     <div class="stack" style="grid-template-rows:1fr 1fr">
       <div class="key small" data-action="trailer_axle_up" data-led="trailerLiftAxle" data-icon="trailerLiftAxle" title="Trailer axle up (raise)"></div>
@@ -397,7 +398,7 @@
   </div>
 
   <!-- cruise, retarder, engine brake -->
-  <div class="panel" style="left:1186px;top:924px;width:776px;height:250px;grid-template-columns:repeat(5,1fr)">
+  <div class="panel" style="left:1186px;top:944px;width:776px;height:236px;grid-template-columns:repeat(5,1fr)">
     <div class="stack" style="grid-template-rows:1fr auto 1fr">
       <div class="key small" data-action="cruise_up" data-repeat><i data-icon="cruise"></i><span class="sign">+</span></div>
       <div class="lcd-mini" id="cruiseLcd">–</div>
@@ -420,7 +421,7 @@
   </div>
 
   <!-- lights, high beam, beacon, hazard -->
-  <div class="panel" style="left:40px;top:1186px;width:772px;height:250px;grid-template-columns:300px 150px 1fr">
+  <div class="panel" style="left:40px;top:1192px;width:772px;height:236px;grid-template-columns:300px 150px 1fr">
     <div class="key rotary" id="lightSwitch" title="Lights: OFF / PARKING / LOW BEAM">
       <div class="bezel" style="top:58%"></div><div class="knob round" id="lightKnob" style="top:58%"><svg viewBox="0 0 220 220" aria-hidden="true">
         <defs>
@@ -445,7 +446,7 @@
   </div>
 
   <!-- suspension -->
-  <div class="panel" style="left:836px;top:1186px;width:476px;height:250px;grid-template-columns:repeat(3,1fr)">
+  <div class="panel" style="left:836px;top:1192px;width:476px;height:236px;grid-template-columns:repeat(3,1fr)">
     <div class="stack" style="grid-template-rows:1fr 1fr">
       <div class="key" data-action="suspension_front_up" data-hold data-icon="suspFrontUp" title="Front suspension up"></div>
       <div class="key" data-action="suspension_front_down" data-hold data-icon="suspFrontDown" title="Front suspension down"></div>
@@ -458,7 +459,7 @@
   </div>
 
   <!-- parking brake, trailer supply -->
-  <div class="panel" style="left:1336px;top:1186px;width:626px;height:250px;grid-template-columns:1fr 1fr">
+  <div class="panel" style="left:1336px;top:1192px;width:626px;height:236px;grid-template-columns:1fr 1fr">
     <div class="key valve" id="parkBtn" data-action="parking_brake" data-led="parkBrake" title="Parking brake">
       <div class="valve-collar"></div><div class="valve-stem"></div>
         <svg class="valve-knob" viewBox="0 0 200 200" aria-hidden="true">

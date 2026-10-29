@@ -127,6 +127,10 @@ export type HostMessage =
   /** The music's spectrum as it plays, while the page asks for it (`spectrum`): bars from the lows to the
    * highs, spaced by octaves, each 0 (silent) to 255; all 0 when it stops. */
   | { type: 'spectrum'; bars: number[] }
+  /** Windows' natural voices (Narrator's, through SAPI 5), which the host speaks for the page (`speak`). */
+  | { type: 'sapiVoices'; voices: { name: string; lang: string }[] }
+  /** The words of `speak` request `id` said (or not to be said). */
+  | { type: 'spoken'; id: number }
   /** The cities whose garages the player owns, and their headquarters', from their latest save. */
   | { type: 'garages'; owned: string[]; headquarters: string | null }
   /** The game's answer to the page's `route` request `id`. */
@@ -301,6 +305,10 @@ export type PageMessage =
   | { type: 'ready' }
   /** The route's turns spoken, as set in Settings › Sound › Spoken Directions, kept with ATS GPS's settings. */
   | ({ type: 'voice' } & VoiceSettings)
+  /** Words said by the host in one of its natural voices (`sapiVoices`), volume 0 to 1; it answers `spoken`. */
+  | { type: 'speak'; id: number; text: string; voice: string; volume: number }
+  /** What the host is saying, stopped. */
+  | { type: 'hush' }
   /** A startup stage reached (the boot screens shown), for the host's startup log. */
   | { type: 'startup'; stage: string }
   /** Whether ATS GPS is open on the truck's screen (or the truck's original screen shows): posted as the

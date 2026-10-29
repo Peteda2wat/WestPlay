@@ -160,6 +160,8 @@ fn westplay(writer: &mut TcpStream, method: &str, path: &str, body: &[u8]) -> st
         return json_reply(writer, 502, &json!({ "error": "ATS GPS isn't running" }));
     };
     let _ = upstream.set_read_timeout(Some(Duration::from_secs(10)));
+    // Head and body go in two writes: without this a tap waits on the loopback's delayed ack.
+    let _ = upstream.set_nodelay(true);
     // WestPlay takes taps only with this header and its own address as Host (no web page can send either).
     let head = format!(
         "{method} {path} HTTP/1.1\r\nHost: 127.0.0.1:{}\r\nX-WestPlay-Remote: 1\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",

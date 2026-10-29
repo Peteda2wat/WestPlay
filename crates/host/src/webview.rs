@@ -89,8 +89,12 @@ pub enum Failure {
     Browser,
 }
 
-/// The frame the thread's WebViews render onto, `width` x `height`: one compositor, and the visual that is
-/// captured, holding each WebView's visual.
+/// Device pixels per page pixel: the page is laid out at the frame's size but drawn this many times as sharp,
+/// for the iPad (which shows it ~2x wide). The game gets it halved back (capture.rs). Owner 2026-10-28.
+pub const RENDER_SCALE: u32 = 2;
+
+/// The frame the thread's WebViews render onto, `width` x `height` page pixels ([`RENDER_SCALE`] times that in
+/// device pixels): one compositor, and the visual that is captured, holding each WebView's visual.
 pub struct Stage {
     _dispatcher: DispatcherQueueController,
     compositor: Compositor,
@@ -119,9 +123,11 @@ impl Stage {
         };
         let compositor = Compositor::new()?;
         let root = compositor.CreateContainerVisual()?;
-        root.SetSize(Vector2 { X: width as f32, Y: height as f32 })?;
+        root.SetSize(Vector2 { X: (width * RENDER_SCALE) as f32, Y: (height * RENDER_SCALE) as f32 })?;
         let page = compositor.CreateContainerVisual()?;
         page.SetSize(Vector2 { X: width as f32, Y: height as f32 })?;
+        let scale = RENDER_SCALE as f32;
+        page.SetScale(windows_numerics::Vector3 { X: scale, Y: scale, Z: 1.0 })?;
         root.Children()?.InsertAtTop(&page)?;
         Ok(Self {
             _dispatcher: dispatcher,
@@ -161,7 +167,8 @@ impl Stage {
         let (width, frame_height) = self.frame;
         self.page.SetSize(Vector2 { X: width as f32, Y: height as f32 })?;
         let squeeze = frame_height as f32 / height as f32;
-        self.page.SetScale(windows_numerics::Vector3 { X: 1.0, Y: squeeze, Z: 1.0 })?;
+        let scale = RENDER_SCALE as f32;
+        self.page.SetScale(windows_numerics::Vector3 { X: scale, Y: scale * squeeze, Z: 1.0 })?;
         self.page_size.set((width, height));
         Ok(())
     }
@@ -235,7 +242,8 @@ impl OffscreenWebView {
             // Render at exactly width x height regardless of the monitor's DPI.
             let controller3: ICoreWebView2Controller3 = controller.cast()?;
             controller3.SetShouldDetectMonitorScaleChanges(false)?;
-            controller3.SetRasterizationScale(1.0)?;
+            // Drawn RENDER_SCALE times as sharp, shrunk back on the stage (`root`'s scale, `place`).
+            controller3.SetRasterizationScale(RENDER_SCALE as f64)?;
             // Transparent: what the page leaves transparent stays transparent in the frames, and the game's own
             // screen shows through there (the truck's OEM strip around CarPlay).
             controller.cast::<ICoreWebView2Controller2>()?.SetDefaultBackgroundColor(COREWEBVIEW2_COLOR {
@@ -244,8 +252,10 @@ impl OffscreenWebView {
                 G: 0,
                 B: 0,
             })?;
-            controller.SetBounds(RECT { left: 0, top: 0, right: width as i32, bottom: height as i32 })?;
+            controller.SetBounds(device_rect(width, height))?;
             controller.SetIsVisible(true)?;
+            let shrink = 1.0 / RENDER_SCALE as f32;
+            root.SetScale(windows_numerics::Vector3 { X: shrink, Y: shrink, Z: 1.0 })?;
         }
         // SAFETY: the controller was just created and isn't closed.
         let webview = unsafe { controller.CoreWebView2()? };
@@ -366,10 +376,11 @@ impl OffscreenWebView {
     /// Where on the stage the WebView shows, and its size: the page lays itself out at that size.
     pub fn place(&self, x: f32, y: f32, width: u32, height: u32) -> windows::core::Result<()> {
         self.root.SetOffset(windows_numerics::Vector3 { X: x, Y: y, Z: 0.0 })?;
-        self.root.SetScale(windows_numerics::Vector3 { X: 1.0, Y: 1.0, Z: 1.0 })?;
+        let shrink = 1.0 / RENDER_SCALE as f32;
+        self.root.SetScale(windows_numerics::Vector3 { X: shrink, Y: shrink, Z: 1.0 })?;
         self.root.SetSize(Vector2 { X: width as f32, Y: height as f32 })?;
         // SAFETY: the controller is alive as long as `self`; the bounds are plain values.
-        unsafe { self.controller.SetBounds(RECT { left: 0, top: 0, right: width as i32, bottom: height as i32 }) }
+        unsafe { self.controller.SetBounds(device_rect(width, height)) }
     }
 
     /// The page laid out large, in the shape of the rectangle `x, y, width, height` of the stage and as big
@@ -378,6 +389,7 @@ impl OffscreenWebView {
     pub fn fit(&self, room: (u32, u32), x: f32, y: f32, width: u32, height: u32) -> windows::core::Result<()> {
         let (page_width, page_height, scale) = fitted(room, width, height);
         self.place(x, y, page_width, page_height)?;
+        let scale = scale / RENDER_SCALE as f32;
         self.root.SetScale(windows_numerics::Vector3 { X: scale, Y: scale, Z: 1.0 })
     }
 
@@ -563,9 +575,17 @@ impl OffscreenWebView {
         data: u32,
         point: POINT,
     ) -> windows::core::Result<()> {
+        // In device pixels, `point` in page pixels.
+        let s = RENDER_SCALE as i32;
+        let point = POINT { x: point.x * s, y: point.y * s };
         // SAFETY: the composition controller is alive as long as `self`; plain values only.
         unsafe { self.composition.SendMouseInput(kind, keys, data, point) }
     }
+}
+
+/// A WebView's bounds, `width` x `height` page pixels, in the device pixels WebView2 takes.
+fn device_rect(width: u32, height: u32) -> RECT {
+    RECT { left: 0, top: 0, right: (width * RENDER_SCALE) as i32, bottom: (height * RENDER_SCALE) as i32 }
 }
 
 impl Drop for OffscreenWebView {

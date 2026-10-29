@@ -20,7 +20,11 @@ use windows::Graphics::Capture::{
 };
 use windows::Graphics::DirectX::DirectXPixelFormat;
 use windows::UI::Composition::Visual;
-use windows::Win32::Graphics::Direct3D11::{D3D11_BOX, ID3D11DeviceContext, ID3D11Texture2D};
+use windows::Win32::Graphics::Direct3D11::{
+    D3D11_BIND_RENDER_TARGET, D3D11_BIND_SHADER_RESOURCE, D3D11_BOX, D3D11_RESOURCE_MISC_GENERATE_MIPS,
+    D3D11_TEXTURE2D_DESC, D3D11_USAGE_DEFAULT, ID3D11DeviceContext, ID3D11ShaderResourceView, ID3D11Texture2D,
+};
+use windows::Win32::Graphics::Dxgi::Common::{DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_SAMPLE_DESC};
 use windows::Win32::System::WinRT::Direct3D11::IDirect3DDxgiInterfaceAccess;
 use windows::core::{IInspectable, Interface, Result};
 
@@ -40,6 +44,8 @@ pub struct Capture {
     mailbox: Arc<Mailbox<Direct3D11CaptureFrame>>,
     context: ID3D11DeviceContext,
     shared: Arc<SharedFrame>,
+    /// Frames twice the shared texture's size (`webview::RENDER_SCALE`) are halved through it for the game.
+    halver: Option<Halver>,
     bridge: Arc<BridgeMapping>,
     pub frames: Arc<AtomicU64>,
     /// Frames Windows Graphics Capture delivered (each the page drawn anew; some replaced before they're due).
@@ -60,6 +66,12 @@ impl Capture {
             POOL_FRAMES,
             item.Size()?,
         )?;
+        let size = item.Size()?;
+        let halver = if (size.Width as u32, size.Height as u32) == (shared.width * 2, shared.height * 2) {
+            Some(Halver::new(gpu, size.Width as u32, size.Height as u32)?)
+        } else {
+            None
+        };
         let session = pool.CreateCaptureSession(&item)?;
         let _ = session.SetIsCursorCaptureEnabled(false);
 
@@ -84,6 +96,7 @@ impl Capture {
             mailbox,
             context: gpu.context.clone(),
             shared,
+            halver,
             bridge,
             frames: Arc::new(AtomicU64::new(0)),
             arrived,
@@ -111,7 +124,7 @@ impl Capture {
                 .and_then(|surface| unsafe { surface.cast::<IDirect3DDxgiInterfaceAccess>()?.GetInterface() });
             // A frame whose texture can't be had is done with all the same.
             let Ok(texture) = texture else { return true };
-            match publish(&self.context, &texture, &self.shared) {
+            match publish(&self.context, &texture, &self.shared, self.halver.as_ref()) {
                 Lock::Held => {
                     if let Some(published) = published.take() {
                         published(&texture);
@@ -216,10 +229,26 @@ fn flush<F>(mailbox: &Mailbox<F>, now: Instant, publish: impl FnOnce(&F) -> bool
 }
 
 /// Copies a frame into the shared texture, if its lock could be had ([`Lock::Held`]: copied).
-fn publish(context: &ID3D11DeviceContext, frame: &ID3D11Texture2D, shared: &SharedFrame) -> Lock {
+fn publish(
+    context: &ID3D11DeviceContext,
+    frame: &ID3D11Texture2D,
+    shared: &SharedFrame,
+    halver: Option<&Halver>,
+) -> Lock {
     let lock = shared.try_lock();
     if lock != Lock::Held {
         return lock;
+    }
+    if let Some(halver) = halver {
+        // SAFETY: the frame, the halver's texture and the shared texture are alive textures of this device, the
+        // frame the size of the halver's top level and its second level the shared texture's; the latter is locked.
+        unsafe {
+            context.CopySubresourceRegion(&halver.texture, 0, 0, 0, 0, frame, 0, None);
+            context.GenerateMips(&halver.view);
+            context.CopySubresourceRegion(&shared.texture, 0, 0, 0, 0, &halver.texture, 1, None);
+        }
+        shared.unlock();
+        return Lock::Held;
     }
     // SAFETY: the frame and the shared texture are alive, and the shared texture is locked (above); the region
     // fits both.
@@ -238,6 +267,39 @@ fn publish(context: &ID3D11DeviceContext, frame: &ID3D11Texture2D, shared: &Shar
     }
     shared.unlock();
     Lock::Held
+}
+
+/// A texture of the frame's size with one level more at half that, which the GPU fills from the first
+/// (`GenerateMips`): the game's half-size copy, averaged, not cropped.
+struct Halver {
+    texture: ID3D11Texture2D,
+    view: ID3D11ShaderResourceView,
+}
+
+impl Halver {
+    fn new(gpu: &Gpu, width: u32, height: u32) -> Result<Self> {
+        let desc = D3D11_TEXTURE2D_DESC {
+            Width: width,
+            Height: height,
+            MipLevels: 2,
+            ArraySize: 1,
+            Format: DXGI_FORMAT_B8G8R8A8_UNORM,
+            SampleDesc: DXGI_SAMPLE_DESC { Count: 1, Quality: 0 },
+            Usage: D3D11_USAGE_DEFAULT,
+            BindFlags: (D3D11_BIND_RENDER_TARGET.0 | D3D11_BIND_SHADER_RESOURCE.0) as u32,
+            CPUAccessFlags: 0,
+            MiscFlags: D3D11_RESOURCE_MISC_GENERATE_MIPS.0 as u32,
+        };
+        // SAFETY: the device is alive (`gpu`); the description and the outs are locals.
+        unsafe {
+            let mut texture = None;
+            gpu.device.CreateTexture2D(&desc, None, Some(&mut texture))?;
+            let texture = texture.ok_or_else(windows::core::Error::empty)?;
+            let mut view = None;
+            gpu.device.CreateShaderResourceView(&texture, None, Some(&mut view))?;
+            Ok(Self { texture, view: view.ok_or_else(windows::core::Error::empty)? })
+        }
+    }
 }
 
 #[cfg(test)]

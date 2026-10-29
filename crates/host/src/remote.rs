@@ -48,7 +48,8 @@ pub const PORT: u16 = 8766;
 /// Frames per second read back for viewers: half the game's, plenty for a touchscreen over Wi-Fi.
 const MAX_FPS: u32 = 30;
 const READ_INTERVAL: Duration = Duration::from_micros(1_000_000 / MAX_FPS as u64);
-const JPEG_QUALITY: u8 = 70;
+// 80, not 70: the iPad shows text sharper (owner 2026-10-28); the 2x frame (webview::RENDER_SCALE) costs bytes enough.
+const JPEG_QUALITY: u8 = 80;
 /// How long a stream waits for a new frame before sending the last again: a viewer gone is found out by the
 /// write failing, so the readback stops when no one watches.
 const KEEPALIVE: Duration = Duration::from_secs(2);
@@ -224,16 +225,15 @@ struct Pixels {
 }
 
 fn encode(frame: &Pixels) -> Option<Vec<u8>> {
-    let (width, height) = (frame.width as usize, frame.height as usize);
-    let mut rgb = Vec::with_capacity(width * height * 3);
-    for row in frame.bytes.chunks(frame.pitch).take(height) {
-        for bgra in row[..width * 4].chunks_exact(4) {
-            rgb.extend_from_slice(&[bgra[2], bgra[1], bgra[0]]);
-        }
+    let row = frame.width as usize * 4;
+    let mut bgra = Vec::with_capacity(row * frame.height as usize);
+    for line in frame.bytes.chunks(frame.pitch).take(frame.height as usize) {
+        bgra.extend_from_slice(&line[..row]);
     }
+    // jpeg-encoder, not image's: ~4x faster and ~40% smaller on the 2x frame (58 -> 16 ms, 2026-10-29), the iPad's lag.
     let mut jpeg = Vec::new();
-    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, JPEG_QUALITY)
-        .encode(&rgb, frame.width, frame.height, image::ExtendedColorType::Rgb8)
+    jpeg_encoder::Encoder::new(&mut jpeg, JPEG_QUALITY)
+        .encode(&bgra, frame.width as u16, frame.height as u16, jpeg_encoder::ColorType::Bgra)
         .ok()?;
     Some(jpeg)
 }
@@ -677,13 +677,14 @@ mod tests {
 
     #[test]
     fn encodes_bgra_rows_with_padding() {
-        // 2 x 2 pixels, rows 16 bytes apart (8 of padding), blue on the left, red on the right.
-        let row = [255, 0, 0, 255, 0, 0, 255, 255, 9, 9, 9, 9, 9, 9, 9, 9];
-        let frame = Pixels { width: 2, height: 2, pitch: 16, bytes: [row, row].concat() };
+        // 16 x 16 pixels, rows 72 bytes apart (8 of padding), blue on the left, red on the right (wide enough for
+        // the halved colour of 4:2:0).
+        let row = [[[255, 0, 0, 255]; 8].concat(), [[0, 0, 255, 255]; 8].concat(), vec![9; 8]].concat();
+        let frame = Pixels { width: 16, height: 16, pitch: 72, bytes: row.repeat(16) };
         let jpeg = encode(&frame).expect("encoded");
         let image = image::load_from_memory(&jpeg).unwrap().to_rgb8();
-        assert_eq!(image.dimensions(), (2, 2));
-        let (left, right) = (image.get_pixel(0, 0), image.get_pixel(1, 0));
+        assert_eq!(image.dimensions(), (16, 16));
+        let (left, right) = (image.get_pixel(2, 8), image.get_pixel(13, 8));
         assert!(left[2] > 150 && left[0] < 100, "left {left:?}");
         assert!(right[0] > 150 && right[2] < 100, "right {right:?}");
     }

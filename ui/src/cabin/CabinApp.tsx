@@ -14,7 +14,6 @@ import { followTruckersMp } from './maps/truckersmp'
 import { speakGuidance } from './maps/voiceGuidance'
 import { routeClicksDuringTransitions } from './shell/clickThrough'
 import { installDragScroll } from './shell/dragScroll'
-import { Cursor } from './shell/Cursor'
 import { Shell } from './shell/Shell'
 import { showVolume } from './shell/volumeShown'
 import { type Route, routeKey } from './state/navigation'
@@ -67,13 +66,7 @@ export function CabinApp() {
   return (
     <Shell
       entering={entering}
-      overlay={
-        <>
-          {FOLLOW_POWER && phase !== 'on' && <BootScreen phase={phase} />}
-          {/* In a plain browser the system cursor is there already. */}
-          {isInHost() && <Cursor />}
-        </>
-      }
+      overlay={FOLLOW_POWER && phase !== 'on' && <BootScreen phase={phase} />}
     >
       {/* The screen mounts when the power is on, and fades in after the boot. */}
       {powered && <Screens route={route} />}
