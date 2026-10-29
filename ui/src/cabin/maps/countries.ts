@@ -26,11 +26,13 @@ export interface CountryGrid {
   cells: Uint8Array
   /** Each country's time zone, minutes, by id. */
   zones: Map<number, number>
+  /** Each country's name (ATS's states), by id: none in a map built before they were exported. */
+  names: Map<number, string>
 }
 
 /** The grid as the map export writes it, `null` if it isn't one. */
 export function parseGrid(json: unknown): CountryGrid | null {
-  const { cell, x, z, width, height, cells, zones } = (json ?? {}) as {
+  const { cell, x, z, width, height, cells, zones, names } = (json ?? {}) as {
     cell?: unknown
     x?: unknown
     z?: unknown
@@ -38,6 +40,7 @@ export function parseGrid(json: unknown): CountryGrid | null {
     height?: unknown
     cells?: unknown
     zones?: Record<string, unknown>
+    names?: Record<string, unknown>
   }
   if (
     typeof cell !== 'number' ||
@@ -53,7 +56,15 @@ export function parseGrid(json: unknown): CountryGrid | null {
   const bytes = new Uint8Array(width * height)
   for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(cells.slice(i * 2, i * 2 + 2), 16) || 0
   const zoneMap = new Map(Object.entries(zones ?? {}).map(([id, minutes]) => [Number(id), Number(minutes)]))
-  return { cell, x, z, width, height, cells: bytes, zones: zoneMap }
+  const nameMap = new Map(
+    Object.entries(names ?? {}).flatMap(([id, name]) => (typeof name === 'string' ? [[Number(id), name]] : [])),
+  )
+  return { cell, x, z, width, height, cells: bytes, zones: zoneMap, names: nameMap }
+}
+
+/** The name of the country (ATS: the state) at `x`, `z`; `null` where it isn't known. */
+export function countryNameAt(grid: CountryGrid, x: number, z: number): string | null {
+  return grid.names.get(countryAt(grid, x, z)) ?? null
 }
 
 /** The country at `x`, `z` (metres): its square's (the map export gives a square without a country's road the

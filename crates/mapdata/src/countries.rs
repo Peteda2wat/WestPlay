@@ -32,6 +32,8 @@ pub struct Countries {
     pub cells: Vec<u8>,
     /// Each country's time zone, minutes from UTC, by id.
     pub zones: BTreeMap<u8, i32>,
+    /// Each country's name (ATS's states: "California"), by id: shown on the map where the truck is.
+    pub names: BTreeMap<u8, String>,
 }
 
 /// The countries of the roads either side of `node` (forward, backward), 0 for none.
@@ -72,7 +74,7 @@ pub fn grid<'a>(nodes: impl IntoIterator<Item = &'a Node>) -> Countries {
             country => country,
         })
         .collect();
-    Countries { x: columns.0 as f32 * CELL, z: rows.0 as f32 * CELL, width, height, cells, zones: BTreeMap::new() }
+    Countries { x: columns.0 as f32 * CELL, z: rows.0 as f32 * CELL, width, height, cells, ..Countries::default() }
 }
 
 /// The country of the nearest square with one within `SEARCH_RINGS` of `column`, `row` (by straight distance,
@@ -105,9 +107,9 @@ fn nearest(voted: &[u8], width: usize, height: usize, column: i64, row: i64) -> 
     0
 }
 
-/// Each country's time zone (minutes), by id: from the game's country definitions (`def/country/*.sui`, and
-/// a mod's `def/country.<mod>.sii`), map mods' countries with theirs.
-pub fn time_zones(files: &GameFiles) -> Result<BTreeMap<u8, i32>, FileError> {
+/// Each country's time zone (minutes) and name, by id: from the game's country definitions
+/// (`def/country/*.sui`, and a mod's `def/country.<mod>.sii`), map mods' countries with theirs.
+pub fn time_zones(files: &GameFiles) -> Result<(BTreeMap<u8, i32>, BTreeMap<u8, String>), FileError> {
     let mut paths: Vec<String> = files
         .list("def/country")?
         .into_iter()
@@ -121,35 +123,52 @@ pub fn time_zones(files: &GameFiles) -> Result<BTreeMap<u8, i32>, FileError> {
             .filter(|name| name.starts_with("country.") && name.ends_with(".sii"))
             .map(|name| format!("def/{name}")),
     );
-    let mut zones = BTreeMap::new();
+    let (mut zones, mut names) = (BTreeMap::new(), BTreeMap::new());
     for path in paths {
         let Some(bytes) = files.read(&path)? else { continue };
-        zones.extend(zones_in(&String::from_utf8_lossy(&bytes)));
+        for (id, zone, name) in definitions_in(&String::from_utf8_lossy(&bytes)) {
+            if let Some(zone) = zone {
+                zones.insert(id, zone);
+            }
+            if let Some(name) = name {
+                names.insert(id, name);
+            }
+        }
     }
-    Ok(zones)
+    Ok((zones, names))
 }
 
-/// The `country_id` and `time_zone` of each country definition in a file's text.
-fn zones_in(text: &str) -> Vec<(u8, i32)> {
-    let value = |line: &str, name: &str| -> Option<i64> {
-        let rest = line.trim().strip_prefix(name)?.trim_start().strip_prefix(':')?;
-        rest.split(|c: char| c.is_whitespace() || c == '#').find(|word| !word.is_empty())?.parse().ok()
+/// One country definition as read: its `country_id`, `time_zone` and `name`.
+type Definition = (Option<i64>, Option<i64>, Option<String>);
+
+/// The `country_id`, `time_zone` and `name` of each country definition in a file's text (one without an id
+/// left out).
+fn definitions_in(text: &str) -> Vec<(u8, Option<i32>, Option<String>)> {
+    let field = |line: &str, name: &str| -> Option<String> {
+        let rest = line.trim().strip_prefix(name)?.trim_start().strip_prefix(':')?.trim_start();
+        if let Some(quoted) = rest.strip_prefix('"') {
+            return quoted.split('"').next().map(str::to_string);
+        }
+        rest.split(|c: char| c.is_whitespace() || c == '#').find(|word| !word.is_empty()).map(str::to_string)
     };
+    let number = |line: &str, name: &str| field(line, name)?.parse::<i64>().ok();
     let mut found = Vec::new();
-    let (mut id, mut zone) = (None, None);
+    let mut flush = |block: &mut Definition| {
+        let (id, zone, name) = std::mem::take(block);
+        if let Some(Ok(id)) = id.map(u8::try_from) {
+            found.push((id, zone.and_then(|zone| i32::try_from(zone).ok()), name.filter(|name| !name.is_empty())));
+        }
+    };
+    let mut block: Definition = (None, None, None);
     for line in text.lines() {
         if line.contains("country_data") && line.contains(':') && !line.trim_start().starts_with('#') {
-            (id, zone) = (None, None);
+            flush(&mut block);
         }
-        id = value(line, "country_id").or(id);
-        zone = value(line, "time_zone").or(zone);
-        if let (Some(country), Some(minutes)) = (id, zone) {
-            if let (Ok(country), Ok(minutes)) = (u8::try_from(country), i32::try_from(minutes)) {
-                found.push((country, minutes));
-            }
-            (id, zone) = (None, None);
-        }
+        block.0 = number(line, "country_id").or(block.0);
+        block.1 = number(line, "time_zone").or(block.1);
+        block.2 = field(line, "name").or(block.2.take());
     }
+    flush(&mut block);
     found
 }
 
@@ -175,6 +194,7 @@ impl Countries {
             "height": self.height,
             "cells": cells,
             "zones": self.zones.iter().map(|(id, minutes)| (id.to_string(), minutes)).collect::<BTreeMap<_, _>>(),
+            "names": self.names.iter().map(|(id, name)| (id.to_string(), name)).collect::<BTreeMap<_, _>>(),
         })
     }
 }
@@ -226,15 +246,20 @@ mod tests {
     #[test]
     fn reads_each_countrys_id_and_time_zone() {
         let text = "SiiNunit\n{\ncountry_data : country.data.finland\n{\n\tname: \"Suomi\"\n\tcountry_id: 23\n\ttime_zone: 180\t\t# +3 hours in minutes\n\ttime_zone_name: \"@@tz_eest@@\"\n}\ncountry_data : country.data.uk\n{\n\tcountry_id: 10\n\ttime_zone: 60\n}\n}\n";
-        assert_eq!(zones_in(text), [(23, 180), (10, 60)]);
-        // One without a time zone: none.
-        assert_eq!(zones_in("country_data : x\n{\ncountry_id: 3\n}\n"), []);
+        assert_eq!(definitions_in(text), [(23, Some(180), Some("Suomi".to_string())), (10, Some(60), None)]);
+        // One without a time zone: its name only (ATS's own `name: "New Mexico"`); one without an id: none.
+        assert_eq!(
+            definitions_in("country_data : x\n{\ncountry_id: 3\nname: \"New Mexico\"\t# x\n}\n"),
+            [(3, None, Some("New Mexico".to_string()))]
+        );
+        assert_eq!(definitions_in("country_data : x\n{\ntime_zone: 60\n}\n"), []);
     }
 
     #[test]
     fn the_page_reads_the_squares_as_hex() {
         let mut countries = grid(&[node(100.0, 100.0, 23, 23), node(1100.0, 100.0, 5, 5)]);
         countries.zones = BTreeMap::from([(5, 120), (23, 180)]);
+        countries.names = BTreeMap::from([(23, "Suomi".to_string())]);
         let json = countries.to_json();
         let (width, height) = (countries.width, countries.height);
         assert_eq!((json["width"].as_u64(), json["height"].as_u64()), (Some(width as u64), Some(height as u64)));
@@ -245,5 +270,7 @@ mod tests {
         let at = (rings * width + rings) * 2;
         assert_eq!(&cells[at..at + 4], "1705");
         assert_eq!(json["zones"]["23"], 180);
+        assert_eq!(json["names"]["23"], "Suomi");
     }
 }
+

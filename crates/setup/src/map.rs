@@ -43,8 +43,9 @@ use crate::profiles::{Mod, Profile};
 /// 14 (after 1.2.0): the tunnels, the roads' `tunnel` (area.rs mark_tunnels). 15 (after 2.0.3): map mods read
 /// that were left out (sectors of 895, environment areas before 901, emptied directories in protected
 /// archives) and older mods' prefabs (from version 22, skipped before); only a map that left a mod out is
-/// built again for it ([`SAME_BUT_LEFT_OUT`]).
-pub const BUILDER_VERSION: u32 = 15;
+/// built again for it ([`SAME_BUT_LEFT_OUT`]). 16 (owner 2026-10-29): the countries' names (ATS's states) in
+/// countries.json, shown on the map where the truck is.
+pub const BUILDER_VERSION: u32 = 16;
 /// The oldest builder whose maps are today's but for the mods they left out: one of those that left none out
 /// is kept (a mod's old prefabs it skipped are drawn once it's built again for another reason).
 const SAME_BUT_LEFT_OUT: u32 = 14;

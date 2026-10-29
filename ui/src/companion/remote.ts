@@ -38,11 +38,11 @@ export const BUTTON_GROUPS: { title: string; buttons: [name: string, label: stri
       ['activate_overlay', 'Activate overlay'],
       ['sleep_anywhere', 'Sleep', 'SleepAnywhere plugin'],
       ['service_anywhere', 'Service', 'ServiceAnywhere plugin: the full service area'],
-      ['tablet', 'Tablet'],
       ['escape', 'Escape'],
       ['confirm', 'Confirm'],
       ['navigation', 'Nav'],
-      ['nav_zoom', 'Nav zoom'],
+      ['nav_zoom_out', 'Zoom −', 'The Nav map: mouse wheel down'],
+      ['nav_zoom_in', 'Zoom +', 'The Nav map: mouse wheel up'],
     ],
   },
   {

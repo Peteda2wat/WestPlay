@@ -645,7 +645,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
             for (slot, value) in host.keybinds.iter().zip(config.settings.get().keybinds.bridge_values()) {
                 slot.store(value, Ordering::Release);
             }
-            let _ = webview.post_json(&settings_message(&config.settings.get()));
+            let _ = webview.post_json(&settings_message(&config.settings.get(), day_length()));
         }
         pointer.update(&bridge.bridge().plugin.pointer, &webview);
         // Taps on the remote screen (the iPad): the page gets them as it gets the in-game cursor's clicks.
@@ -658,7 +658,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 remote.set_voice_muted(settings.voice.muted);
                 config.settings.set(settings.clone());
                 (config.on_settings)(&settings);
-                let _ = webview.post_json(&settings_message(&settings));
+                let _ = webview.post_json(&settings_message(&settings, day_length()));
             }
             let page = stage.page_size().get();
             remote.set_page(page);
@@ -729,6 +729,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
         while let Ok(update) = map_watch.updates.try_recv() {
             if map_shown != (update.folder.clone(), update.built) {
                 map_shown = (update.folder.clone(), update.built);
+                log!("maps: the cab shows {:?} ({:?})", map_shown.0, update.status);
                 let _ = webview.post_json(&maps::map_message(map_shown.0.as_deref(), map_shown.1));
                 (status.map_folder, status.map_built) = map_shown.clone();
                 (config.on_status)(&status);
@@ -797,7 +798,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                             let _ = webview.post_json(playback);
                         }
                     }
-                    let _ = webview.post_json(&settings_message(&config.settings.get()));
+                    let _ = webview.post_json(&settings_message(&config.settings.get(), day_length()));
                     let _ = webview.post_json(&sapi.voices_message());
                     if let Some(message) = &customize_message {
                         let _ = webview.post_json(message);
@@ -815,6 +816,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                     }
                 }
                 Some(PageMessage::Startup { stage }) => startup::mark(&format!("page: {stage}")),
+                Some(PageMessage::PageError { text }) => log!("page error: {text}"),
                 Some(PageMessage::TruckStrip { strip }) => {
                     let mut settings = config.settings.get();
                     if settings.screen.truck_strip != strip {
@@ -1926,9 +1928,27 @@ fn screen_message(layout: u32) -> String {
     serde_json::json!({ "type": "screen", "layout": id }).to_string()
 }
 
+/// How many times slower the game's clock runs: the day_length plugin's `Documents\<game>\day_length.txt` (its
+/// first number, 3 when unreadable as the plugin takes it), 1 without the file.
+fn day_length() -> f32 {
+    let game = westplay_setup::game::current().name();
+    let Some(text) = westplay_setup::places::documents_folders()
+        .iter()
+        .find_map(|documents| std::fs::read_to_string(documents.join(game).join("day_length.txt")).ok())
+    else {
+        return 1.0;
+    };
+    text.lines()
+        .map(|line| line.split('#').next().unwrap_or("").trim())
+        .find(|line| !line.is_empty())
+        .and_then(|line| line.parse::<f32>().ok())
+        .filter(|value| (1.0..=60.0).contains(value))
+        .unwrap_or(3.0)
+}
+
 /// `{"type":"settings","truckStrip":"auto","wallpaper":"plain","iconSet":null,"iconStyle":"auto","equalizer":…}`: the
-/// settings the cabin page applies itself.
-fn settings_message(settings: &settings::Settings) -> String {
+/// settings the cabin page applies itself, and the clock's slowdown ([`day_length`]).
+fn settings_message(settings: &settings::Settings, day_length: f32) -> String {
     serde_json::json!({
         "type": "settings",
         "truckStrip": settings.screen.truck_strip,
@@ -1938,6 +1958,7 @@ fn settings_message(settings: &settings::Settings) -> String {
         "equalizer": settings.sound.equalizer.clamped(),
         "equalizerCustom": settings.sound.custom,
         "voice": settings.voice,
+        "dayLength": day_length,
     })
     .to_string()
 }
@@ -1958,6 +1979,8 @@ enum PageMessage {
     Ready,
     /// A startup stage the page reached (the boot screens shown), for the startup log (`startup`).
     Startup { stage: String },
+    /// Something in the page failed (each different one once), for the log.
+    PageError { text: String },
     /// Whether WestPlay is open on the truck's screen: posted as the page loads and whenever it changes.
     Westplay { open: bool },
     /// The wallpaper chosen in the cab's Settings (an id: `wallpapers.ts`), to keep with the settings.
@@ -2162,6 +2185,10 @@ mod tests {
             Some(PageMessage::Startup { stage: "power splash".into() })
         );
         assert_eq!(
+            parse_page_message(r#"{"type":"pageError","text":"map: Invalid LngLat"}"#),
+            Some(PageMessage::PageError { text: "map: Invalid LngLat".into() })
+        );
+        assert_eq!(
             parse_page_message(r#"{"type":"westplay","open":false}"#),
             Some(PageMessage::Westplay { open: false })
         );
@@ -2344,7 +2371,7 @@ mod tests {
     #[test]
     fn tells_the_page_the_truck_strip_wallpaper_and_icons() {
         let mut settings = crate::settings::Settings::default();
-        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings)).unwrap();
+        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings, 1.0)).unwrap();
         assert_eq!(
             message,
             serde_json::json!({
@@ -2356,13 +2383,14 @@ mod tests {
                 "equalizer": { "bass": 0, "mid": 0, "treble": 0 },
                 "equalizerCustom": false,
                 "voice": { "muted": false, "level": "normal", "name": null },
+                "dayLength": 1.0,
             })
         );
         settings.screen.truck_strip = crate::settings::TruckStrip::Off;
         settings.sound.equalizer = crate::speakers::Equalizer { bass: -9, mid: 2, treble: 6 };
         settings.look.wallpaper = Some("custom:Dusk".into());
         settings.look.icon_set = Some("Retro".into());
-        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings)).unwrap();
+        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings, 1.0)).unwrap();
         assert_eq!(message["truckStrip"], "off");
         assert_eq!(message["wallpaper"], "custom:Dusk");
         assert_eq!(message["iconSet"], "Retro");

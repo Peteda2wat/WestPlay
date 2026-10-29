@@ -7,8 +7,10 @@ use std::time::Duration;
 
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     INPUT, INPUT_0, INPUT_KEYBOARD, INPUT_MOUSE, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
-    KEYEVENTF_SCANCODE, MOUSEEVENTF_XDOWN, MOUSEEVENTF_XUP, MOUSEINPUT, SendInput, VIRTUAL_KEY, VK_PAUSE,
+    KEYEVENTF_SCANCODE, MOUSEEVENTF_WHEEL, MOUSEEVENTF_XDOWN, MOUSEEVENTF_XUP, MOUSEINPUT, SendInput, VIRTUAL_KEY,
+    VK_PAUSE,
 };
+use windows::Win32::UI::WindowsAndMessaging::WHEEL_DELTA;
 
 /// Every key name, its scan code, and whether it's an extended key. The mouse's side buttons are "keys" too:
 /// their code is the X button's number.
@@ -120,6 +122,9 @@ const KEYS: &[(&str, u16, bool)] = &[
     ("Delete", 0x53, true),
     ("MouseBack", 1, false),
     ("MouseForward", 2, false),
+    // The wheel: one notch a press (its code unused).
+    ("WheelUp", 0, false),
+    ("WheelDown", 0, false),
 ];
 
 fn key(name: &str) -> Option<&'static (&'static str, u16, bool)> {
@@ -196,7 +201,19 @@ impl Keyboard {
             }
             return;
         }
-        let input = if name.starts_with("Mouse") {
+        let input = if name.starts_with("Wheel") {
+            // A notch has no "up": nothing to release.
+            if up {
+                return;
+            }
+            let notch = if name == "WheelUp" { WHEEL_DELTA as i32 } else { -(WHEEL_DELTA as i32) };
+            INPUT {
+                r#type: INPUT_MOUSE,
+                Anonymous: INPUT_0 {
+                    mi: MOUSEINPUT { mouseData: notch as u32, dwFlags: MOUSEEVENTF_WHEEL, ..Default::default() },
+                },
+            }
+        } else if name.starts_with("Mouse") {
             INPUT {
                 r#type: INPUT_MOUSE,
                 Anonymous: INPUT_0 {
@@ -245,6 +262,7 @@ mod tests {
         assert_eq!(parse(""), Ok(vec![]));
         assert_eq!(normalize("shift+f8").as_deref(), Ok("Shift+F8"));
         assert_eq!(normalize("mouseback").as_deref(), Ok("MouseBack"));
+        assert_eq!(normalize("wheelup").as_deref(), Ok("WheelUp"));
         assert!(parse("Ctrl+Banana").unwrap_err().contains("Banana"));
     }
 

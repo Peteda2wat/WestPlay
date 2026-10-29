@@ -2,7 +2,7 @@ import maplibregl, { type GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import { create as createStore } from 'zustand'
-import type { Telemetry } from '../../shared/host'
+import { postToHost, type Telemetry } from '../../shared/host'
 import type { Appearance } from '../state/appearance'
 import { type LiveState, useCabin, useLive } from '../state/store'
 import { textScale } from '../state/textSize'
@@ -715,16 +715,32 @@ function place() {
       frame = requestAnimationFrame(step)
       const dt = Math.min(now - lastFrame, 100)
       lastFrame = now
-      syncAppearance(current)
-      syncGarages(current)
-      syncPlayers(current, now)
-      syncRouteTraffic(current, now)
-      syncRoute(current, now)
-      syncCanopies(current, now)
-      updateCamera(current, now, dt)
-      showLabels(current)
-      keepView(current, now)
+      // Each on its own: one failing every frame froze the whole map while the voice went on (2026-10-29).
+      guard(() => syncAppearance(current))
+      guard(() => syncGarages(current))
+      guard(() => syncPlayers(current, now))
+      guard(() => syncRouteTraffic(current, now))
+      guard(() => syncRoute(current, now))
+      guard(() => syncCanopies(current, now))
+      guard(() => updateCamera(current, now, dt))
+      guard(() => showLabels(current))
+      guard(() => keepView(current, now))
     })
+  }
+}
+
+/** Errors already sent to the host's log. */
+const reported = new Set<string>()
+
+/** Runs one part of the map's frame, its error (each different one once) to the host's log. */
+function guard(part: () => void) {
+  try {
+    part()
+  } catch (error) {
+    const text = `map: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`
+    if (reported.has(text)) return
+    reported.add(text)
+    postToHost({ type: 'pageError', text })
   }
 }
 

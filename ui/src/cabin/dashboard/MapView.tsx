@@ -29,6 +29,7 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
   const limit = useLive((state) => (state.telemetry ? speedKmh(state.telemetry.navigationSpeedLimit, miles) : 0))
   const data = useMapData()
   const hvtMap = useLive((state) => state.hvtMap)
+  const countryName = useLive((state) => state.countryName)
   const text = useText()
 
   if (hvtMap) {
@@ -61,6 +62,8 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
         )
       )}
       <div className="map-shade" />
+      {/* The state the truck is in, always (owner 2026-10-29). */}
+      {countryName && <div className="map-state glass">{countryName}</div>}
       {/* The Maps app: the whole trip card (the Dashboard's), bottom left, in place of the pill (owner 2026-10-27). */}
       {interactive ? (
         <div className="map-trip">
@@ -95,6 +98,7 @@ function TripPill() {
   const text = useText()
   const clock24 = useCabin((state) => state.clock24)
   const miles = useCabin((state) => state.miles)
+  const dayLength = useCabin((state) => state.dayLength)
   const trip = useLive(
     useShallow((state) => {
       const telemetry = state.telemetry
@@ -111,9 +115,11 @@ function TripPill() {
         : null
       const total = formatTripTime(minutes, text)
       // The real-world driving time left: the game's time left divided by its time scale here.
-      const real = formatRealLeft(realMinutesLeft(telemetry, miles))
+      const real = formatRealLeft(realMinutesLeft(telemetry, miles, dayLength))
+      const arrival = Math.round(cabClock(telemetry, state.clockShift) + minutes)
       return [
-        formatGameTime(Math.round(cabClock(telemetry, state.clockShift) + minutes), clock24),
+        formatGameTime(arrival, clock24),
+        text.days[Math.floor(arrival / 1440) % 7],
         real,
         stop ? `${formatTripTime(stop.minutes, text)} | ${total}` : total,
         formatTripDistance(telemetry.navigationDistance, text.decimal, miles),
@@ -121,10 +127,10 @@ function TripPill() {
     }),
   )
   if (!trip) return null
-  const [arrival, real, time, distance] = trip
+  const [arrival, day, real, time, distance] = trip
   return (
     <div className="eta-pill glass">
-      <b>{arrival}</b> {text.arrival}
+      <b>{arrival}</b> {day}
       {real && (
         <>
           {' '}

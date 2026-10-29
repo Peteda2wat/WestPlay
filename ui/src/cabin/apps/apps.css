@@ -16,6 +16,36 @@
   display: flex;
 }
 
+/* The Maps app edge to edge behind the floating sidebar, no border round it (owner 2026-10-29: the iPad shows
+   the whole screen, the DAF's edge crop doesn't matter there). The cards on its left clear the sidebar. */
+.app-panel.maps-app {
+  inset: 0;
+}
+
+.maps-app > .map-tile {
+  border-radius: 0;
+}
+
+.maps-app > .map-tile > .road-map-host {
+  clip-path: none;
+}
+
+.maps-app .guidance-banner,
+.maps-app .map-trip,
+.maps-app .speed-stack,
+.maps-app .map-tile .map-search-button:not(.guided) {
+  left: var(--content-left);
+}
+
+/* The state's name clears the search button, top right while a route is followed. */
+.maps-app .map-tile:has(.map-search-button.guided) .map-state {
+  right: 100px;
+}
+
+.maps-app .map-tile .map-search {
+  left: calc(var(--content-left) - 6px);
+}
+
 /* Development placeholder (see AppScreen.tsx). */
 .not-built {
   display: flex;

@@ -1,4 +1,4 @@
-import { type CountryGrid, clockShiftAt, parseGrid } from '../maps/countries'
+import { type CountryGrid, clockShiftAt, countryNameAt, parseGrid } from '../maps/countries'
 import { loadMapData, onMapChange } from '../maps/mapData'
 import { useLive } from './store'
 
@@ -36,10 +36,12 @@ export function followTimeZone(): () => void {
   let grid: CountryGrid | null = null
   let gridFrom: string | null | undefined
   const apply = () => {
-    const { timeZones, telemetry, clockShift } = useLive.getState()
+    const { timeZones, telemetry, clockShift, countryName } = useLive.getState()
     const shift = timeZones && grid && telemetry ? clockShiftAt(grid, telemetry.x, telemetry.z) : 0
+    // The state shown on the map (owner 2026-10-29), whatever the time zones option.
+    const name = grid && telemetry ? countryNameAt(grid, telemetry.x, telemetry.z) : null
     // Set only when it changes: setting it calls this again.
-    if (shift !== clockShift) useLive.setState({ clockShift: shift })
+    if (shift !== clockShift || name !== countryName) useLive.setState({ clockShift: shift, countryName: name })
   }
   const followMap = async () => {
     const map = await loadMapData()
@@ -58,6 +60,6 @@ export function followTimeZone(): () => void {
   return () => {
     stopLive()
     stopMap()
-    useLive.setState({ clockShift: 0 })
+    useLive.setState({ clockShift: 0, countryName: null })
   }
 }

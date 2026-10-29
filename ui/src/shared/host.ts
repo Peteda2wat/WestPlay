@@ -121,6 +121,8 @@ export type HostMessage =
       equalizerCustom?: boolean
       /** The route's turns spoken (Settings › Sound › Spoken Directions). */
       voice?: VoiceSettings
+      /** How many times slower the game's clock runs (the day_length plugin's day_length.txt; 1 = vanilla). */
+      dayLength?: number
     }
   /** The player's own wallpapers and icon sets (shared/customize.ts), their files at `CABIN_FILES`. */
   | { type: 'customize'; wallpapers: CustomWallpaper[]; iconSets: IconSet[] }
@@ -311,6 +313,8 @@ export type PageMessage =
   | { type: 'hush' }
   /** A startup stage reached (the boot screens shown), for the host's startup log. */
   | { type: 'startup'; stage: string }
+  /** Something in the page failed (each different one once), for the host's log. */
+  | { type: 'pageError'; text: string }
   /** Whether ATS GPS is open on the truck's screen (or the truck's original screen shows): posted as the
    * page connects and whenever it changes, for the companion window. */
   | { type: 'westplay'; open: boolean }

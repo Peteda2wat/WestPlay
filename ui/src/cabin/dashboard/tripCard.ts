@@ -53,6 +53,7 @@ export function tripCardView(
   clockShift: number,
   hours24: boolean,
   miles: boolean,
+  dayLength = 1,
 ): TripCardView {
   const t = text.trip
   const distance = (metres: number) => formatTripDistance(metres, text.decimal, miles)
@@ -60,8 +61,10 @@ export function tripCardView(
   const clock = cabClock(telemetry, clockShift)
   const big: TripCardView['big'] = []
   if (route) {
-    big.push({ value: formatGameTime(Math.round(clock + telemetry.navigationTime / 60), hours24), unit: text.arrival })
-    const [left, leftUnit] = formatRealLeft(realMinutesLeft(telemetry, miles)).split(' ')
+    // The weekday it arrives on in place of the word "arrival" (owner 2026-10-29).
+    const arrival = Math.round(clock + telemetry.navigationTime / 60)
+    big.push({ value: formatGameTime(arrival, hours24), unit: text.days[Math.floor(arrival / 1440) % 7] })
+    const [left, leftUnit] = formatRealLeft(realMinutesLeft(telemetry, miles, dayLength)).split(' ')
     big.push({ value: left, unit: `${leftUnit} ${t.real}` })
     const [far, farUnit] = distance(telemetry.navigationDistance).split(' ')
     big.push({ value: far, unit: farUnit ?? '' })

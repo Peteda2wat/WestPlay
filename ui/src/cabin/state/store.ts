@@ -91,6 +91,8 @@ interface CabinState {
   /** The route's turns spoken (Settings › Sound › Spoken Directions): kept with ATS GPS's settings, the host
    * sends them (the iPad's Nav Voice key mutes it there). */
   voice: VoiceSettings
+  /** How many times slower the game's clock runs (the day_length plugin; 1 = vanilla): the host sends it. */
+  dayLength: number
   power: PowerState
   /**
    * The screen is handed back to the truck (its stock screen shows, with ATS GPS's button to come back),
@@ -144,6 +146,7 @@ export const useCabin = create<CabinState>()(
       equalizer: FLAT,
       equalizerCustom: false,
       voice: DEFAULT_VOICE,
+      dayLength: 1,
       power: INITIAL_POWER,
       navigate: (action) => set((state) => ({ navigation: navigate(state.navigation, action) })),
       setAppearanceMode: (appearanceMode) => set({ appearanceMode }),
@@ -280,6 +283,9 @@ export interface LiveState {
   /** How far the clock where the truck is runs from the game's time, minutes: its country's time zone with
    * the profile's time zones on, else 0 (state/timeZone.ts). Every clock shown adds it (`cabClock`). */
   clockShift: number
+  /** The country the truck is in (ATS: its state, "Nevada"), by the map's grid; `null` where unknown
+   * (state/timeZone.ts). */
+  countryName: string | null
   /** The route the game's GPS plans (`null`: none): its map nodes, each one's distance left to the
    * destination (as the game counts distances), the ways through its junctions and the turns there (by the
    * node each starts at, once the host has found them), how far right of its way it runs at its nodes on
@@ -333,6 +339,7 @@ export const useLive = create<LiveState>()(() => ({
   gameLanguage: null,
   timeZones: false,
   clockShift: 0,
+  countryName: null,
   route: null,
   routeNext: 0,
   routeStops: [],
@@ -491,6 +498,7 @@ function receiveHostMessage(now: () => number): (message: HostMessage) => void {
           equalizer: toEqualizer(message.equalizer),
           equalizerCustom: message.equalizerCustom === true,
           voice: toVoice(message.voice),
+          dayLength: typeof message.dayLength === 'number' && message.dayLength >= 1 ? message.dayLength : 1,
         })
         setIcons({
           iconSet: message.iconSet ?? null,

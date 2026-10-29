@@ -132,6 +132,25 @@
   bottom: calc(46% + 34px);
 }
 
+/* The state the truck is in, top right (MapView.tsx). */
+.map-state {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: calc(22px * var(--text-scale, 1));
+  font-weight: 600;
+  color: #fff;
+  background: rgb(20 22 26 / 0.55);
+}
+
+.appearance-light .map-state {
+  color: #14161a;
+  background: rgb(255 255 255 / 0.72);
+}
+
 /* The road's speed limit over the live speed, bottom left, as on Apple's map. */
 .speed-stack {
   position: absolute;
@@ -231,6 +250,13 @@
 
   .dashboard .eta-pill .dot {
     margin: 0 2px;
+  }
+
+  .dashboard .map-state {
+    right: 14px;
+    top: 14px;
+    padding: 5px 12px;
+    font-size: calc(15px * var(--text-scale, 1));
   }
 
   .dashboard .speed-stack {

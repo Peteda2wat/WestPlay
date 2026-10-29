@@ -282,11 +282,12 @@
     <div class="key" data-action="service_anywhere" title="Service area (stop the truck first)"><span>Service</span><i data-icon="wrench"></i></div>
     <!-- ATS GPS's spoken directions off / on (lit while off): straight to ATS GPS, no game key -->
     <div class="key" id="navVoiceBtn" title="ATS GPS's spoken directions on / off"><span>Nav Voice</span><i data-icon="voice"></i></div>
-    <div class="key" data-action="tablet" title="Tablet (mouse back button)"><span>Tablet</span><i data-icon="info"></i></div>
     <div class="key" data-action="escape" title="Escape"><span>Escape</span><i data-icon="cross"></i></div>
     <div class="key" data-action="confirm" title="Confirm"><span>Confirm</span><i data-icon="check"></i></div>
     <div class="key" data-action="navigation" title="Navigation"><span>Nav</span><i data-icon="nav"></i></div>
-    <div class="key" data-action="nav_zoom" title="Navigation zoom"><span>Nav Zoom</span><i data-icon="plusMinus"></i></div>
+    <!-- the Nav map's zoom: the game zooms it with the mouse wheel only (controls.sii mapzoom_in / mapzoom_out) -->
+    <div class="key" data-action="nav_zoom_out" data-repeat title="Nav map zoom out (mouse wheel down)"><span>Zoom</span><i data-icon="zoomOut"></i></div>
+    <div class="key" data-action="nav_zoom_in" data-repeat title="Nav map zoom in (mouse wheel up)"><span>Zoom</span><i data-icon="zoomIn"></i></div>
     <!-- ATS GPS's music: its Volume down / Previous / Play-Pause / Next / Volume up keybinds (F16 / F13 / F14 / F15 / F17, set in ATS GPS's Controls) -->
     <div class="key" data-action="music_volume_down" data-repeat title="Volume down (ATS GPS)"><span>Volume</span><i data-icon="volDown"></i></div>
     <div class="key" data-action="music_previous" title="Previous track (ATS GPS)"><span>Rewind</span><i data-icon="rewind"></i></div>
@@ -545,6 +546,8 @@
     nav: `<path d="M54 10 L10 28 L30 34 L36 54 Z" ${S}/>`,
     voice: `<path d="M8 12 H56 V42 H30 L18 54 V42 H8 Z" ${S}/><path d="M28 21 L36 27 L28 33 Z" fill="currentColor"/>`,
     plusMinus: `<path d="M8 18 H28 M18 8 V28 M50 10 L20 56 M36 46 H56" ${S}/>`,
+    zoomIn: `<circle cx="27" cy="27" r="18" ${S}/><path d="M40 40 L56 56" ${S} stroke-width="6"/><path d="M18 27 H36 M27 18 V36" ${S}/>`,
+    zoomOut: `<circle cx="27" cy="27" r="18" ${S}/><path d="M40 40 L56 56" ${S} stroke-width="6"/><path d="M18 27 H36" ${S}/>`,
     camera: `<rect x="6" y="20" width="36" height="26" rx="3" fill="currentColor"/><path d="M42 29 L58 20 V46 L42 37 Z" fill="currentColor"/>`,
     engine: `<path d="M12 28 H20 V22 H38 V28 H44 L50 34 V46 H44 L40 52 H20 L12 44 Z" ${S}/><path d="M26 22 V16 H34 V22 M4 36 H12 M50 38 H58" ${S}/>
              <path class="slash" d="M8 10 L56 56" ${S} stroke-width="5"/>`,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
-import { isInHost } from '../../shared/host'
+import { isInHost, postToHost } from '../../shared/host'
 
 /**
  * The map the Maps app draws, built from the player's own game files (crates/mapdata, built by the app for the
@@ -77,7 +77,10 @@ function load(base: string, built: number | null): Promise<MapData | null> {
   let map = loading.get(key)
   if (!map) {
     map = fetch(`${base}/map.json`, { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() : null))
+      .then((response) => {
+        if (!response.ok) postToHost({ type: 'pageError', text: `map: ${base}/map.json answered ${response.status}` })
+        return response.ok ? response.json() : null
+      })
       .then((manifest) =>
         manifest
           ? {
@@ -94,7 +97,10 @@ function load(base: string, built: number | null): Promise<MapData | null> {
             }
           : null,
       )
-      .catch(() => null)
+      .catch((error) => {
+        postToHost({ type: 'pageError', text: `map: ${base}/map.json failed: ${String(error)}` })
+        return null
+      })
     loading.set(key, map)
   }
   return map

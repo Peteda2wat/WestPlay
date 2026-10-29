@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockShiftAt, countryAt, parseGrid } from '../maps/countries'
+import { clockShiftAt, countryAt, countryNameAt, parseGrid } from '../maps/countries'
 
 // Three squares of 1000 m west to east: Germany (5), the square between (the export gives it the nearest's,
 // Germany), Finland (23); a square with none near; and their time zones.
@@ -50,5 +50,22 @@ describe('the clock where the truck is', () => {
     })!
     expect(clockShiftAt(usa, 500, 500)).toBe(0)
     expect(clockShiftAt(usa, 1500, 500)).toBe(120)
+  })
+
+  it('names the state the truck is in, where the map export named it', () => {
+    const usa = parseGrid({
+      cell: 1000,
+      x: 0,
+      z: 0,
+      width: 2,
+      height: 1,
+      cells: '0102',
+      names: { '1': 'California', '2': 7 },
+    })!
+    expect(countryNameAt(usa, 500, 500)).toBe('California')
+    // A name that isn't one, off the grid, and a map built before names: none.
+    expect(countryNameAt(usa, 1500, 500)).toBeNull()
+    expect(countryNameAt(usa, 9000, 500)).toBeNull()
+    expect(countryNameAt(grid, -500, 500)).toBeNull()
   })
 })

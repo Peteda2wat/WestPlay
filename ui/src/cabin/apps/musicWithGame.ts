@@ -6,7 +6,7 @@ import { poweredOff, withGame } from './youtube/withGame'
  * A music app with the game (YouTube, Spotify, Apple Music, YouTube Music; the rule: youtube/withGame.ts):
  * the music playing here fades out and pauses while the player is away from the game (it's paused, or tabbed
  * out of) and plays on fading in as they come back, only if it was ATS GPS that paused it; it stops at once
- * as the truck's electrics go off, and nothing plays while they're off. Music playing elsewhere (Spotify on a
+ * as the truck's electrics go off (music the player starts while they're off still plays). Music playing elsewhere (Spotify on a
  * phone) is left as it is.
  */
 export interface MusicPlayer {
@@ -63,13 +63,10 @@ export function pauseMusicWithGame(player: MusicPlayer): () => void {
     if (player.playingHere()) player.pauseHere()
     paused = false
   })
-  // Nothing plays while they're off: music that starts playing here then is paused as it starts.
-  const dark = player.subscribe((started) => {
-    if (isOff() && started) player.pauseHere()
-  })
+  // Music the player starts while they're off plays (owner 2026-10-29: Spotify started from the iPad with the
+  // truck off was paused as it started, then closed as stale).
   return () => {
     game()
     power()
-    dark()
   }
 }

@@ -22,7 +22,7 @@ describe('Truck Remote trip card', () => {
     expect(stopsNeeded(telemetry, 400, 600_000, 600)).toEqual({ fuel: 1, fuelBy: 400_000, sleep: 1, sleepAt: 240_000 })
   })
 
-  it('shows arrival, real time left and distance, then the job rows', () => {
+  it('shows arrival (its weekday), real time left and distance, then the job rows', () => {
     const job = {
       cargoLoaded: true,
       cargo: 'Tomatoes',
@@ -32,7 +32,7 @@ describe('Truck Remote trip card', () => {
     } as JobInfo
     const view = tripCardView(telemetry, job, 400, text, 0, true, false)
     expect(view.big).toEqual([
-      { value: '00:00', unit: 'arrival' },
+      { value: '00:00', unit: 'Fri' },
       { value: '30', unit: 'min left' },
       { value: '600', unit: 'km' },
     ])

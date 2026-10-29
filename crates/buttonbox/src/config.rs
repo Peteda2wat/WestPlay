@@ -60,6 +60,11 @@ pub fn load(dir: &Path) -> (Config, Vec<String>) {
 /// Every button the controller presses has an entry, every key as the table spells it; a key not known is
 /// cleared and said.
 fn tidy(config: &mut Config) -> Vec<String> {
+    // Buttons added since the settings were saved get their default key (Nav zoom + / -, 2026-10-29).
+    let defaults: Config = serde_json::from_str(DEFAULTS).expect("the defaults read");
+    for (name, combo) in defaults.bindings {
+        config.bindings.entry(name).or_insert(combo);
+    }
     for name in REQUIRED {
         config.bindings.entry(name.to_owned()).or_default();
     }

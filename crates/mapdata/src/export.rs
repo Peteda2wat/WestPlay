@@ -174,8 +174,8 @@ pub fn export(
     // that can't be read leave the zones out (the clock then the game's time): never the map for the clock.
     let mut countries = countries::grid(map.nodes.values());
     let time_zones_unread = match countries::time_zones(files) {
-        Ok(zones) => {
-            countries.zones = zones;
+        Ok((zones, names)) => {
+            (countries.zones, countries.names) = (zones, names);
             None
         }
         Err(error) => Some(error.to_string()),
