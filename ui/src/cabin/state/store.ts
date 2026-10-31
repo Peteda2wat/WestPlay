@@ -91,8 +91,6 @@ interface CabinState {
   /** The route's turns spoken (Settings › Sound › Spoken Directions): kept with ATS GPS's settings, the host
    * sends them (the iPad's Nav Voice key mutes it there). */
   voice: VoiceSettings
-  /** How many times slower the game's clock runs (the day_length plugin; 1 = vanilla): the host sends it. */
-  dayLength: number
   power: PowerState
   /**
    * The screen is handed back to the truck (its stock screen shows, with ATS GPS's button to come back),
@@ -146,7 +144,6 @@ export const useCabin = create<CabinState>()(
       equalizer: FLAT,
       equalizerCustom: false,
       voice: DEFAULT_VOICE,
-      dayLength: 1,
       power: INITIAL_POWER,
       navigate: (action) => set((state) => ({ navigation: navigate(state.navigation, action) })),
       setAppearanceMode: (appearanceMode) => set({ appearanceMode }),
@@ -498,7 +495,6 @@ function receiveHostMessage(now: () => number): (message: HostMessage) => void {
           equalizer: toEqualizer(message.equalizer),
           equalizerCustom: message.equalizerCustom === true,
           voice: toVoice(message.voice),
-          dayLength: typeof message.dayLength === 'number' && message.dayLength >= 1 ? message.dayLength : 1,
         })
         setIcons({
           iconSet: message.iconSet ?? null,

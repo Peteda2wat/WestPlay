@@ -202,9 +202,8 @@ export function TripCard() {
   const job = useLive((state) => state.job)
   const fuelCapacity = useLive((state) => state.truck?.fuelCapacity ?? 0)
   const clockShift = useLive((state) => state.clockShift)
-  const dayLength = useCabin((state) => state.dayLength)
   if (!telemetry) return null
-  const view = tripCardView(telemetry, job, fuelCapacity, text, clockShift, clock24, miles, dayLength)
+  const view = tripCardView(telemetry, job, fuelCapacity, text, clockShift, clock24, miles)
   return (
     <article className="widget glass job trip-card">
       {view.big.length > 0 && (

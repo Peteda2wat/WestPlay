@@ -26,12 +26,11 @@ export interface DestinationView {
 /**
  * Real minutes of driving left, as Truck Remote's trip card counts them: the game's time left over its time
  * scale, at the open-road rate (about 20 in ATS, 19 in ETS2) unless the game reports one that high right now,
- * since cities run at 3 and would make it read hours too long. `miles` stands for ATS. `dayLength` is the
- * day_length plugin's multiplier: its clock runs that much slower, so the game's time left is that much shorter.
+ * since cities run at 3 and would make it read hours too long. `miles` stands for ATS.
  */
-export function realMinutesLeft(telemetry: Telemetry, miles: boolean, dayLength = 1): number {
+export function realMinutesLeft(telemetry: Telemetry, miles: boolean): number {
   const scale = telemetry.localScale >= 10 ? telemetry.localScale : miles ? 20 : 19
-  return (telemetry.navigationTime / 60 / scale) * dayLength
+  return telemetry.navigationTime / 60 / scale
 }
 
 /** Real time left as Truck Remote shows it: "45 min", "2:05 hr". */

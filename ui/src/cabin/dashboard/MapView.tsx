@@ -98,7 +98,6 @@ function TripPill() {
   const text = useText()
   const clock24 = useCabin((state) => state.clock24)
   const miles = useCabin((state) => state.miles)
-  const dayLength = useCabin((state) => state.dayLength)
   const trip = useLive(
     useShallow((state) => {
       const telemetry = state.telemetry
@@ -115,7 +114,7 @@ function TripPill() {
         : null
       const total = formatTripTime(minutes, text)
       // The real-world driving time left: the game's time left divided by its time scale here.
-      const real = formatRealLeft(realMinutesLeft(telemetry, miles, dayLength))
+      const real = formatRealLeft(realMinutesLeft(telemetry, miles))
       const arrival = Math.round(cabClock(telemetry, state.clockShift) + minutes)
       return [
         formatGameTime(arrival, clock24),

@@ -121,8 +121,6 @@ export type HostMessage =
       equalizerCustom?: boolean
       /** The route's turns spoken (Settings › Sound › Spoken Directions). */
       voice?: VoiceSettings
-      /** How many times slower the game's clock runs (the day_length plugin's day_length.txt; 1 = vanilla). */
-      dayLength?: number
     }
   /** The player's own wallpapers and icon sets (shared/customize.ts), their files at `CABIN_FILES`. */
   | { type: 'customize'; wallpapers: CustomWallpaper[]; iconSets: IconSet[] }

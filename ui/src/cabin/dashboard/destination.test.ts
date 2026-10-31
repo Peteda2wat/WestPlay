@@ -56,13 +56,6 @@ describe('Truck Remote time formats', () => {
     )
   })
 
-  it('stretches real time by the day_length plugin, whose clock runs slower', () => {
-    // 3x slower clock: the game says 40 game-minutes of open road, which is 6 real minutes.
-    expect(formatRealLeft(realMinutesLeft({ navigationTime: 40 * 60, localScale: 20 } as Telemetry, true, 3))).toBe(
-      '6 min',
-    )
-  })
-
   it('shows the break in game hours and minutes', () => {
     expect(formatBreak(370, text)).toBe('In 6h 10m')
     expect(formatBreak(45, text)).toBe('In 45m · find a stop')

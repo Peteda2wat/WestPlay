@@ -647,7 +647,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
             for (slot, value) in host.keybinds.iter().zip(config.settings.get().keybinds.bridge_values()) {
                 slot.store(value, Ordering::Release);
             }
-            let _ = webview.post_json(&settings_message(&config.settings.get(), day_length()));
+            let _ = webview.post_json(&settings_message(&config.settings.get()));
         }
         pointer.update(&bridge.bridge().plugin.pointer, &webview);
         // Taps on the remote screen (the iPad): the page gets them as it gets the in-game cursor's clicks.
@@ -660,7 +660,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 remote.set_voice_muted(settings.voice.muted);
                 config.settings.set(settings.clone());
                 (config.on_settings)(&settings);
-                let _ = webview.post_json(&settings_message(&settings, day_length()));
+                let _ = webview.post_json(&settings_message(&settings));
             }
             let page = stage.page_size().get();
             remote.set_page(page);
@@ -800,7 +800,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                             let _ = webview.post_json(playback);
                         }
                     }
-                    let _ = webview.post_json(&settings_message(&config.settings.get(), day_length()));
+                    let _ = webview.post_json(&settings_message(&config.settings.get()));
                     let _ = webview.post_json(&sapi.voices_message());
                     if let Some(message) = &customize_message {
                         let _ = webview.post_json(message);
@@ -1942,27 +1942,9 @@ fn screen_message(layout: u32) -> String {
     serde_json::json!({ "type": "screen", "layout": id }).to_string()
 }
 
-/// How many times slower the game's clock runs: the day_length plugin's `Documents\<game>\day_length.txt` (its
-/// first number, 3 when unreadable as the plugin takes it), 1 without the file.
-fn day_length() -> f32 {
-    let game = westplay_setup::game::current().name();
-    let Some(text) = westplay_setup::places::documents_folders()
-        .iter()
-        .find_map(|documents| std::fs::read_to_string(documents.join(game).join("day_length.txt")).ok())
-    else {
-        return 1.0;
-    };
-    text.lines()
-        .map(|line| line.split('#').next().unwrap_or("").trim())
-        .find(|line| !line.is_empty())
-        .and_then(|line| line.parse::<f32>().ok())
-        .filter(|value| (1.0..=60.0).contains(value))
-        .unwrap_or(3.0)
-}
-
 /// `{"type":"settings","truckStrip":"auto","wallpaper":"plain","iconSet":null,"iconStyle":"auto","equalizer":…}`: the
-/// settings the cabin page applies itself, and the clock's slowdown ([`day_length`]).
-fn settings_message(settings: &settings::Settings, day_length: f32) -> String {
+/// settings the cabin page applies itself.
+fn settings_message(settings: &settings::Settings) -> String {
     serde_json::json!({
         "type": "settings",
         "truckStrip": settings.screen.truck_strip,
@@ -1972,7 +1954,6 @@ fn settings_message(settings: &settings::Settings, day_length: f32) -> String {
         "equalizer": settings.sound.equalizer.clamped(),
         "equalizerCustom": settings.sound.custom,
         "voice": settings.voice,
-        "dayLength": day_length,
     })
     .to_string()
 }
@@ -2403,7 +2384,6 @@ mod tests {
                 "equalizer": { "bass": 0, "mid": 0, "treble": 0 },
                 "equalizerCustom": false,
                 "voice": { "muted": false, "level": "normal", "name": null },
-                "dayLength": 1.0,
             })
         );
         settings.screen.truck_strip = crate::settings::TruckStrip::Off;
