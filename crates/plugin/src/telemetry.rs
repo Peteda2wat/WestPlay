@@ -74,6 +74,15 @@ static SNAPSHOT: Mutex<Telemetry> = Mutex::new(Telemetry {
     trailer_connected: false,
     trailer_x: 0.0,
     trailer_z: 0.0,
+    wear_engine: 0.0,
+    wear_transmission: 0.0,
+    wear_cabin: 0.0,
+    wear_chassis: 0.0,
+    wear_wheels: 0.0,
+    trailer_wear_chassis: 0.0,
+    trailer_wear_wheels: 0.0,
+    trailer_wear_body: 0.0,
+    cargo_damage: 0.0,
 });
 
 /// Where the driver's head is by default in the truck's cab (the "truck" configuration's `head.position`).
@@ -114,6 +123,15 @@ enum Field {
     RestStop,
     TrailerPlacement,
     TrailerConnected,
+    WearEngine,
+    WearTransmission,
+    WearCabin,
+    WearChassis,
+    WearWheels,
+    TrailerWearChassis,
+    TrailerWearWheels,
+    TrailerWearBody,
+    CargoDamage,
 }
 
 const CHANNELS: &[(&str, u32, Field)] = &[
@@ -144,6 +162,15 @@ const CHANNELS: &[(&str, u32, Field)] = &[
     ("truck.effective.steering", SCS_VALUE_TYPE_FLOAT, Field::Steering),
     ("multiplayer.time.offset", SCS_VALUE_TYPE_S32, Field::MultiplayerTimeOffset),
     ("rest.stop", SCS_VALUE_TYPE_S32, Field::RestStop),
+    ("truck.wear.engine", SCS_VALUE_TYPE_FLOAT, Field::WearEngine),
+    ("truck.wear.transmission", SCS_VALUE_TYPE_FLOAT, Field::WearTransmission),
+    ("truck.wear.cabin", SCS_VALUE_TYPE_FLOAT, Field::WearCabin),
+    ("truck.wear.chassis", SCS_VALUE_TYPE_FLOAT, Field::WearChassis),
+    ("truck.wear.wheels", SCS_VALUE_TYPE_FLOAT, Field::WearWheels),
+    ("trailer.0.wear.chassis", SCS_VALUE_TYPE_FLOAT, Field::TrailerWearChassis),
+    ("trailer.0.wear.wheels", SCS_VALUE_TYPE_FLOAT, Field::TrailerWearWheels),
+    ("trailer.0.wear.body", SCS_VALUE_TYPE_FLOAT, Field::TrailerWearBody),
+    ("trailer.0.cargo.damage", SCS_VALUE_TYPE_FLOAT, Field::CargoDamage),
 ];
 
 /// Registers the telemetry channels and events. Called from `scs_telemetry_init`.
@@ -438,6 +465,15 @@ unsafe fn on_channel_value(value: *const ScsValue, context: *mut c_void) {
                 (s.trailer_known, s.trailer_x, s.trailer_z) = (true, p.x, p.z);
             }
             Field::TrailerConnected => s.trailer_connected = value.bool(),
+            Field::WearEngine => s.wear_engine = value.float(),
+            Field::WearTransmission => s.wear_transmission = value.float(),
+            Field::WearCabin => s.wear_cabin = value.float(),
+            Field::WearChassis => s.wear_chassis = value.float(),
+            Field::WearWheels => s.wear_wheels = value.float(),
+            Field::TrailerWearChassis => s.trailer_wear_chassis = value.float(),
+            Field::TrailerWearWheels => s.trailer_wear_wheels = value.float(),
+            Field::TrailerWearBody => s.trailer_wear_body = value.float(),
+            Field::CargoDamage => s.cargo_damage = value.float(),
         }
     }
 }
@@ -478,5 +514,14 @@ fn reset(s: &mut Telemetry, field: Field) {
         Field::RestStop => s.next_rest_stop = d.next_rest_stop,
         Field::TrailerPlacement => (s.trailer_known, s.trailer_x, s.trailer_z) = (false, d.trailer_x, d.trailer_z),
         Field::TrailerConnected => s.trailer_connected = d.trailer_connected,
+        Field::WearEngine => s.wear_engine = d.wear_engine,
+        Field::WearTransmission => s.wear_transmission = d.wear_transmission,
+        Field::WearCabin => s.wear_cabin = d.wear_cabin,
+        Field::WearChassis => s.wear_chassis = d.wear_chassis,
+        Field::WearWheels => s.wear_wheels = d.wear_wheels,
+        Field::TrailerWearChassis => s.trailer_wear_chassis = d.trailer_wear_chassis,
+        Field::TrailerWearWheels => s.trailer_wear_wheels = d.trailer_wear_wheels,
+        Field::TrailerWearBody => s.trailer_wear_body = d.trailer_wear_body,
+        Field::CargoDamage => s.cargo_damage = d.cargo_damage,
     }
 }

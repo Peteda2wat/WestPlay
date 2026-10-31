@@ -27,7 +27,7 @@ pub fn bridge_name() -> String {
     format!("Local\\WestPlay.Bridge.v{BRIDGE_VERSION}")
 }
 pub const BRIDGE_MAGIC: u32 = u32::from_le_bytes(*b"WPB7");
-pub const BRIDGE_VERSION: u32 = 28;
+pub const BRIDGE_VERSION: u32 = 29;
 
 /// Size of the app's frames, and the base size of the screen textures in the mod (`westplay_setup::game_mod`
 /// builds them from these).
@@ -625,6 +625,17 @@ pub struct Telemetry {
     pub trailer_connected: bool,
     pub trailer_x: f64,
     pub trailer_z: f64,
+    /// How worn the truck's parts and the first trailer are, 0 (new) to 1 (the SDK's `truck.wear.*` and
+    /// `trailer.0.wear.*`), and how damaged its cargo is (`trailer.0.cargo.damage`): the cab's damage widget.
+    pub wear_engine: f32,
+    pub wear_transmission: f32,
+    pub wear_cabin: f32,
+    pub wear_chassis: f32,
+    pub wear_wheels: f32,
+    pub trailer_wear_chassis: f32,
+    pub trailer_wear_wheels: f32,
+    pub trailer_wear_body: f32,
+    pub cargo_damage: f32,
 }
 
 /// Identity of the current truck, from the SDK's "truck" configuration.
