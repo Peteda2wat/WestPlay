@@ -24,6 +24,37 @@ impl Box {
         self.0.as_deref().map_err(Clone::clone)
     }
 
+    /// Opens the iPad's page in a regular window, maximized on the second monitor, or hides it if it's showing
+    /// (shown again where it was left). The window never takes focus, so a click on it leaves the game in front
+    /// and the key press reaches the game.
+    pub fn toggle_monitor(app: &tauri::AppHandle) {
+        use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+        if let Some(window) = app.get_webview_window("buttonbox") {
+            let _ = if window.is_visible().unwrap_or(false) { window.hide() } else { window.show() };
+            return;
+        }
+        let Ok(page) = app.state::<Box>().get().map(|box_| box_.local_page()) else { return };
+        let Ok(url) = page.parse() else { return };
+        // The first monitor that isn't the main one; with one monitor, the main one.
+        let monitors = app.available_monitors().unwrap_or_default();
+        let main = app.primary_monitor().ok().flatten().map(|m| *m.position());
+        let Some(monitor) = monitors.iter().find(|m| Some(*m.position()) != main).or(monitors.first()) else { return };
+        let built = WebviewWindowBuilder::new(app, "buttonbox", WebviewUrl::External(url))
+            .title("Button box")
+            .focusable(false)
+            .focused(false)
+            .visible(false)
+            .build();
+        match built {
+            Ok(window) => {
+                let _ = window.set_position(*monitor.position());
+                let _ = window.maximize();
+                let _ = window.show();
+            }
+            Err(e) => westplay_host::log!("[app] the second-monitor button box couldn't open: {e}"),
+        }
+    }
+
     /// Lets go of every key held (the app quitting).
     pub fn shutdown(&self) {
         if let Ok(box_) = &self.0 {

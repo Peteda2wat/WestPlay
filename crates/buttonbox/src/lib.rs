@@ -101,6 +101,11 @@ impl ButtonBox {
         format!("{}:{}", lan_address().unwrap_or_else(|| "this PC's address".into()), self.port)
     }
 
+    /// The iPad page for this PC's own window (the second-monitor button box), its code in the address.
+    pub fn local_page(&self) -> String {
+        format!("http://127.0.0.1:{}/?code={}", self.port, self.token)
+    }
+
     pub fn status(&self) -> Status {
         let ipad = self.ipad.lock().unwrap_or_else(|e| e.into_inner()).is_some_and(|seen| seen.elapsed() < IPAD_GONE);
         let in_front = foreground::program().map(|program| match program {

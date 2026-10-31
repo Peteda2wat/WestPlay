@@ -237,13 +237,15 @@ fn add_tray(app: &tauri::App) -> tauri::Result<()> {
     use tauri::menu::{Menu, MenuItem};
     use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
     let open = MenuItem::with_id(app, "open", "Open American Truck Simulator GPS", true, None::<&str>)?;
+    let monitor = MenuItem::with_id(app, "buttonbox", "Button box on second monitor (open/close)", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit American Truck Simulator GPS", true, None::<&str>)?;
     let mut tray = TrayIconBuilder::with_id("westplay")
         .tooltip("American Truck Simulator GPS")
-        .menu(&Menu::with_items(app, &[&open, &quit])?)
+        .menu(&Menu::with_items(app, &[&open, &monitor, &quit])?)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => show_main(app),
+            "buttonbox" => buttonbox::Box::toggle_monitor(app),
             "quit" => app.exit(0),
             _ => {}
         })
