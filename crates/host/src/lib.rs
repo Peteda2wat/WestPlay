@@ -1957,8 +1957,6 @@ fn settings_message(settings: &settings::Settings) -> String {
     })
     .to_string()
 }
-    /// A line for the log: why the page paused music (owner 2026-10-29: Spotify cut out, the log said nothing).
-    Log { text: String },
 
 /// `{"type":"customize","wallpapers":[…],"iconSets":[…]}`: the player's own wallpapers and icon sets
 /// (`customize::Customizations`), their files at `https://westplay.customize/`.
@@ -1978,6 +1976,8 @@ enum PageMessage {
     Startup { stage: String },
     /// Something in the page failed (each different one once), for the log.
     PageError { text: String },
+    /// A line for the log: why the page paused music (owner 2026-10-29: Spotify cut out, the log said nothing).
+    Log { text: String },
     /// Whether WestPlay is open on the truck's screen: posted as the page loads and whenever it changes.
     Westplay { open: bool },
     /// The wallpaper chosen in the cab's Settings (an id: `wallpapers.ts`), to keep with the settings.
@@ -2081,7 +2081,8 @@ fn parse_page_message(message: &str) -> Option<PageMessage> {
 /// "headquarters":"calais"}` (the cities whose garages they own, and their headquarters', `null` if none),
 /// `{"type":"mapBlock","hvt":true,"language":"tr_tr"}` (they play on a map by HVT, which WestPlay
 /// doesn't allow, and the game's language to say so in), and `{"type":"timeZones","on":true}` (their
-/// profile has the game's time zones on: the clock is the time where the truck is).
+/// profile has the game's time zones on: the clock is the time where the truck is), and
+/// `{"type":"profile","name":"Western"}` (the profile played: the cab keeps each one's own Home and look).
 fn player_messages_for(player: &Player) -> Vec<String> {
     let garages = &player.garages;
     vec![
@@ -2089,6 +2090,7 @@ fn player_messages_for(player: &Player) -> Vec<String> {
             .to_string(),
         serde_json::json!({ "type": "mapBlock", "hvt": player.hvt_map, "language": player.language }).to_string(),
         serde_json::json!({ "type": "timeZones", "on": player.time_zones }).to_string(),
+        serde_json::json!({ "type": "profile", "name": player.profile }).to_string(),
     ]
 }
 
@@ -2168,10 +2170,6 @@ mod tests {
         // the route.
         let message = super::stops_message(Some(7), Some(&route), &[13, 11, 12, 15, 99], &[11]);
         assert_eq!(message, r#"{"id":7,"stops":[2,3],"type":"routeStops"}"#);
-        assert_eq!(
-            parse_page_message(r#"{"type":"log","text":"Spotify paused: game paused"}"#),
-            Some(PageMessage::Log { text: "Spotify paused: game paused".into() })
-        );
         // No route: none.
         assert_eq!(super::stops_message(None, None, &[13], &[]), r#"{"id":null,"stops":[],"type":"routeStops"}"#);
     }
@@ -2188,6 +2186,10 @@ mod tests {
         assert_eq!(
             parse_page_message(r#"{"type":"pageError","text":"map: Invalid LngLat"}"#),
             Some(PageMessage::PageError { text: "map: Invalid LngLat".into() })
+        );
+        assert_eq!(
+            parse_page_message(r#"{"type":"log","text":"Spotify paused: game paused"}"#),
+            Some(PageMessage::Log { text: "Spotify paused: game paused".into() })
         );
         assert_eq!(
             parse_page_message(r#"{"type":"westplay","open":false}"#),
@@ -2372,7 +2374,7 @@ mod tests {
     #[test]
     fn tells_the_page_the_truck_strip_wallpaper_and_icons() {
         let mut settings = crate::settings::Settings::default();
-        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings, 1.0)).unwrap();
+        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings)).unwrap();
         assert_eq!(
             message,
             serde_json::json!({
@@ -2390,7 +2392,7 @@ mod tests {
         settings.sound.equalizer = crate::speakers::Equalizer { bass: -9, mid: 2, treble: 6 };
         settings.look.wallpaper = Some("custom:Dusk".into());
         settings.look.icon_set = Some("Retro".into());
-        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings, 1.0)).unwrap();
+        let message: serde_json::Value = serde_json::from_str(&settings_message(&settings)).unwrap();
         assert_eq!(message["truckStrip"], "off");
         assert_eq!(message["wallpaper"], "custom:Dusk");
         assert_eq!(message["iconSet"], "Retro");
@@ -2441,13 +2443,15 @@ mod tests {
             hvt_map: true,
             language: Some("tr_tr".into()),
             time_zones: true,
+            profile: Some("Western".into()),
         };
         assert_eq!(
             super::player_messages_for(&player),
             [
                 r#"{"headquarters":"calais","owned":["calais","dover"],"type":"garages"}"#,
                 r#"{"hvt":true,"language":"tr_tr","type":"mapBlock"}"#,
-                r#"{"on":true,"type":"timeZones"}"#
+                r#"{"on":true,"type":"timeZones"}"#,
+                r#"{"name":"Western","type":"profile"}"#
             ]
         );
     }

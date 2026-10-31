@@ -34,6 +34,8 @@ pub struct Player {
     /// The profile has the game's time zones on (Options › Gameplay › Time zones: "Only time" or "Full
     /// info"): the game's clock shows the time of the country the truck is in.
     pub time_zones: bool,
+    /// The name of the profile the save is of (the cab keeps each profile's own Home and look).
+    pub profile: Option<String>,
 }
 
 /// The speakers of the parts of the truck the SDK names (`None`: not found in the save, or no part with any).
@@ -112,6 +114,7 @@ impl PlayerWatch {
                                     .as_deref()
                                     .and_then(|file| std::fs::read_to_string(file).ok())
                                     .is_some_and(|config| time_zones(&config)),
+                                profile: profile_name(&path),
                             };
                             if sender.send(player).is_err() {
                                 return;
@@ -189,6 +192,11 @@ fn read_units(path: &Path) -> Result<Vec<westplay_mapdata::sii::Unit>, String> {
     save::read(&data).map_err(|e| e.to_string())
 }
 
+/// The name of the profile a save is of: its folder's (`profiles/<name in hex>/save/<slot>/game.sii`).
+fn profile_name(save: &Path) -> Option<String> {
+    profiles::name_from_folder(save.parent()?.parent()?.parent()?.file_name()?.to_str()?)
+}
+
 /// The game's language, from its config (`uset g_lang_init "tr_tr"`).
 fn game_language(game_documents: &Path) -> Option<String> {
     locale::game_language(&std::fs::read_to_string(game_documents.join("config.cfg")).ok()?)
@@ -213,6 +221,13 @@ fn time_zones(config: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use std::path::{Path, PathBuf};
+
+    #[test]
+    fn names_the_profile_a_save_is_of() {
+        let save = Path::new("C:/Docs/American Truck Simulator/profiles/5765737465726E/save/autosave/game.sii");
+        assert_eq!(super::profile_name(save).as_deref(), Some("Western"));
+        assert_eq!(super::profile_name(Path::new("game.sii")), None);
+    }
 
     #[test]
     fn reads_whether_the_profile_has_time_zones_on() {
