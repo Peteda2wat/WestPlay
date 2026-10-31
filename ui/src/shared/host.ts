@@ -326,6 +326,8 @@ export type PageMessage =
    * speakers as tuned (Recommended); kept with ATS GPS's settings and played by every player. */
   | ({ type: 'equalizer'; custom: boolean } & Equalizer)
   /** The music's spectrum wanted (Settings › Equalizer open) or not: the host answers `spectrum` as it plays. */
+  /** A line for the host's log (why music paused). */
+  | { type: 'log'; text: string }
   | { type: 'spectrum'; on: boolean }
   /** A change to the game's GPS route (Maps' search), at a map node (its uid, hex) for going or adding a
    * stop; the host answers with `routeAnswer` and the same `id`. */

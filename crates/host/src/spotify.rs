@@ -307,6 +307,9 @@ pub struct Playback {
     #[serde(default)]
     pub context: Option<Context>,
     pub playing: bool,
+    /// An advert plays (Spotify's own track for it, which nothing of is kept).
+    #[serde(default)]
+    pub ad: bool,
     #[serde(default)]
     pub position: f64,
     #[serde(default)]
@@ -347,6 +350,8 @@ pub enum Report {
     Playback(Option<Box<Playback>>),
     /// How long a play, a play on, a next or a previous took.
     Timing(Timing),
+    /// Something the player or its connection did on its own (`read_message`'s words, for the log).
+    Event(String),
 }
 
 /// How long a play (a play on, a next, a previous) took: until the song's time moved in the page's player
@@ -574,6 +579,7 @@ impl Spotify {
                 Some(Message::Answer(answer)) => reports.push(Report::Answer(answer)),
                 Some(Message::Playback(playback)) => reports.push(Report::Playback(playback)),
                 Some(Message::Timing(timing)) => reports.push(Report::Timing(timing)),
+                Some(Message::Event(said)) => reports.push(Report::Event(said)),
                 None => {}
             }
         }
@@ -613,6 +619,7 @@ enum Message {
     Answer(Box<Answer>),
     Playback(Option<Box<Playback>>),
     Timing(Timing),
+    Event(String),
 }
 
 fn read_message(message: &str) -> Option<Message> {
@@ -660,6 +667,22 @@ fn read_message(message: &str) -> Option<Message> {
             sounding: timing.get("sounding").and_then(serde_json::Value::as_u64),
             steps: steps_of(timing.get("steps").and_then(serde_json::Value::as_str).unwrap_or("")),
         }));
+    }
+    if let Some(event) = value.get("event").and_then(serde_json::Value::as_str) {
+        // Only the page's own names for what it saw, each in words for the log.
+        let said = match event {
+            "waiting" => "buffering",
+            "stalled" => "stalled",
+            "error" => "error",
+            "abort" => "aborted",
+            "ended" => "ended",
+            "dealer closed" => "lost Spotify's connection",
+            "dealer error" => "Spotify's connection error",
+            _ => return None,
+        };
+        let at = value.get("at").and_then(serde_json::Value::as_u64).map_or(String::new(), |s| format!(" at {s} s"));
+        let advert = if value.get("ad").and_then(serde_json::Value::as_bool) == Some(true) { " (advert playing)" } else { "" };
+        return Some(Message::Event(format!("{said}{at}{advert}")));
     }
     if let Some(playback) = value.get("playback") {
         if playback.is_null() {
@@ -754,6 +777,15 @@ mod tests {
         );
         assert_eq!(read_message(r#"{"playback":null}"#), Some(Message::Playback(None)));
         assert_eq!(read_message(r#"{"ready":true}"#), Some(Message::Ready));
+        assert_eq!(
+            read_message(r#"{"event":"waiting","at":123,"ad":true}"#),
+            Some(Message::Event("buffering at 123 s (advert playing)".into()))
+        );
+        assert_eq!(
+            read_message(r#"{"event":"dealer closed","at":null,"ad":false}"#),
+            Some(Message::Event("lost Spotify's connection".into()))
+        );
+        assert_eq!(read_message(r#"{"event":"anything else"}"#), None);
         // A play's time, its steps only what a step is made of.
         let Some(Message::Timing(timing)) = read_message(
             r#"{"timing":{"action":"resume","sounding":2400,"steps":"button 2, session:playing 30, <b>https://x 9"}}"#,

@@ -64,6 +64,8 @@ fn open(dir: Option<PathBuf>, fallback: Option<PathBuf>) -> (Option<(File, PathB
 fn create(dir: &Path) -> std::io::Result<(File, PathBuf)> {
     fs::create_dir_all(dir)?;
     let path = dir.join("app.log");
+    // The last run's log kept: a reinstall restarts the app and wiped the log of a problem (2026-10-29).
+    let _ = fs::rename(&path, dir.join("app.previous.log"));
     Ok((File::create(&path)?, path))
 }
 

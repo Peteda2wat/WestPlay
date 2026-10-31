@@ -1,3 +1,4 @@
+import { postToHost } from '../../shared/host'
 import { type LiveState, useCabin, useLive } from '../state/store'
 import { fadeOutAndPause, playAndFadeIn } from './fade'
 import { poweredOff, withGame } from './youtube/withGame'
@@ -50,6 +51,8 @@ export function pauseMusicWithGame(player: MusicPlayer): () => void {
     if (away === wasAway) return
     const action = withGame(away, wasAway, player.playingHere(), paused, !isOff())
     if (action === 'pause') {
+      const why = live.gameFocused ? 'the game paused' : 'the game not in focus'
+      postToHost({ type: 'log', text: `${player.name} paused: ${why}` })
       fadeOutAndPause(player)
       paused = true
     } else if (action === 'play') {
@@ -60,7 +63,10 @@ export function pauseMusicWithGame(player: MusicPlayer): () => void {
   const power = useCabin.subscribe((cabin, before) => {
     if (!poweredOff(before.power.phase === 'off', cabin.power.phase === 'off')) return
     // Whatever it's doing, at once (no fade: owner 2026-10-21), and not played on after.
-    if (player.playingHere()) player.pauseHere()
+    if (player.playingHere()) {
+      postToHost({ type: 'log', text: `${player.name} paused: the truck's electrics off` })
+      player.pauseHere()
+    }
     paused = false
   })
   // Music the player starts while they're off plays (owner 2026-10-29: Spotify started from the iPad with the

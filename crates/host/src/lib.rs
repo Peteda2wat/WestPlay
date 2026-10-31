@@ -391,6 +391,8 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
     let mut spotify: Option<spotify::Spotify> = None;
     let mut spotify_state: Option<spotify::State> = None;
     let mut spotify_signing_in = false;
+    // Whether an advert plays in Spotify's player (the log says when it starts and when it's over).
+    let mut spotify_ad = false;
     // Each service's sign-in confirming after its window closed signed in (youtube.rs, spotify.rs).
     let (mut youtube_window_open, mut youtube_confirming) = (false, false);
     let mut spotify_confirming = false;
@@ -817,6 +819,7 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                 }
                 Some(PageMessage::Startup { stage }) => startup::mark(&format!("page: {stage}")),
                 Some(PageMessage::PageError { text }) => log!("page error: {text}"),
+                Some(PageMessage::Log { text }) => log!("page: {text}"),
                 Some(PageMessage::TruckStrip { strip }) => {
                     let mut settings = config.settings.get();
                     if settings.screen.truck_strip != strip {
@@ -878,6 +881,9 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                     }
                 }
                 Some(PageMessage::Spotify { command }) => {
+                    if matches!(command, spotify::Command::Pause) {
+                        log!("[spotify] the page asked to pause");
+                    }
                     if spotify.is_none() && matches!(command, spotify::Command::Pause) {
                         // Nothing to pause: Spotify isn't running.
                     } else if spotify.is_none() && game_closed_at.is_some_and(|at| at.elapsed() < PLAYERS_SETTLE) {
@@ -1230,9 +1236,17 @@ pub fn run(mut config: Config, stop: Arc<AtomicBool>) -> Result<(), Error> {
                             log!("{}", timing.line());
                             spotify_stale |= timing.sounding.is_none();
                         }
+                        // What the page or its connection did on its own (stalled, buffering, lost): the log's only
+                        // word of a stop that isn't a pause.
+                        spotify::Report::Event(said) => log!("[spotify] {said}"),
                         spotify::Report::Playback(playback) => {
                             // What plays on the account's other devices (a phone) isn't this player's.
                             let here = playback.as_deref().filter(|playback| playback.here != Some(false));
+                            let ad = here.is_some_and(|playback| playback.ad);
+                            if ad != spotify_ad {
+                                spotify_ad = ad;
+                                log!("[spotify] {}", if ad { "advert playing" } else { "advert over" });
+                            }
                             let heard = here.map(|playback| play_log::Heard {
                                 doing: if playback.playing {
                                     play_log::Doing::Playing
@@ -1962,6 +1976,8 @@ fn settings_message(settings: &settings::Settings, day_length: f32) -> String {
     })
     .to_string()
 }
+    /// A line for the log: why the page paused music (owner 2026-10-29: Spotify cut out, the log said nothing).
+    Log { text: String },
 
 /// `{"type":"customize","wallpapers":[…],"iconSets":[…]}`: the player's own wallpapers and icon sets
 /// (`customize::Customizations`), their files at `https://westplay.customize/`.
@@ -2171,6 +2187,10 @@ mod tests {
         // the route.
         let message = super::stops_message(Some(7), Some(&route), &[13, 11, 12, 15, 99], &[11]);
         assert_eq!(message, r#"{"id":7,"stops":[2,3],"type":"routeStops"}"#);
+        assert_eq!(
+            parse_page_message(r#"{"type":"log","text":"Spotify paused: game paused"}"#),
+            Some(PageMessage::Log { text: "Spotify paused: game paused".into() })
+        );
         // No route: none.
         assert_eq!(super::stops_message(None, None, &[13], &[]), r#"{"id":null,"stops":[],"type":"routeStops"}"#);
     }

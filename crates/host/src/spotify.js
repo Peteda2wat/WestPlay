@@ -148,12 +148,27 @@
     return send.apply(this, arguments)
   }
 
+  // What stops the music on its own, for the host's log: the element's own trouble (waiting for data, stalled,
+  // ended, errors) and the connection to Spotify's servers, said once each in 2 s. Where in the track it was and
+  // whether an advert plays; never what plays.
+  const lastEvent = new Map()
+  const tellEvent = (name, element) => {
+    const now = performance.now()
+    if (now - (lastEvent.get(name) ?? -Infinity) < 2000) return
+    lastEvent.set(name, now)
+    post({ event: name, at: element ? Math.round(element.currentTime) : null, ad: Boolean(player.state?.ad) })
+  }
+
   // Spotify Connect's state, as the page hears it on its dealer socket.
   const PageSocket = window.WebSocket
   window.WebSocket = new Proxy(PageSocket, {
     construct(target, args) {
       const socket = Reflect.construct(target, args)
-      if (String(args[0]).includes('dealer')) socket.addEventListener('message', (event) => heardDealer(event.data))
+      if (String(args[0]).includes('dealer')) {
+        socket.addEventListener('message', (event) => heardDealer(event.data))
+        socket.addEventListener('close', () => tellEvent('dealer closed'))
+        socket.addEventListener('error', () => tellEvent('dealer error'))
+      }
       return socket
     },
   })
@@ -947,6 +962,9 @@
   const songs = new Map()
   const contexts = new Map()
 
+  // An advert's track in Connect's state (Spotify's own address for it: `spotify:ad:…`).
+  const isAd = (uri) => String(uri ?? '').startsWith('spotify:ad')
+
   const heardCluster = (payload) => {
     const cluster = payload?.cluster ?? payload
     const state = cluster?.player_state
@@ -968,6 +986,7 @@
       context: state.context_uri ?? null,
       contextName: state.context_metadata?.context_description ?? null,
       playing: Boolean(state.is_playing) && !state.is_paused,
+      ad: isAd(state.track?.uri),
       position: Number(state.position_as_of_timestamp ?? 0),
       // Where the position was, in this PC's time (the server's own clock may differ from it).
       at: Number(state.timestamp ?? 0) + (serverNow ? Date.now() - serverNow : 0),
@@ -985,7 +1004,7 @@
   }
 
   const describe = async (uris) => {
-    const missing = uris.filter((uri) => !songs.has(uri))
+    const missing = uris.filter((uri) => !songs.has(uri) && !isAd(uri))
     if (missing.length === 0) return
     // The song playing in full (its colour, whether it's liked); the ones to come in one go.
     const [current, ...rest] = missing
@@ -1068,6 +1087,7 @@
           track: songs.get(state.track) ?? null,
           context: await contextOf(state.context, state.contextName).catch(() => null),
           playing: state.playing,
+          ad: state.ad,
           position,
           duration: state.duration / 1000,
           shuffle: state.shuffle,
@@ -1099,6 +1119,9 @@
     for (const name of MEDIA_EVENTS) element.addEventListener(name, () => step(name))
     // Playing or not said at once as it changes: the cab's fade in waits for it.
     for (const name of ['play', 'pause', 'ended']) element.addEventListener(name, () => tellState())
+    for (const name of ['waiting', 'stalled', 'error', 'abort', 'ended']) {
+      element.addEventListener(name, () => tellEvent(name, element))
+    }
     element.addEventListener('playing', () => keepPaused())
   }
   // The one playing now: Spotify readies the next song in another element (given its keys ahead), and plays
