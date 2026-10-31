@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 import { formatTripDistance, formatTripTime } from '../../shared/format'
 import type { PlannedRoute, RouteAction, RouteAnswer } from '../../shared/host'
 import { useKeyboard } from '../keyboard/store'
@@ -18,8 +17,8 @@ import {
   searchPlaces,
   usePlaces,
 } from './places'
-import { toLngLat } from './projection'
 import { useRecents } from './recents'
+import { answerText, useRouteState, useRouteTo, useTruckAt } from './routeTo'
 import { askDetours, changeRoute, followRoute, planRoutes } from './routeChange'
 import { corridorOf, trafficAlong } from './traffic'
 import { setRouteCorridor, useTruckersMp } from './truckersmp'
@@ -30,30 +29,6 @@ const NEARBY: DestinationKind[] = ['fuel', 'parking', 'service', 'hotel', 'compa
 /** The game's map scale between cities (its world is this much smaller than the distances it gives), for
  * straight-line distances in the units its GPS uses (shared/format.ts). */
 const MAP_SCALE = 19
-
-/** How far the truck may move before the lists' distances are worked out again, metres. */
-const WHERE_STEP = 250
-
-/** Where the truck is (lng, lat), to the nearest `WHERE_STEP` (the lists don't redraw with every metre). */
-function useTruckAt(): [number, number] | null {
-  const at = useLive(
-    useShallow((state) => {
-      const t = state.telemetry
-      return t ? [Math.round(t.x / WHERE_STEP) * WHERE_STEP, Math.round(t.z / WHERE_STEP) * WHERE_STEP] : null
-    }),
-  )
-  return at ? toLngLat(at[0], at[1]) : null
-}
-
-/** What the game's route allows: on a job, only stops (the destination is the job's). */
-interface RouteState {
-  job: boolean
-  route: boolean
-}
-
-function useRouteState(): RouteState {
-  return useLive(useShallow((state) => ({ job: state.job !== null, route: state.route !== null })))
-}
 
 interface DestinationsProps {
   query: string
@@ -230,11 +205,11 @@ const ROUTE_TO_NEAREST = ['fuel', 'parking', 'service', 'garage'] as const
 
 /**
  * Truck Remote's one-tap "route to nearest": the nearest of a kind (the player's own garages for garage),
- * as a stop on a route or job, else as where to go.
+ * as a stop on a route or job, else as where to go (also Home's Route to Nearest widget).
  * shortcut: nearest in a straight line, not the quickest to drive as Truck Remote's was; use planRoutes per
  * candidate if that picks badly.
  */
-function RouteToNearest({
+export function RouteToNearest({
   places,
   garages,
   from,
@@ -246,18 +221,12 @@ function RouteToNearest({
   onDone(message: string): void
 }) {
   const text = useText()
-  const { job, route } = useRouteState()
-  const remember = useRecents((state) => state.remember)
   const [problem, setProblem] = useState<string | null>(null)
-  const go = async (kind: (typeof ROUTE_TO_NEAREST)[number]) => {
+  const routeTo = useRouteTo(onDone, setProblem)
+  const go = (kind: (typeof ROUTE_TO_NEAREST)[number]) => {
     const place = nearestOfKind(kind === 'garage' ? garages : places, kind, from, 1)[0]
     if (!place) return setProblem(text.destinations.noneNearby)
-    const action: RouteAction = job || route ? 'addStop' : 'go'
-    const answer = await changeRoute(action, place.node)
-    if (answer !== 'done') return setProblem(answerText(answer, text))
-    setProblem(null)
-    remember(place)
-    onDone(text.destinations.done[action])
+    void routeTo(place)
   }
   return (
     <section>
@@ -346,7 +315,7 @@ function PlaceList({
   )
 }
 
-function PlaceRow({
+export function PlaceRow({
   place,
   title,
   from,
@@ -602,24 +571,6 @@ async function stopAdded(
 }
 
 /** What the game's answer means for the player, when it wasn't done. */
-function answerText(answer: RouteAnswer, text: Strings): string {
-  switch (answer) {
-    case 'alreadyThere':
-      return text.destinations.alreadyThere
-    case 'full':
-      return text.destinations.full
-    case 'onJob':
-      return text.destinations.onJob
-    case 'unsupported':
-      return text.destinations.unsupported
-    case 'noAnswer':
-      return text.destinations.noAnswer
-    case 'noSuchNode':
-    case 'unexpected':
-    case 'done':
-      return text.destinations.failed
-  }
-}
 
 function BackGlyph() {
   return (

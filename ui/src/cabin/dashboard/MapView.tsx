@@ -7,6 +7,7 @@ import { MapSearch } from '../maps/MapSearch'
 import { nextStop } from '../maps/nextStop'
 import { formatRealLeft, realMinutesLeft } from './destination'
 import { useMapData } from '../maps/mapData'
+import { MARKERS } from '../maps/liveMap'
 import { RoadMap } from '../maps/RoadMap'
 import { useCabin, useLive } from '../state/store'
 import { useText } from '../state/text'
@@ -30,6 +31,7 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
   const data = useMapData()
   const hvtMap = useLive((state) => state.hvtMap)
   const countryName = useLive((state) => state.countryName)
+  const marker = useCabin((state) => state.marker)
   const text = useText()
 
   if (hvtMap) {
@@ -53,11 +55,15 @@ export function MapView({ interactive = false }: { interactive?: boolean }) {
           <>
             <div className="map-plane map-dark" />
             <div className="map-plane map-light" />
-            <div className="puck" aria-hidden>
-              <svg viewBox="0 0 24 24" width="22" height="22">
-                <path d="M12 3 19 20l-7-4-7 4Z" fill="#fff" />
-              </svg>
-            </div>
+            {marker === 'truck' ? (
+              <div className="puck truck" aria-hidden dangerouslySetInnerHTML={{ __html: MARKERS.truck }} />
+            ) : (
+              <div className="puck" aria-hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22">
+                  <path d="M12 3 19 20l-7-4-7 4Z" fill="#fff" />
+                </svg>
+              </div>
+            )}
           </>
         )
       )}

@@ -1,17 +1,32 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useAppIcon } from '../state/hooks'
-import { type AppId, APPS, RELEASED_APP_IDS } from '../state/apps'
+import { type AppId, APPS } from '../state/apps'
+import { type HomeItem, SMALL_WIDGETS, widgetOf } from '../state/home'
 import { useLaunchStyle } from '../state/launch'
 import { go, useCabin } from '../state/store'
 import { useText } from '../state/text'
 import { textScale } from '../state/textSize'
-import { CELL, COMPACT_CELL, LABEL_LINES, pagesOf, pageSize, rowLayout } from './pages'
+import { DestinationWidget, NowPlayingWidget, WeatherWidget } from '../dashboard/widgets'
+import {
+  DamageSmallWidget,
+  DamageWidget,
+  FuelWidget,
+  NearbyWidget,
+  PlacesWidget,
+  TripProgressWidget,
+  TripRingWidget,
+} from './HomeWidgets'
+import { CELL, COMPACT_CELL, LABEL_LINES, packPages, pageSize, rowLayout } from './pages'
+import '../dashboard/dashboard.css'
 import './home.css'
+
+/** A widget on Home takes two columns by two rows: the room of four apps. */
+const WIDGET_CELLS = 2
 
 /**
  * CarPlay-style Home: the app grid next to the sidebar, in pages as CarPlay's: as many columns and rows as the
  * screen fits (pages.ts), the next page a drag sideways away (shell/dragScroll.ts), with a dot for each page
- * below.
+ * below. The apps and the Dashboard's widgets the player put on it, in their order (Settings › Home).
  */
 export function Home() {
   const pagesElement = useRef<HTMLDivElement>(null)
@@ -22,6 +37,9 @@ export function Home() {
   const names = useText().apps
   // Each app's label's lines as drawn (a long name takes two): the rows are as tall as their names need.
   const [lines, setLines] = useState<Partial<Record<AppId, number>>>({})
+  const home = useCabin((state) => state.home)
+  const items = useMemo(() => home.flatMap(({ item, shown }) => (shown ? [item] : [])), [home])
+  const apps = useMemo(() => items.filter((item): item is AppId => widgetOf(item) === null), [items])
 
   useLayoutEffect(() => {
     const element = pagesElement.current
@@ -58,7 +76,7 @@ export function Home() {
         const text = label.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
         found[app] = line > 0 ? Math.min(LABEL_LINES, Math.max(1, Math.round(text / line))) : 1
       }
-      setLines((current) => (RELEASED_APP_IDS.every((app) => current[app] === found[app]) ? current : found))
+      setLines((current) => (apps.every((app) => current[app] === found[app]) ? current : found))
     }
     count()
     let active = true
@@ -66,18 +84,32 @@ export function Home() {
     return () => {
       active = false
     }
-  }, [size.columns, size.compact, scale, names])
+  }, [size.columns, size.compact, scale, names, apps])
 
   const cell = size.compact ? COMPACT_CELL : CELL
+  // Each item's cells each way: an app's or a small widget's one, a widget's two.
+  const cellsOf = (item: HomeItem) => {
+    const widget = widgetOf(item)
+    return widget === null || SMALL_WIDGETS.has(widget) ? 1 : WIDGET_CELLS
+  }
+  // With widgets, which row an app lands in is the packing's: every row as tall as the longest name, and a
+  // widget counted as the cells it takes.
+  const widgets = items.length - apps.length
+  const longest = Math.max(1, ...apps.map((app) => lines[app] ?? 1))
+  const cellCount = items.reduce((sum, item) => sum + cellsOf(item) ** 2, 0)
   const rows = rowLayout(
     cell,
     scale,
     size.height,
     size.columns,
     size.rows,
-    RELEASED_APP_IDS.map((app) => lines[app] ?? 1),
+    widgets > 0 ? Array.from({ length: cellCount }, () => longest) : apps.map((app) => lines[app] ?? 1),
   )
-  const pages = pagesOf(RELEASED_APP_IDS, size.columns * rows.rows)
+  const pages = packPages(
+    items.map((item) => ({ item, width: cellsOf(item), height: cellsOf(item) })),
+    size.columns,
+    rows.rows,
+  )
   const turnTo = (index: number) => {
     const element = pagesElement.current
     element?.scrollTo({ left: index * element.clientWidth, behavior: 'smooth' })
@@ -93,7 +125,7 @@ export function Home() {
           setPage(Math.round(element.scrollLeft / Math.max(1, element.clientWidth)))
         }}
       >
-        {pages.map((apps, index) => (
+        {pages.map((placed, index) => (
           <div
             key={index}
             className="home-grid"
@@ -106,8 +138,14 @@ export function Home() {
               rowGap: rows.gap,
             }}
           >
-            {apps.map((id) => (
-              <HomeApp key={id} app={id} />
+            {placed.map(({ item, column, row, width, height }) => (
+              <div
+                key={item}
+                className="home-cell"
+                style={{ gridColumn: `${column + 1} / span ${width}`, gridRow: `${row + 1} / span ${height}` }}
+              >
+                <HomeItemView item={item} />
+              </div>
             ))}
           </div>
         ))}
@@ -128,6 +166,35 @@ export function Home() {
       )}
     </section>
   )
+}
+
+function HomeItemView({ item }: { item: HomeItem }) {
+  switch (widgetOf(item)) {
+    case null:
+      return <HomeApp app={item as AppId} />
+    case 'nowPlaying':
+      return <NowPlayingWidget onHome />
+    case 'destination':
+      return <DestinationWidget onHome />
+    case 'weather':
+      return <WeatherWidget onHome />
+    case 'tripProgress':
+      return <TripProgressWidget />
+    case 'fuel':
+      return <FuelWidget />
+    case 'nearby':
+      return <NearbyWidget />
+    case 'places':
+      return <PlacesWidget />
+    case 'damage':
+      return <DamageWidget />
+    case 'tripRing':
+      return <TripRingWidget />
+    case 'fuelSmall':
+      return <FuelWidget small />
+    case 'damageSmall':
+      return <DamageSmallWidget />
+  }
 }
 
 /** An app on Home. Its icon is what the app grows out of when it opens, and shrinks back into. */

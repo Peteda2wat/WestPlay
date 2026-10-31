@@ -7,6 +7,7 @@ import { pickVariant, prepareWallpaper } from '../../wallpapers'
 import { type Appearance, resolveAppearance } from '../../state/appearance'
 import { useLook, useScreenProfile } from '../../state/hooks'
 import { DASHBOARD_WIDGETS, type DashboardWidget, useCabin, useLive } from '../../state/store'
+import { type HomeItem, widgetOf } from '../../state/home'
 import { useText } from '../../state/text'
 import { TEXT_SIZES } from '../../state/textSize'
 import {
@@ -14,6 +15,8 @@ import {
   CheckGlyph,
   ChevronGlyph,
   DashboardGlyph,
+  HomeGlyph,
+  MoveGlyph,
   NowPlayingGlyph,
   SoundGlyph,
   WallpaperGlyph,
@@ -62,6 +65,8 @@ function PageContent({ page }: { page: SettingsPage }) {
       return <AppearancePage />
     case 'wallpaper':
       return <WallpaperPage />
+    case 'home':
+      return <HomePage />
     case 'dashboard':
       return <DashboardPage />
     case 'nowPlaying':
@@ -108,6 +113,7 @@ function ListPage() {
         />
       </Group>
       <Group>
+        <NavRow tile="var(--apple-blue)" icon={<HomeGlyph />} label={text.settings.home} onOpen={() => open('home')} />
         <NavRow
           tile="var(--apple-indigo)"
           icon={<DashboardGlyph />}
@@ -147,6 +153,8 @@ function AppearancePage() {
   const setClock24 = useCabin((state) => state.setClock24)
   const miles = useCabin((state) => state.miles)
   const setMiles = useCabin((state) => state.setMiles)
+  const marker = useCabin((state) => state.marker)
+  const setMarker = useCabin((state) => state.setMarker)
   const open = useSettings((state) => state.open)
   return (
     <Page title={text.settings.appearance}>
@@ -181,6 +189,10 @@ function AppearancePage() {
       <Group>
         <SwitchRow label={text.settings.clock24} on={clock24} onToggle={setClock24} />
         <SwitchRow label={text.settings.miles} on={miles} onToggle={setMiles} />
+      </Group>
+      <Group header={text.settings.mapMarker}>
+        <CheckRow label={text.settings.markerArrow} on={marker === 'arrow'} onPick={() => setMarker('arrow')} />
+        <CheckRow label={text.settings.markerTruck} on={marker === 'truck'} onPick={() => setMarker('truck')} />
       </Group>
       {hasBar && (
         <Group footer={text.settings.vehicleBarFooter}>
@@ -337,12 +349,96 @@ function DashboardPage() {
     nowPlaying: text.nowPlaying,
     destination: text.destination,
     weather: text.apps.weather,
+    gauges: text.homeWidgets.gauges,
   }
   return (
     <Page title={text.settings.dashboard}>
       <Group header={text.settings.widgets}>
         {DASHBOARD_WIDGETS.map((widget) => (
           <SwitchRow key={widget} label={names[widget]} on={widgets[widget]} onToggle={(on) => setWidget(widget, on)} />
+        ))}
+      </Group>
+    </Page>
+  )
+}
+
+/**
+ * What Home shows, in its order (apps and the Dashboard's widgets together, as Home places them), each switched
+ * on or off and moved up or down (no dragging: a drag on Home turns its pages, and the cab's mouse makes long drags clumsy). Settings
+ * stays on: Home can't lose the way back here.
+ */
+function HomePage() {
+  const text = useText()
+  const home = useCabin((state) => state.home)
+  const move = useCabin((state) => state.moveHomeEntry)
+  const show = useCabin((state) => state.showHomeItem)
+  const name = (item: HomeItem) => {
+    switch (widgetOf(item)) {
+      case null:
+        return text.apps[item as keyof typeof text.apps]
+      case 'nowPlaying':
+        return text.nowPlaying
+      case 'destination':
+        return text.destination
+      case 'weather':
+        return text.apps.weather
+      case 'tripProgress':
+        return text.homeWidgets.tripProgress
+      case 'fuel':
+        return text.homeWidgets.fuel
+      case 'nearby':
+        return text.destinations.routeToNearest
+      case 'places':
+        return text.destinations.favourites
+      case 'damage':
+        return text.homeWidgets.damage
+      case 'tripRing':
+        return text.homeWidgets.tripRing
+      case 'fuelSmall':
+        return text.homeWidgets.fuelSmall
+      case 'damageSmall':
+        return text.homeWidgets.damageSmall
+    }
+  }
+  return (
+    <Page title={text.settings.home}>
+      <Group footer={text.settings.homeFooter}>
+        {home.map(({ item, shown }, index) => (
+          <div key={item} className="settings-row home-row">
+            <span className="settings-label">{name(item)}</span>
+            {widgetOf(item) !== null && <span className="settings-value">{text.settings.homeWidget}</span>}
+            <button
+              type="button"
+              className="home-move"
+              aria-label={`${text.settings.moveUp}: ${name(item)}`}
+              disabled={index === 0}
+              onClick={() => move(index, -1)}
+            >
+              <MoveGlyph />
+            </button>
+            <button
+              type="button"
+              className="home-move"
+              aria-label={`${text.settings.moveDown}: ${name(item)}`}
+              disabled={index === home.length - 1}
+              onClick={() => move(index, 1)}
+            >
+              <MoveGlyph down />
+            </button>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shown}
+              aria-label={name(item)}
+              className="home-switch"
+              disabled={item === 'settings'}
+              onClick={() => show(item, !shown)}
+            >
+              <span className={shown ? 'apple-switch on' : 'apple-switch'} aria-hidden>
+                <span className="apple-switch-thumb" />
+              </span>
+            </button>
+          </div>
         ))}
       </Group>
     </Page>

@@ -32,6 +32,35 @@
   margin-top: -2px;
 }
 
+/* The truck seen from above: white with a dark outline and Apple Maps' blue windscreen, no disc; dark so it
+   stands out on the blue route it drives on (and on the stand-in map: dashboard/MapView.tsx). */
+.map-puck.truck,
+.puck.truck {
+  width: 36px;
+  height: 60px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #1c1c1e;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.45));
+}
+
+.map-puck.truck svg,
+.puck.truck svg {
+  width: 36px;
+  height: 60px;
+  margin: 0;
+  fill: #fff;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+.map-puck.truck svg rect:last-child,
+.puck.truck svg rect:last-child {
+  fill: #0a84ff;
+}
+
 /* Place names: ATS GPS's type with a halo of the ground colour, so they read over anything. */
 .map-label {
   pointer-events: none;

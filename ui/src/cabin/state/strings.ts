@@ -21,6 +21,24 @@ export interface Strings {
   realTime: string
   /** The job tile's break, as Truck Remote: "Break: In 6h 0m", "Break: Now!". */
   breakLabel: string
+  /** Home's own widgets (home/HomeWidgets.tsx): their names in Settings › Home, and their words. */
+  homeWidgets: {
+    tripProgress: string
+    fuel: string
+    damage: string
+    noRoute: string
+    toPickup: string
+    toDelivery: string
+    truck: string
+    trailer: string
+    cargo: string
+    noTrailer: string
+    /** The small ones (Settings › Home), and the Dashboard's row of them (Settings › Dashboard). */
+    tripRing: string
+    fuelSmall: string
+    damageSmall: string
+    gauges: string
+  }
   /** Truck Remote's trip card in the job tile (dashboard/tripCard.ts). */
   trip: {
     real: string
@@ -33,6 +51,9 @@ export interface Strings {
     late: string
     fuelStops: string
     sleepStops: string
+    /** The trip computer (dashboard/tripComputer.ts): how far driven since the job was taken, and the average speed. */
+    driven: string
+    average: string
     fuel: string
     none: string
     first: string
@@ -479,10 +500,20 @@ export interface Strings {
     wallpaper: string
     dashboard: string
     widgets: string
+    /** Settings › Home: what Home shows and in which order, each row moved up or down. */
+    home: string
+    homeFooter: string
+    homeWidget: string
+    moveUp: string
+    moveDown: string
     showAlbumArt: string
     /** iOS's 24-Hour Time (Date & Time): off, the clock in 12 hours with AM/PM. */
     clock24: string
     miles: string
+    /** Appearance › Map Marker: the truck on the map, Apple Maps' arrow or a truck seen from above. */
+    mapMarker: string
+    markerArrow: string
+    markerTruck: string
     /** Sound, and in it the Equalizer: the speakers as tuned (Recommended) or the player's own tone (Custom), what
      * it does, its three bands under the graph, and the curve set back. */
     sound: string
@@ -519,6 +550,22 @@ export const STRINGS: Record<Language, Strings> = {
     arrival: 'arrival',
     realTime: 'left (real)',
     breakLabel: 'Break',
+    homeWidgets: {
+      tripProgress: 'Trip Progress',
+      fuel: 'Fuel Range',
+      damage: 'Damage',
+      noRoute: 'No route',
+      toPickup: 'to pickup',
+      toDelivery: 'to delivery',
+      truck: 'Truck',
+      trailer: 'Trailer',
+      cargo: 'Cargo',
+      noTrailer: 'No trailer',
+      tripRing: 'Time Left (small)',
+      fuelSmall: 'Fuel Range (small)',
+      damageSmall: 'Damage (small)',
+      gauges: 'Gauges',
+    },
     trip: {
       real: 'left',
       freeRoam: 'Free roam',
@@ -530,6 +577,8 @@ export const STRINGS: Record<Language, Strings> = {
       late: 'late',
       fuelStops: 'Fuel stops',
       sleepStops: 'Sleep stops',
+      driven: 'Driven',
+      average: 'Avg speed',
       fuel: 'Fuel',
       none: 'None',
       first: 'first',
@@ -996,9 +1045,17 @@ export const STRINGS: Record<Language, Strings> = {
       wallpaper: 'Wallpaper',
       dashboard: 'Dashboard',
       widgets: 'Widgets',
+      home: 'Home',
+      homeFooter: 'Widgets on Home take the room of four apps.',
+      homeWidget: 'Widget',
+      moveUp: 'Move up',
+      moveDown: 'Move down',
       showAlbumArt: 'Show Album Art',
       clock24: '24-Hour Time',
       miles: 'Miles',
+      mapMarker: 'Map Marker',
+      markerArrow: 'Arrow',
+      markerTruck: 'Truck',
       sound: 'Sound',
       equalizer: 'Equalizer',
       recommended: 'Recommended',
@@ -1039,6 +1096,22 @@ export const STRINGS: Record<Language, Strings> = {
     arrival: 'varış',
     realTime: 'gerçek süre',
     breakLabel: 'Mola',
+    homeWidgets: {
+      tripProgress: 'Yolculuk',
+      fuel: 'Yakıt Menzili',
+      damage: 'Hasar',
+      noRoute: 'Rota yok',
+      toPickup: 'yüklemeye',
+      toDelivery: 'teslimata',
+      truck: 'Çekici',
+      trailer: 'Dorse',
+      cargo: 'Yük',
+      noTrailer: 'Dorse yok',
+      tripRing: 'Kalan Süre (küçük)',
+      fuelSmall: 'Yakıt Menzili (küçük)',
+      damageSmall: 'Hasar (küçük)',
+      gauges: 'Göstergeler',
+    },
     trip: {
       real: 'kaldı',
       freeRoam: 'Serbest sürüş',
@@ -1050,6 +1123,8 @@ export const STRINGS: Record<Language, Strings> = {
       late: 'gecikmeli',
       fuelStops: 'Yakıt molası',
       sleepStops: 'Uyku molası',
+      driven: 'Gidilen',
+      average: 'Ort. hız',
       fuel: 'Yakıt',
       none: 'Yok',
       first: 'ilki',
@@ -1520,9 +1595,17 @@ export const STRINGS: Record<Language, Strings> = {
       wallpaper: 'Duvar Kâğıdı',
       dashboard: 'Gösterge Paneli',
       widgets: 'Widget’lar',
+      home: 'Ana Ekran',
+      homeFooter: 'Ana Ekran’daki widget’lar dört uygulamanın yerini kaplar.',
+      homeWidget: 'Widget',
+      moveUp: 'Yukarı taşı',
+      moveDown: 'Aşağı taşı',
       showAlbumArt: 'Albüm Kapağını Göster',
       clock24: '24 Saat Biçimi',
       miles: 'Mil',
+      mapMarker: 'Harita İşareti',
+      markerArrow: 'Ok',
+      markerTruck: 'Tır',
       sound: 'Ses',
       equalizer: 'Ekolayzır',
       recommended: 'Önerilen',

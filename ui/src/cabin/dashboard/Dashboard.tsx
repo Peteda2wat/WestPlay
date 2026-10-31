@@ -1,7 +1,7 @@
 import { GuidanceCard } from '../maps/GuidanceCard'
 import { MapView } from './MapView'
 import { useAnyWidget } from './widgetState'
-import { DestinationWidget, NowPlayingWidget, WeatherWidget } from './widgets'
+import { DestinationWidget, GaugesWidget, NowPlayingWidget, WeatherWidget } from './widgets'
 import './dashboard.css'
 
 /**
@@ -17,6 +17,7 @@ export function Dashboard() {
       <MapView />
       <div className="widgets" hidden={!anyWidget}>
         <GuidanceCard variant="widget" />
+        <GaugesWidget />
         <NowPlayingWidget />
         <DestinationWidget />
         <WeatherWidget />

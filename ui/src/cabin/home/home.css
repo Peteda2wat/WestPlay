@@ -105,3 +105,333 @@
   border-radius: 10px;
   font-size: calc(19px * var(--text-scale, 1));
 }
+
+/* A cell of the grid: an app, or a widget across two columns and two rows (Home.tsx), the Dashboard's own. */
+.home-cell {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.home-cell > .widget-slot {
+  flex: 1;
+  margin: 0 12px;
+}
+
+.home-pages.compact .home-cell > .widget-slot {
+  margin: 0 6px;
+}
+
+/* --- Home's own widgets (HomeWidgets.tsx): a card two cells by two, its content laid out down it. --------- */
+.home-widget {
+  position: relative;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 26px;
+}
+
+.home-widget-note {
+  align-self: center;
+  font-size: calc(24px * var(--text-scale, 1));
+  color: var(--text-dim);
+}
+
+/* What a route change says, for a moment, over the card's foot. */
+.home-widget-done {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--chip);
+  font-size: calc(19px * var(--text-scale, 1));
+  font-weight: 600;
+  text-align: center;
+}
+
+.home-widget h3 {
+  margin: 0 4px 6px;
+  font-size: calc(20px * var(--text-scale, 1));
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* Trip progress: the time left, a bar from the truck to the leg's end (orange: the pickup), the distance. */
+.trip-progress .tp-time {
+  font-size: calc(54px * var(--text-scale, 1));
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.tp-bar {
+  position: relative;
+  height: 12px;
+  margin: 18px 22px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.tp-done {
+  height: 100%;
+  border-radius: inherit;
+  background: #0a84ff;
+}
+
+.tp-truck {
+  position: absolute;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #fff;
+  color: #1c1c1e;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.35);
+}
+
+.tp-end {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: #30d158;
+}
+
+.tp-end.pickup {
+  background: #ff9f0a;
+}
+
+.tp-left {
+  font-size: calc(26px * var(--text-scale, 1));
+  color: var(--text-dim);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fuel range: a three-quarter ring, open at the bottom, filled as the tank; the range in its middle. */
+.fuel-gauge {
+  display: grid;
+  place-items: center;
+}
+
+.fuel-gauge > * {
+  grid-area: 1 / 1;
+}
+
+.gauge {
+  width: min(100%, 300px);
+  height: min(100%, 300px);
+  rotate: 135deg;
+}
+
+.gauge circle {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.gauge-track {
+  stroke: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.gauge-fill {
+  stroke: #30d158;
+  transition: stroke-dasharray 600ms var(--motion-ease);
+}
+
+.fuel-gauge.low .gauge-fill {
+  stroke: #ff9f0a;
+}
+
+.gauge-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+}
+
+.gauge-text b {
+  font-size: calc(56px * var(--text-scale, 1));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge-text span {
+  font-size: calc(24px * var(--text-scale, 1));
+  color: var(--text-dim);
+}
+
+.gauge-text small {
+  margin-top: 6px;
+  font-size: calc(20px * var(--text-scale, 1));
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* Route to Nearest and the places: Maps' own buttons and rows (maps.css), at Home's size. */
+.home-widget .destinations-nearby {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 10px;
+}
+
+.home-widget .destinations-nearby button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border-radius: 18px;
+  font-size: calc(19px * var(--text-scale, 1));
+  font-weight: 600;
+}
+
+.home-widget .destinations-nearby button:active,
+.home-widget .destination-row:active {
+  background: var(--field);
+}
+
+.home-widget .destinations-nearby button:disabled {
+  opacity: 0.4;
+}
+
+.home-widget .destinations-nearby .place-badge {
+  width: 64px;
+  height: 64px;
+}
+
+.home-widget .destination-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 4px;
+  text-align: left;
+  border-radius: 16px;
+}
+
+.home-widget .destination-row + .destination-row {
+  border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius: 0;
+}
+
+/* Damage: the truck, then a bar each for it, its trailer and the cargo, green, orange or red. */
+.home-damage {
+  gap: 18px;
+}
+
+.damage-truck {
+  align-self: center;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.damage-row {
+  display: grid;
+  grid-template-columns: 5em 1fr 3em;
+  align-items: center;
+  gap: 14px;
+  font-size: calc(24px * var(--text-scale, 1));
+  --level: #30d158;
+}
+
+.damage-row.worn {
+  --level: #ff9f0a;
+}
+
+.damage-row.damaged {
+  --level: #ff453a;
+}
+
+.damage-row.none {
+  grid-template-columns: 5em 1fr;
+}
+
+.damage-label {
+  font-weight: 600;
+}
+
+.damage-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+  overflow: hidden;
+}
+
+.damage-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--level);
+}
+
+.damage-value {
+  text-align: right;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.damage-row:not(.none) .damage-value {
+  color: var(--level);
+  font-weight: 700;
+}
+
+/* Small widgets (an app's room, or a third of the Dashboard's Gauges row): the type sized to the card. */
+.home-widget.small {
+  container-type: size;
+  padding: 6px;
+  gap: 4px;
+  border-radius: 26px;
+}
+
+.home-widget.small .gauge-text b {
+  font-size: 27cqmin;
+}
+
+.home-widget.small .gauge-text span {
+  font-size: 13cqmin;
+}
+
+.trip-ring .gauge-fill {
+  stroke: #0a84ff;
+}
+
+.trip-ring.pickup .gauge-fill {
+  stroke: #ff9f0a;
+}
+
+.damage-small {
+  align-items: center;
+  --level: #30d158;
+}
+
+.damage-small.worn {
+  --level: #ff9f0a;
+}
+
+.damage-small.damaged {
+  --level: #ff453a;
+}
+
+.damage-small .damage-truck svg {
+  width: 60cqmin;
+  height: auto;
+}
+
+.damage-share {
+  font-size: 28cqmin;
+  font-weight: 700;
+  color: var(--level);
+  font-variant-numeric: tabular-nums;
+}

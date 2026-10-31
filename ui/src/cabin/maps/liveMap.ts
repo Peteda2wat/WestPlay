@@ -4,7 +4,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import { create as createStore } from 'zustand'
 import { postToHost, type Telemetry } from '../../shared/host'
 import type { Appearance } from '../state/appearance'
-import { type LiveState, useCabin, useLive } from '../state/store'
+import { type LiveState, type MapMarker, useCabin, useLive } from '../state/store'
 import { textScale } from '../state/textSize'
 import {
   AUTO_RECENTRE_MS,
@@ -100,6 +100,15 @@ const WHEEL_ZOOM = 0.5
 /** A flag: the route's end, and (green) where a job's trailer waits to be picked up, as the game's own map. */
 const FLAG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 21V4.2c3.6-1.9 6.6 1.6 11 0v8.6c-4.4 1.6-7.4-1.9-11 0" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+/** The truck on the map (Settings › Appearance › Map Marker): Apple Maps' arrow in a blue disc, or a truck and
+ * trailer seen from above, its cab ahead. */
+export const MARKERS: Record<MapMarker, string> = {
+  arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5 18 19l-6-3.2L6 19Z" fill="currentColor"/></svg>',
+  truck:
+    '<svg viewBox="0 0 24 40" aria-hidden="true"><rect x="5" y="14" width="14" height="24" rx="2"/><rect x="6" y="2" width="12" height="10" rx="3.5"/><rect x="8" y="4.5" width="8" height="3" rx="1" fill="#fff" stroke="none"/></svg>',
+}
+/** The marker asked for, for a map made after it's set. */
+let wantedMarker: MapMarker = 'arrow'
 const MIN_ZOOM = 9
 const MAX_ZOOM = 19.5
 /** How far the truck moves along the route before the route's head is drawn again from it, metres. */
@@ -290,9 +299,7 @@ function create(data: MapData, appearance: Appearance): LiveMap {
     .catch(() => {})
 
   const puckElement = document.createElement('div')
-  puckElement.className = 'map-puck'
-  puckElement.innerHTML =
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5 18 19l-6-3.2L6 19Z" fill="currentColor"/></svg>'
+  drawMarker(puckElement, wantedMarker)
   const puck = new maplibregl.Marker({ element: puckElement, pitchAlignment: 'viewport', rotationAlignment: 'map' })
   const destinationElement = document.createElement('div')
   destinationElement.className = 'map-destination'
@@ -839,6 +846,16 @@ export function liveRouteProgress(): { spans: Spans; progress: Progress } | null
   const spans = live?.routeShown?.spans
   const progress = live?.progress
   return spans && spans.length > 0 && progress ? { spans, progress } : null
+}
+
+function drawMarker(element: HTMLElement, marker: MapMarker) {
+  element.className = `map-puck ${marker}`
+  element.innerHTML = MARKERS[marker]
+}
+
+export function setLiveMapMarker(marker: MapMarker) {
+  wantedMarker = marker
+  if (live) drawMarker(live.puck.getElement(), marker)
 }
 
 export function setLiveMapAppearance(appearance: Appearance) {

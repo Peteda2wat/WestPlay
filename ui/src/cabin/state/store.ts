@@ -43,6 +43,7 @@ import { receiveSpoken } from '../maps/voiceGuidance'
 import type { Point, RouteNode } from '../maps/route'
 import { DEFAULT_WALLPAPER_ID } from '../wallpapers'
 import { isReleasedApp } from './apps'
+import { DEFAULT_HOME, type HomeEntry, type HomeItem, moveEntry, showEntry, toHome } from './home'
 import type { AppearanceMode } from './appearance'
 import { afterRunningTransition, animateNavigation, launchFor, type LaunchOrigin } from './launch'
 import {
@@ -59,10 +60,14 @@ import { INITIAL_POWER, power, type PowerEvent, type PowerState } from './power'
 import { isScreenLayoutId, type ScreenLayoutId } from './screen'
 import { DEFAULT_TEXT_SIZE, STEPS_ADDED_BELOW, toTextSize } from './textSize'
 
-/** The Dashboard's widgets the player can turn off (turn-by-turn always shows while there's a route). */
-export type DashboardWidget = 'nowPlaying' | 'destination' | 'weather'
+/** The Dashboard's widgets the player can turn off (turn-by-turn always shows while there's a route); `gauges`:
+ * the trip's time, the fuel and the damage side by side, small (off until turned on). */
+export type DashboardWidget = 'nowPlaying' | 'destination' | 'weather' | 'gauges'
 
-export const DASHBOARD_WIDGETS: readonly DashboardWidget[] = ['nowPlaying', 'destination', 'weather']
+export const DASHBOARD_WIDGETS: readonly DashboardWidget[] = ['nowPlaying', 'destination', 'weather', 'gauges']
+
+/** The truck on the map (Settings › Appearance › Map Marker): Apple Maps' arrow, or a truck seen from above. */
+export type MapMarker = 'arrow' | 'truck'
 
 /**
  * Cabin state that the UI renders from. Telemetry lives in its own store (`useLive`) because it updates
@@ -74,12 +79,15 @@ interface CabinState {
   wallpaperId: string
   /** The Dashboard's widgets shown (Settings, Dashboard). */
   dashboardWidgets: Record<DashboardWidget, boolean>
+  /** Home's apps and widgets, in order, each shown or not (Settings › Home: state/home.ts). */
+  home: HomeEntry[]
   /** Album art on Now Playing and in Music (Settings, Now Playing): off, a plain note instead. */
   albumArt: boolean
   /** The clock in 24 hours ("14:22"), or in 12 with AM/PM (Settings › Appearance › 24-Hour Time). */
   clock24: boolean
   /** Distances in miles and feet, speeds in mph (Settings › Appearance › Miles); off, km and km/h. */
   miles: boolean
+  marker: MapMarker
   /** The apps' text size, a step of `TEXT_SIZES` (Settings › Appearance › Text Size). */
   textSize: number
   /** The truck's own strip: kept (`auto`) or not, as set in the companion window (the host sends it). */
@@ -101,9 +109,12 @@ interface CabinState {
   setAppearanceMode(mode: AppearanceMode): void
   setWallpaper(id: string): void
   setDashboardWidget(widget: DashboardWidget, shown: boolean): void
+  moveHomeEntry(index: number, by: number): void
+  showHomeItem(item: HomeItem, shown: boolean): void
   setAlbumArt(shown: boolean): void
   setClock24(on: boolean): void
   setMiles(on: boolean): void
+  setMarker(marker: MapMarker): void
   setTextSize(step: number): void
   /** One band of the curve, set in Settings › Equalizer (choosing Custom): played by every player, and kept with
    * ATS GPS's settings. */
@@ -124,10 +135,24 @@ interface CabinState {
 /** What survives a restart of the app: where you were and your choices, never the power state. */
 type Persisted = Pick<
   CabinState,
-  'navigation' | 'appearanceMode' | 'wallpaperId' | 'dashboardWidgets' | 'albumArt' | 'clock24' | 'miles' | 'textSize'
+  | 'navigation'
+  | 'appearanceMode'
+  | 'wallpaperId'
+  | 'dashboardWidgets'
+  | 'home'
+  | 'albumArt'
+  | 'clock24'
+  | 'miles'
+  | 'marker'
+  | 'textSize'
 >
 
-const ALL_WIDGETS: Record<DashboardWidget, boolean> = { nowPlaying: true, destination: true, weather: true }
+const ALL_WIDGETS: Record<DashboardWidget, boolean> = {
+  nowPlaying: true,
+  destination: true,
+  weather: true,
+  gauges: false,
+}
 
 export const useCabin = create<CabinState>()(
   persist(
@@ -136,9 +161,11 @@ export const useCabin = create<CabinState>()(
       appearanceMode: 'auto',
       wallpaperId: DEFAULT_WALLPAPER_ID,
       dashboardWidgets: ALL_WIDGETS,
+      home: [...DEFAULT_HOME],
       albumArt: true,
       clock24: true,
       miles: false,
+      marker: 'arrow',
       textSize: DEFAULT_TEXT_SIZE,
       oemMode: 'auto',
       equalizer: FLAT,
@@ -154,9 +181,12 @@ export const useCabin = create<CabinState>()(
       },
       setDashboardWidget: (widget, shown) =>
         set((state) => ({ dashboardWidgets: { ...state.dashboardWidgets, [widget]: shown } })),
+      moveHomeEntry: (index, by) => set((state) => ({ home: moveEntry(state.home, index, by) })),
+      showHomeItem: (item, shown) => set((state) => ({ home: showEntry(state.home, item, shown) })),
       setAlbumArt: (albumArt) => set({ albumArt }),
       setClock24: (clock24) => set({ clock24 }),
       setMiles: (miles) => set({ miles }),
+      setMarker: (marker) => set({ marker }),
       setTextSize: (step) => set({ textSize: toTextSize(step) }),
       setEqualizerBand: (band, db) => {
         const equalizer = toEqualizer({ ...useCabin.getState().equalizer, [band]: db })
@@ -210,9 +240,11 @@ export const useCabin = create<CabinState>()(
         appearanceMode: state.appearanceMode,
         wallpaperId: state.wallpaperId,
         dashboardWidgets: state.dashboardWidgets,
+        home: state.home,
         albumArt: state.albumArt,
         clock24: state.clock24,
         miles: state.miles,
+        marker: state.marker,
         textSize: state.textSize,
       }),
       // Stored data comes from an earlier version of ATS GPS (or was edited): keep only what is valid.
@@ -220,6 +252,31 @@ export const useCabin = create<CabinState>()(
     },
   ),
 )
+
+/** The game profile whose choices the cab keeps now (`null`: the shared ones, until the host names one). */
+let profileKept: string | null = null
+
+/**
+ * The game's profile played (the host reads it from the save): each keeps its own Home, look, wallpaper and
+ * Settings choices (`westplay.cabin.profile.<name>`); one seen for the first time starts from the choices as
+ * they are. The wallpaper goes to the host, which keeps one for the companion window. The demo keeps its own.
+ */
+export async function switchProfile(name: string | null): Promise<void> {
+  if (IS_DEMO || name === null || name === profileKept) return
+  profileKept = name
+  const key = `westplay.cabin.profile.${name}`
+  let first = true
+  try {
+    first = localStorage.getItem(key) === null
+  } catch {
+    // No storage: the choices as they are, kept for this run only.
+  }
+  useCabin.persist.setOptions({ name: key })
+  // Any change saves them under the new name: the first time, the choices as they are.
+  if (first) useCabin.setState({})
+  else await useCabin.persist.rehydrate()
+  if (isInHost()) postToHost({ type: 'wallpaper', id: useCabin.getState().wallpaperId })
+}
 
 function sanitize(stored: Partial<Persisted> | undefined): Partial<Persisted> {
   if (!stored) return {}
@@ -241,12 +298,19 @@ function sanitize(stored: Partial<Persisted> | undefined): Partial<Persisted> {
   if (typeof stored.dashboardWidgets === 'object' && stored.dashboardWidgets !== null) {
     const widgets = stored.dashboardWidgets as Partial<Record<DashboardWidget, unknown>>
     result.dashboardWidgets = Object.fromEntries(
-      DASHBOARD_WIDGETS.map((widget) => [widget, widgets[widget] !== false]),
+      // Each on unless turned off; the gauges, added later, off unless turned on.
+      DASHBOARD_WIDGETS.map((widget) => [
+        widget,
+        widget === 'gauges' ? widgets[widget] === true : widgets[widget] !== false,
+      ]),
     ) as Record<DashboardWidget, boolean>
   }
+  // Kept from before Home could be changed: Home as it comes.
+  if (stored.home !== undefined) result.home = toHome(stored.home)
   if (typeof stored.albumArt === 'boolean') result.albumArt = stored.albumArt
   if (typeof stored.clock24 === 'boolean') result.clock24 = stored.clock24
   if (typeof stored.miles === 'boolean') result.miles = stored.miles
+  if (stored.marker === 'arrow' || stored.marker === 'truck') result.marker = stored.marker
   if (stored.textSize !== undefined) result.textSize = toTextSize(stored.textSize)
   return result
 }
@@ -441,6 +505,9 @@ function receiveHostMessage(now: () => number): (message: HostMessage) => void {
         break
       case 'timeZones':
         useLive.setState({ timeZones: message.on })
+        break
+      case 'profile':
+        void switchProfile(message.name)
         break
       case 'route':
         useLive.setState({

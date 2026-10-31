@@ -21,27 +21,45 @@ describe('the saved Settings choices', () => {
   it('come back as they were', async () => {
     vi.stubGlobal(
       'localStorage',
-      savedStorage({ dashboardWidgets: { nowPlaying: false, destination: true, weather: false }, albumArt: false }),
+      savedStorage({
+        dashboardWidgets: { nowPlaying: false, destination: true, weather: false, gauges: true },
+        albumArt: false,
+      }),
     )
     const { useCabin } = await import('./store')
-    expect(useCabin.getState().dashboardWidgets).toEqual({ nowPlaying: false, destination: true, weather: false })
+    expect(useCabin.getState().dashboardWidgets).toEqual({
+      nowPlaying: false,
+      destination: true,
+      weather: false,
+      gauges: true,
+    })
     expect(useCabin.getState().albumArt).toBe(false)
   })
 
-  it('keep a widget shown unless it was turned off, and ignore what isn’t a choice', async () => {
+  it('keep a widget shown unless it was turned off (the gauges off unless turned on), and ignore what isn’t a choice', async () => {
     vi.stubGlobal(
       'localStorage',
-      savedStorage({ dashboardWidgets: { weather: false, nowPlaying: 'no' }, albumArt: 'off' }),
+      savedStorage({ dashboardWidgets: { weather: false, nowPlaying: 'no', gauges: 'yes' }, albumArt: 'off' }),
     )
     const { useCabin } = await import('./store')
-    expect(useCabin.getState().dashboardWidgets).toEqual({ nowPlaying: true, destination: true, weather: false })
+    expect(useCabin.getState().dashboardWidgets).toEqual({
+      nowPlaying: true,
+      destination: true,
+      weather: false,
+      gauges: false,
+    })
     expect(useCabin.getState().albumArt).toBe(true)
   })
 
-  it('are all on when nothing was saved (an earlier ATS GPS)', async () => {
+  it('are all on when nothing was saved (an earlier ATS GPS), but the gauges added since', async () => {
     vi.stubGlobal('localStorage', savedStorage({ appearanceMode: 'dark' }))
     const { useCabin } = await import('./store')
-    expect(useCabin.getState().dashboardWidgets).toEqual({ nowPlaying: true, destination: true, weather: true })
+    expect(useCabin.getState().dashboardWidgets).toEqual({
+      nowPlaying: true,
+      destination: true,
+      weather: true,
+      gauges: false,
+    })
     expect(useCabin.getState().albumArt).toBe(true)
     expect(useCabin.getState().appearanceMode).toBe('dark')
   })
@@ -61,5 +79,27 @@ describe('the saved Text Size', () => {
     const { useCabin } = await import('./store')
     const { DEFAULT_TEXT_SIZE } = await import('./textSize')
     expect(useCabin.getState().textSize).toBe(DEFAULT_TEXT_SIZE)
+  })
+})
+
+describe('each game profile', () => {
+  it('keeps its own choices, a new one starting from those shown', async () => {
+    const storage = savedStorage({ albumArt: false }, 3)
+    vi.stubGlobal('localStorage', storage)
+    const { switchProfile, useCabin } = await import('./store')
+    await switchProfile('Western')
+    expect(useCabin.getState().albumArt).toBe(false)
+    expect(JSON.parse(storage.getItem('westplay.cabin.profile.Western') ?? '{}').state.albumArt).toBe(false)
+    useCabin.getState().setAlbumArt(true)
+
+    await switchProfile('Eastern')
+    useCabin.getState().setMiles(true)
+    await switchProfile('Western')
+    expect(useCabin.getState().albumArt).toBe(true)
+    expect(useCabin.getState().miles).toBe(false)
+    await switchProfile('Eastern')
+    expect(useCabin.getState().miles).toBe(true)
+    // The shared choices are left as they were.
+    expect(JSON.parse(storage.getItem('westplay.cabin') ?? '{}').state.albumArt).toBe(false)
   })
 })

@@ -21,6 +21,7 @@ import { nextPhaseAt, type PowerPhase } from './state/power'
 import { connectHost, useCabin, useLive } from './state/store'
 import { languageOf } from './state/strings'
 import { followTimeZone } from './state/timeZone'
+import { followTrip } from './dashboard/useTrip'
 
 /**
  * Plain browser previews have no truck to power the screen; they show it as if the electrics were on.
@@ -46,6 +47,8 @@ export function CabinApp() {
   useEffect(() => followKeybinds(), [])
   // The clock where the truck is: its country's time zone, as the game's own clock (state/timeZone.ts).
   useEffect(() => followTimeZone(), [])
+  // The trip computer's distance and average speed, counted from the telemetry (dashboard/useTrip.ts).
+  useEffect(() => followTrip(), [])
   // TruckersMP: its other players, read while the game runs under it (the map's dots, a route's traffic).
   useEffect(() => followTruckersMp(), [])
   useEffect(() => routeClicksDuringTransitions(), [])
@@ -64,10 +67,7 @@ export function CabinApp() {
   const powered = !FOLLOW_POWER || phase === 'on'
 
   return (
-    <Shell
-      entering={entering}
-      overlay={FOLLOW_POWER && phase !== 'on' && <BootScreen phase={phase} />}
-    >
+    <Shell entering={entering} overlay={FOLLOW_POWER && phase !== 'on' && <BootScreen phase={phase} />}>
       {/* The screen mounts when the power is on, and fades in after the boot. */}
       {powered && <Screens route={route} />}
     </Shell>

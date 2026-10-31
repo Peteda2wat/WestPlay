@@ -45,4 +45,13 @@ describe('Truck Remote trip card', () => {
       'Fuel: 50% · 200 L · 500 km',
     ])
   })
+
+  it('adds the distance driven and the average speed once it has gone 100 m', () => {
+    const rows = (metres: number) =>
+      tripCardView(telemetry, null, 400, text, 0, true, false, { job: null, metres, movingMs: 600_000 })
+        .rows.slice(-2)
+        .map((row) => `${row.key}: ${row.value}`)
+    expect(rows(15_000)).toEqual(['Driven: 15 km', 'Avg speed: 90 km/h'])
+    expect(rows(50)).not.toContain('Driven: 50 m')
+  })
 })

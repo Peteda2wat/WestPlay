@@ -75,9 +75,55 @@ export function rowLayout(
   }
 }
 
-/** The apps in pages of `perPage`, in order (one empty page without apps). */
-export function pagesOf<T>(apps: readonly T[], perPage: number): T[][] {
-  const pages: T[][] = []
-  for (let at = 0; at < apps.length; at += Math.max(1, perPage)) pages.push(apps.slice(at, at + Math.max(1, perPage)))
-  return pages.length > 0 ? pages : [[]]
+/** An item on a page of Home's grid: its cell (column and row from 0) and how many it takes each way. */
+export interface Placed<T> {
+  item: T
+  column: number
+  row: number
+  width: number
+  height: number
+}
+
+/**
+ * Home's items in pages of `columns` x `rows`, in order: each at the first place on the last page its cells fit
+ * (taking a gap an earlier larger one left, as iOS's Home does), else on a new page; never on a page before it,
+ * so the order holds from page to page. An item wider or taller than the page takes all of it that way. One
+ * empty page without items.
+ */
+export function packPages<T>(
+  items: readonly { item: T; width: number; height: number }[],
+  columns: number,
+  rows: number,
+): Placed<T>[][] {
+  const pages: { placed: Placed<T>[]; taken: boolean[] }[] = []
+  const fits = (taken: boolean[], column: number, row: number, width: number, height: number) => {
+    if (column + width > columns || row + height > rows) return false
+    for (let r = row; r < row + height; r++) {
+      for (let c = column; c < column + width; c++) if (taken[r * columns + c]) return false
+    }
+    return true
+  }
+  for (const { item, width: wanted, height: tall } of items) {
+    const width = Math.max(1, Math.min(columns, wanted))
+    const height = Math.max(1, Math.min(rows, tall))
+    const place = (page: (typeof pages)[number]) => {
+      for (let cell = 0; cell < columns * rows; cell++) {
+        const column = cell % columns
+        const row = Math.floor(cell / columns)
+        if (!fits(page.taken, column, row, width, height)) continue
+        for (let r = row; r < row + height; r++) {
+          for (let c = column; c < column + width; c++) page.taken[r * columns + c] = true
+        }
+        page.placed.push({ item, column, row, width, height })
+        return true
+      }
+      return false
+    }
+    const last = pages[pages.length - 1]
+    if (last && place(last)) continue
+    const page = { placed: [], taken: [] }
+    pages.push(page)
+    place(page)
+  }
+  return pages.length > 0 ? pages.map((page) => page.placed) : [[]]
 }

@@ -75,6 +75,10 @@
     0 6px 16px rgb(0 0 0 / 0.45);
 }
 
+.puck.truck {
+  margin-left: -18px;
+}
+
 .eta-pill {
   position: absolute;
   left: 50%;

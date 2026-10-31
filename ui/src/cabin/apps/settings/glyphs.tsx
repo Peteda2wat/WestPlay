@@ -45,6 +45,38 @@ export function DashboardGlyph() {
   )
 }
 
+/** Home: its grid of apps, two by two. */
+export function HomeGlyph() {
+  return (
+    <TileGlyph>
+      <rect x="4" y="4" width="7" height="7" rx="2" />
+      <rect x="13" y="4" width="7" height="7" rx="2" />
+      <rect x="4" y="13" width="7" height="7" rx="2" />
+      <rect x="13" y="13" width="7" height="7" rx="2" />
+    </TileGlyph>
+  )
+}
+
+/** Moving a row up (`down`: down) in Settings › Home. */
+export function MoveGlyph({ down = false }: { down?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 12"
+      width="20"
+      height="12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={down ? { transform: 'scaleY(-1)' } : undefined}
+      aria-hidden
+    >
+      <path d="m2.5 9.5 7.5-7 7.5 7" />
+    </svg>
+  )
+}
+
 /** Now Playing: a pair of beamed notes. */
 export function NowPlayingGlyph() {
   return (

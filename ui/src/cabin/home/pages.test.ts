@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CELL, cellHeight, pagesOf, pageSize, rowLayout } from './pages'
+import { CELL, cellHeight, packPages, pageSize, rowLayout } from './pages'
 
 describe('pageSize', () => {
   it('fits 4 x 2 on the DAF and 5 x 2 on the Scania Smart Dash', () => {
@@ -56,10 +56,34 @@ describe('rowLayout', () => {
   })
 })
 
-describe('pagesOf', () => {
-  it('fills each page in order, the rest on the next', () => {
-    expect(pagesOf([1, 2, 3, 4, 5, 6, 7, 8, 9], 8)).toEqual([[1, 2, 3, 4, 5, 6, 7, 8], [9]])
-    expect(pagesOf([1, 2, 3], 8)).toEqual([[1, 2, 3]])
-    expect(pagesOf([], 8)).toEqual([[]])
+describe('packPages', () => {
+  const app = (item: string) => ({ item, width: 1, height: 1 })
+  const widget = (item: string) => ({ item, width: 2, height: 2 })
+  const cells = (pages: ReturnType<typeof packPages<string>>) =>
+    pages.map((page) =>
+      page.map(({ item, column, row, width, height }) => `${item}@${column},${row}:${width}x${height}`),
+    )
+
+  it('puts a widget beside the apps and fills the gap it leaves', () => {
+    expect(cells(packPages([app('a'), app('b'), widget('W'), app('c'), app('d'), app('e')], 4, 2))).toEqual([
+      ['a@0,0:1x1', 'b@1,0:1x1', 'W@2,0:2x2', 'c@0,1:1x1', 'd@1,1:1x1'],
+      ['e@0,0:1x1'],
+    ])
+  })
+
+  it('starts a page for what does not fit, never going back a page', () => {
+    expect(cells(packPages([app('a'), app('b'), app('c'), widget('W'), app('d')], 4, 2))).toEqual([
+      ['a@0,0:1x1', 'b@1,0:1x1', 'c@2,0:1x1'],
+      ['W@0,0:2x2', 'd@2,0:1x1'],
+    ])
+  })
+
+  it('keeps a widget within a page of one row or one column', () => {
+    expect(cells(packPages([widget('W')], 5, 1))).toEqual([['W@0,0:2x1']])
+    expect(cells(packPages([widget('W'), app('a')], 1, 3))).toEqual([['W@0,0:1x2', 'a@0,2:1x1']])
+  })
+
+  it('has one empty page without items', () => {
+    expect(packPages([], 4, 2)).toEqual([[]])
   })
 })

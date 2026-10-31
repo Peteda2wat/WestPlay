@@ -33,7 +33,13 @@ export function useAnyWidget(): boolean {
   const guided = useGuided()
   const destination = useDestinationView() !== EMPTY
   const weather = useLive((state) => state.weather !== null)
-  return guided || widgets.nowPlaying || (widgets.destination && destination) || (widgets.weather && weather)
+  return (
+    guided ||
+    widgets.gauges ||
+    widgets.nowPlaying ||
+    (widgets.destination && destination) ||
+    (widgets.weather && weather)
+  )
 }
 
 /** Whether turn-by-turn shows: while the route has a step to show (as GuidanceCard decides). */

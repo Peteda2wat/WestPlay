@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useLook } from '../state/hooks'
-import { setLiveMapAppearance, showLiveMap } from './liveMap'
+import { useCabin } from '../state/store'
+import { setLiveMapAppearance, setLiveMapMarker, showLiveMap } from './liveMap'
 import type { MapData } from './mapData'
 import './maps.css'
 
@@ -12,11 +13,15 @@ import './maps.css'
 export function RoadMap({ data, interactive }: { data: MapData; interactive: boolean }) {
   const host = useRef<HTMLDivElement>(null)
   const { appearance } = useLook()
+  const marker = useCabin((state) => state.marker)
   // The appearance as of now, for when the map is shown (outside render).
   const appearanceRef = useRef(appearance)
   useLayoutEffect(() => {
     appearanceRef.current = appearance
   })
+
+  // Before the map is shown, so a map made now has it.
+  useLayoutEffect(() => setLiveMapMarker(marker), [marker])
 
   useEffect(() => {
     if (!host.current) return

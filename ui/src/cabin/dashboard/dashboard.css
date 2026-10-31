@@ -484,3 +484,17 @@
   padding-top: 6px;
   font-size: calc(16px * var(--text-scale, 1));
 }
+
+/* The Gauges (widgets.tsx): three small widgets side by side, each about square, never squeezed by the others. */
+.gauges-row {
+  flex: none;
+  display: flex;
+  gap: calc(var(--tile-gap, 18px) - 2px);
+  aspect-ratio: 3.1 / 1;
+}
+
+.gauges-row > .widget-slot {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}

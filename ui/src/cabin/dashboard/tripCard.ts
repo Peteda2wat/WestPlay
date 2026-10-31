@@ -1,12 +1,14 @@
-import { formatGameTime, formatTripDistance } from '../../shared/format'
+import { formatGameTime, formatTripDistance, speedKmh } from '../../shared/format'
 import { cabClock, type JobInfo, type Telemetry } from '../../shared/host'
 import type { Strings } from '../state/strings'
 import { formatBreak, formatDeadline, formatRealLeft, realMinutesLeft } from './destination'
+import { averageSpeed, type Trip } from './tripComputer'
 
 /**
  * Truck Remote's trip card, in the Dashboard's job tile (owner 2026-10-27: "the same navigation Truck Remote
  * had", in the tile, not on the map): arrival, real time left and distance left in big type, then the job,
- * the deadline, the break, the fuel and sleep stops the rest of the trip needs, and the fuel.
+ * the deadline, the break, the fuel and sleep stops the rest of the trip needs, the fuel, and the trip computer's
+ * distance driven and average speed (once it has gone 100 m).
  */
 export interface TripCardView {
   big: { value: string; unit: string }[]
@@ -53,6 +55,7 @@ export function tripCardView(
   clockShift: number,
   hours24: boolean,
   miles: boolean,
+  trip?: Trip,
 ): TripCardView {
   const t = text.trip
   const distance = (metres: number) => formatTripDistance(metres, text.decimal, miles)
@@ -110,6 +113,10 @@ export function tripCardView(
       value: `${percent}% · ${amount} · ${distance(telemetry.fuelRange * 1000)}`,
       late: percent < 15,
     })
+  }
+  if (trip && trip.metres >= 100) {
+    rows.push({ key: t.driven, value: distance(trip.metres) })
+    rows.push({ key: t.average, value: `${speedKmh(averageSpeed(trip), miles)} ${miles ? 'mph' : 'km/h'}` })
   }
   return { big, rows }
 }

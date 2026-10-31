@@ -619,3 +619,33 @@
   transform: translate(-50%, -50%) scale(1.08);
   transition: transform 150ms var(--motion-ease);
 }
+
+/* Settings › Home: a row's name, its up and down buttons and its switch, each a target of its own. */
+.home-row {
+  gap: 10px;
+}
+
+.shell .home-move,
+.shell .home-switch {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--apple-blue);
+}
+
+.shell .home-move:active,
+.shell .home-switch:active {
+  background: var(--apple-card-raised);
+}
+
+.shell .home-move:disabled {
+  color: var(--apple-label-tertiary);
+}
+
+.shell .home-switch:disabled {
+  opacity: 0.5;
+}

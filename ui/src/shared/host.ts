@@ -42,6 +42,17 @@ export interface Telemetry {
   trailerConnected: boolean
   trailerX: number
   trailerZ: number
+  /** How worn the truck's parts and the first trailer are, 0 (new) to 1, and how damaged its cargo is (the
+   * damage widget). */
+  wearEngine: number
+  wearTransmission: number
+  wearCabin: number
+  wearChassis: number
+  wearWheels: number
+  trailerWearChassis: number
+  trailerWearWheels: number
+  trailerWearBody: number
+  cargoDamage: number
   dashboardBacklight: number
   electricEnabled: boolean
   engineEnabled: boolean
@@ -151,6 +162,8 @@ export type HostMessage =
   | { type: 'mapBlock'; hvt: boolean; language: string | null }
   /** Whether the player's profile has the game's time zones on (its clock the time where the truck is). */
   | { type: 'timeZones'; on: boolean }
+  /** The game profile played (from its save; `null` until one is read): the cab keeps each one's own choices. */
+  | { type: 'profile'; name: string | null }
   /** The game's GPS route: its map nodes in order, `[x, z, forward x, forward z, distance left]` (metres;
    * the road's direction, either way along it; the distance left from the node to the destination, as the
    * game counts distances). `null` without a route. */
@@ -313,6 +326,8 @@ export type PageMessage =
   | { type: 'startup'; stage: string }
   /** Something in the page failed (each different one once), for the host's log. */
   | { type: 'pageError'; text: string }
+  /** A line for the host's log (why music paused). */
+  | { type: 'log'; text: string }
   /** Whether ATS GPS is open on the truck's screen (or the truck's original screen shows): posted as the
    * page connects and whenever it changes, for the companion window. */
   | { type: 'westplay'; open: boolean }
@@ -324,8 +339,6 @@ export type PageMessage =
    * speakers as tuned (Recommended); kept with ATS GPS's settings and played by every player. */
   | ({ type: 'equalizer'; custom: boolean } & Equalizer)
   /** The music's spectrum wanted (Settings › Equalizer open) or not: the host answers `spectrum` as it plays. */
-  /** A line for the host's log (why music paused). */
-  | { type: 'log'; text: string }
   | { type: 'spectrum'; on: boolean }
   /** A change to the game's GPS route (Maps' search), at a map node (its uid, hex) for going or adding a
    * stop; the host answers with `routeAnswer` and the same `id`. */

@@ -23,19 +23,22 @@ import { useLive } from '../state/store'
 import { useText } from '../state/text'
 import { nearestCity } from './destination'
 import { tripCardView } from './tripCard'
+import { useTrip } from './useTrip'
 import { useNowPlaying } from './useNowPlaying'
 import { weatherView } from './weather'
 import { WeatherGlyph } from './WeatherGlyph'
 import { EMPTY, useDestinationView, useGuided } from './widgetState'
 import { cabClock } from '../../shared/host'
+import { DamageSmallWidget, FuelWidget, TripRingWidget } from '../home/HomeWidgets'
 
 /**
  * Now Playing: what plays, the video YouTube plays first (VideoWidget), then the Spotify app's music, then
  * Apple Music's (the Music app), then YouTube Music's; nothing playing, what played last (nowPlaying.ts); none
- * of them with anything, Not Playing. Turned off in Settings, its room goes to the others.
+ * of them with anything, Not Playing. Turned off in Settings, its room goes to the others. `onHome`: on Home
+ * (Settings › Home), shown whatever the Dashboard's switch says.
  */
-export function NowPlayingWidget() {
-  const shown = useCabin((state) => state.dashboardWidgets.nowPlaying)
+export function NowPlayingWidget({ onHome = false }: { onHome?: boolean }) {
+  const shown = useCabin((state) => state.dashboardWidgets.nowPlaying) || onHome
   const { showing, spotify, appleMusic, youtubeMusic } = useNowPlaying()
   return (
     <div className={`widget-slot${shown ? ' open' : ''}`}>
@@ -185,11 +188,12 @@ function MusicWidget({
 /**
  * Where the truck is headed, our "live activity" (destination.ts): the job's pickup and then its delivery
  * (deadline and distance left), or where the game's route ends; folded away without either, as the
- * guidance card comes and goes.
+ * guidance card comes and goes. On Home, always (free roam says so).
  */
-export function DestinationWidget() {
+export function DestinationWidget({ onHome = false }: { onHome?: boolean }) {
   const view = useDestinationView()
-  const shown = useCabin((state) => state.dashboardWidgets.destination) && view !== EMPTY
+  const switchedOn = useCabin((state) => state.dashboardWidgets.destination)
+  const shown = onHome || (switchedOn && view !== EMPTY)
   return <div className={`widget-slot${shown ? ' open' : ''}`}>{shown && <TripCard />}</div>
 }
 
@@ -202,8 +206,9 @@ export function TripCard() {
   const job = useLive((state) => state.job)
   const fuelCapacity = useLive((state) => state.truck?.fuelCapacity ?? 0)
   const clockShift = useLive((state) => state.clockShift)
+  const trip = useTrip()
   if (!telemetry) return null
-  const view = tripCardView(telemetry, job, fuelCapacity, text, clockShift, clock24, miles)
+  const view = tripCardView(telemetry, job, fuelCapacity, text, clockShift, clock24, miles, trip)
   return (
     <article className="widget glass job trip-card">
       {view.big.length > 0 && (
@@ -228,6 +233,20 @@ export function TripCard() {
   )
 }
 
+/** YMN One's small gauges side by side (owner 2026-10-30): the time left on a ring, the fuel's range and the
+ * truck's damage, a row as tall as a third of its width; turned on in Settings › Dashboard. */
+export function GaugesWidget() {
+  const shown = useCabin((state) => state.dashboardWidgets.gauges)
+  if (!shown) return null
+  return (
+    <div className="gauges-row">
+      <TripRingWidget />
+      <FuelWidget small />
+      <DamageSmallWidget />
+    </div>
+  )
+}
+
 /** How many widgets the column holds at most: the weather comes in only where there's room. */
 const COLUMN = 3
 
@@ -235,16 +254,19 @@ const COLUMN = 3
  * The weather where the truck is, as CarPlay's weather widget (weather.ts): the nearest city, the weather
  * and its symbol. The column holds three widgets: it comes in where there's room (turn-by-turn, Now Playing
  * or the destination not showing: no route, no job, or turned off in Settings), as they come and go; and
- * not without the weather (no game, or one whose weather isn't read), or turned off itself.
+ * not without the weather (no game, or one whose weather isn't read), or turned off itself. On Home, it has its
+ * own room.
  */
-export function WeatherWidget() {
+export function WeatherWidget({ onHome = false }: { onHome?: boolean }) {
   const text = useText()
   const labels = useMapData()?.labels
   const widgets = useCabin((state) => state.dashboardWidgets)
   const guided = useGuided()
   const destination = useDestinationView()
-  const others = [guided, widgets.nowPlaying, widgets.destination && destination !== EMPTY].filter(Boolean).length
-  const room = widgets.weather && others < COLUMN
+  const others = [guided, widgets.gauges, widgets.nowPlaying, widgets.destination && destination !== EMPTY].filter(
+    Boolean,
+  ).length
+  const room = onHome || (widgets.weather && others < COLUMN)
   const weather = useLive((state) => state.weather)
   const gameTime = useLive((state) => (state.telemetry ? cabClock(state.telemetry, state.clockShift) : 0))
   const place = useLive((state) => {
